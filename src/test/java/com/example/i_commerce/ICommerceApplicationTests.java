@@ -1,4 +1,4 @@
-package com.example.I_Commerce;
+package com.example.i_commerce;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,4 @@
-package com.example.I_Commerce;
+package com.example.i_commerce;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
