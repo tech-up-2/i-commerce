@@ -12,7 +12,15 @@ public class AppException extends RuntimeException{
 
     public AppException(ErrorCode errorCode) {
         this.errorCode = errorCode;
-        this.message = errorCode.getMessage();
+        this.message = null;
+    }
+
+    @Override
+    public String getMessage() {
+        if(message == null) {
+            return errorCode.getMessage();
+        }
+        return String.format("%s", message);
     }
 
 }
