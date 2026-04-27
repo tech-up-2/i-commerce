@@ -2,12 +2,9 @@ package com.example.i_commerce.domain.member.entity;
 
 
 import com.example.i_commerce.domain.chat.entity.ChatMessage;
-import com.example.i_commerce.domain.chat.entity.ChatParticipant;
-import com.example.i_commerce.domain.chat.entity.ChatReport;
-import com.example.i_commerce.domain.chat.entity.MessageReadStatus;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
-import com.example.i_commerce.domain.member.entity.enums.MemberRole;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
+import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -37,7 +34,7 @@ public class Member extends BaseEntity {
 
     @Id
     @Column(length = 50)
-    private String id;
+    private Long id;
 
     @Column(nullable = false, length = 50)
     private String email;
@@ -67,7 +64,7 @@ public class Member extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MemberRole role;
+    private MemberType role;
 
     //Member 도메인 관련
     @Builder.Default
