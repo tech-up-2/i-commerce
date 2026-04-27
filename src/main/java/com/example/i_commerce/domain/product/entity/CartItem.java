@@ -35,8 +35,8 @@ public class CartItem extends BaseEntity {
     @Column(nullable = false)
     private Long cartId;
 
-    @Column(name = "p_variant_id", nullable = false)
-    private Long productVariantId;
+//    @Column(name = "p_variant_id", nullable = false)
+//    private Long productVariantId;
 
     @Column(nullable = false)
     private Integer quantity;

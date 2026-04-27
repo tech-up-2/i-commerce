@@ -36,8 +36,8 @@ public class StoreAddress extends BaseEntity {
     @JoinColumn(name = "store_id")
     private Store store;
 
-    @Column(nullable = false)
-    private Long storeId;
+//    @Column(nullable = false)
+//    private Long storeId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

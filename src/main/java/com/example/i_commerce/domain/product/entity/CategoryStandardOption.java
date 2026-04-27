@@ -37,11 +37,11 @@ public class CategoryStandardOption extends BaseEntity {
     private SystemOption systemOption;
 
 
-    @Column(nullable = false)
-    private Long categoryId;
-
-    @Column(nullable = false)
-    private Long systemOptionId;
+//    @Column(nullable = false)
+//    private Long categoryId;
+//
+//    @Column(nullable = false)
+//    private Long systemOptionId;
 
     @Builder.Default
     private Boolean required = false;

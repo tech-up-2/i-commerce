@@ -36,7 +36,7 @@ public class Delivery extends BaseEntity {
     private Order order;
 
 
-    private Long orderId;
+//    private Long orderId;
 
     @Column(nullable = false, length = 50)
     private String sellerId;

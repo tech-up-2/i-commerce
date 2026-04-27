@@ -32,8 +32,8 @@ public class ChatParticipant extends BaseEntity {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-    @Column(nullable = false)
-    private Long chatRoomId;
+//    @Column(nullable = false)
+//    private Long chatRoomId;
 
     @Column(nullable = false, length = 50)
     private String userId;
