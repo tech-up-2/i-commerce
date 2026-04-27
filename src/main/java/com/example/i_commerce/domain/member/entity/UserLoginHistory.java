@@ -37,12 +37,12 @@ public class UserLoginHistory extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private Member member;
 
-    @Column(nullable = false, length = 50)
-    private String userId;
+//    @Column(nullable = false, length = 50)
+//    private String userId;
 
     @Builder.Default
     @Column(nullable = false)
-    private Boolean loginResult;
+    private Boolean loginResult = false;
 
     @Column(length = 50)
     private String ipAddress;

@@ -34,8 +34,8 @@ public class PointHistory {
     @JoinColumn(name = "user_id", nullable = false)
     private Member member;
 
-    @Column(nullable = false, length = 50)
-    private String userId;
+//    @Column(nullable = false, length = 50)
+//    private String userId;
 
     private Long orderId;
 

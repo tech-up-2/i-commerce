@@ -42,7 +42,7 @@ public class Category extends BaseEntity {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Category> children = new ArrayList<>();
 
-    private Long parentId;
+//    private Long parentId;
 
     @Column(length = 100)
     private String name;

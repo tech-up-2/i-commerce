@@ -32,8 +32,8 @@ public class DeliveryAddress extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private Member member;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+//    @Column(name = "user_id", nullable = false)
+//    private Long userId;
 
     @Column(nullable = false, length = 50)
     private String label;

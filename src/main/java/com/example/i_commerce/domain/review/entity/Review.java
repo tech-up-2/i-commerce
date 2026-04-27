@@ -41,9 +41,9 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private Integer score;
 
-    private Long reportCount = 0L;
+    private Long reportCount;
 
-    private Boolean isBest = false;
+    private Boolean isBest;
 
     @Builder.Default
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)

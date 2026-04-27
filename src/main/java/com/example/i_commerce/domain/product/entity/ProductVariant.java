@@ -36,8 +36,8 @@ public class ProductVariant extends BaseEntity {
     @JoinColumn(name = "product_id")
     private Product product;
 
-    @Column(nullable = false)
-    private Long productId;
+//    @Column(nullable = false)
+//    private Long productId;
 
     @Column(length = 100)
     private String sku;

@@ -32,8 +32,8 @@ public class Stock extends BaseEntity {
     @JoinColumn(name = "p_variant_id", nullable = false)
     private ProductVariant productVariant;
 
-    @Column(name = "p_variant_id", nullable = false)
-    private Long productVariantId;
+//    @Column(name = "p_variant_id", nullable = false)
+//    private Long productVariantId;
 
     @Column(nullable = false)
     private Integer quantity;

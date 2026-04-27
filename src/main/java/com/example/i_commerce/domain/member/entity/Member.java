@@ -59,7 +59,7 @@ public class Member extends BaseEntity {
     private String phoneNumber;
 
     @Column(nullable = false)
-    private Integer point = 0;
+    private Integer point;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -72,7 +72,7 @@ public class Member extends BaseEntity {
     //Member 도메인 관련
     @Builder.Default
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Seller seller;
+    private Seller seller = new Seller();
 
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -87,9 +87,9 @@ public class Member extends BaseEntity {
     private List<PointHistory> pointHistories = new ArrayList<>();
 
 
-    @Builder.Default
-    @OneToMany(mappedBy = "member")
-    private List<ChatMessage> chatMessages = new ArrayList<>();
+//    @Builder.Default
+//    @OneToMany(mappedBy = "member")
+//    private List<ChatMessage> chatMessages = new ArrayList<>();
 
 
 }

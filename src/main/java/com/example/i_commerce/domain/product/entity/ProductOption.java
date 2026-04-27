@@ -40,8 +40,8 @@ public class ProductOption extends BaseEntity {
     @JoinColumn(name = "sys_option_id", nullable = false)
     private SystemOption systemOption;
 
-    @Column(nullable = false)
-    private Long productId;
+//    @Column(nullable = false)
+//    private Long productId;
 
     private String sourceType;
 
@@ -60,7 +60,7 @@ public class ProductOption extends BaseEntity {
     @Column(length = 255)
     private String optionType;
 
-    private Long sysOptionId;
+//    private Long sysOptionId;
 
     @Builder.Default
     @OneToMany(mappedBy = "productOption", cascade = CascadeType.ALL, orphanRemoval = true)
