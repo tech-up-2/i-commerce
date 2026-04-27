@@ -1,6 +1,5 @@
 package com.example.i_commerce.domain.product.entity;
 
-
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -22,41 +21,47 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "product_items")
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Category extends BaseEntity {
+public class ProductItem extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private Category parent;
+    private Product product;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @Column(unique = true, nullable = false)
+    private String sku;
 
     @Column(nullable = false)
-    private Integer depth;
+    private Integer price;
+
+    private String mainImageUrl;
+
+    @Column(length = 50, nullable = false)
+    private String status;
+
+    @ManyToOne
+    @JoinColumn(name = "option_value_1_id")
+    private ProductOptionValue optionValue1;
+
+    @ManyToOne
+    @JoinColumn(name = "option_value_2_id")
+    private ProductOptionValue optionValue2;
 
     @Builder.Default
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
-    private List<Category> children = new ArrayList<>();
+    @OneToMany(mappedBy = "productItem", cascade = CascadeType.ALL)
+    private List<ProductAttribute> attributes = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    private List<Product> products = new ArrayList<>();
+    @OneToMany(mappedBy = "productItem", cascade = CascadeType.ALL)
+    private List<Stock> stocks = new ArrayList<>();
 
-    @Builder.Default
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    private List<CategoryOption> categoryOptions = new ArrayList<>();
 
-    @Builder.Default
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    private List<CategoryAttribute> categoryAttributes = new ArrayList<>();
 
 }

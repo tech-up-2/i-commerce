@@ -1,6 +1,5 @@
 package com.example.i_commerce.domain.product.entity;
 
-
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -22,41 +21,38 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "product_option_values")
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Category extends BaseEntity {
+public class ProductOptionValue extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private Category parent;
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @Column(length = 100, nullable = false)
+    private String optionOrder;
+
+    @Column(length = 100, nullable = false)
+    private String optionName;
+
+    @Column(length = 100, nullable = false)
+    private String value;
 
     @Column(nullable = false)
-    private Integer depth;
+    private Integer displayOrder;
 
     @Builder.Default
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
-    private List<Category> children = new ArrayList<>();
+    @OneToMany(mappedBy = "optionValue1", cascade = CascadeType.ALL)
+    private List<ProductItem> items1 = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    private List<Product> products = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    private List<CategoryOption> categoryOptions = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    private List<CategoryAttribute> categoryAttributes = new ArrayList<>();
-
+    @OneToMany(mappedBy = "optionValue2", cascade = CascadeType.ALL)
+    private List<ProductItem> items2 = new ArrayList<>();
 }
