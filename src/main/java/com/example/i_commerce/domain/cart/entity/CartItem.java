@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.product.entity;
+package com.example.i_commerce.domain.cart.entity;
 
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -29,18 +29,16 @@ public class CartItem extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "p_variant_id", nullable = false)
-    private ProductVariant productVariant;
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
 
     @Column(nullable = false)
-    private Long cartId;
-
-//    @Column(name = "p_variant_id", nullable = false)
-//    private Long productVariantId;
+    private Long productItem;
 
     @Column(nullable = false)
     private Integer quantity;
 
     @Builder.Default
     private Boolean isChecked = true;
+
 }
