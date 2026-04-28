@@ -7,7 +7,7 @@ import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
-import com.example.i_commerce.domain.order.service.dto.OrderCreateDto;
+import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
 import com.example.i_commerce.domain.order.service.dto.OrderItemDto;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
@@ -29,7 +29,7 @@ public class OrderService {
     private final ProductItemRepository productItemRepository;
     private final MemberRepository memberRepository;
 
-    public ApiResponse<?> createOrder(OrderCreateDto dto) {
+    public ApiResponse<Void> createOrder(CreateOrderRequest dto) {
 
         // 주문 생성
         Member member = memberRepository.findById(dto.memberId())

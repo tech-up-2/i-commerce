@@ -8,7 +8,7 @@ import com.example.i_commerce.domain.member.entity.DeliveryAddress;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
-import com.example.i_commerce.domain.order.service.dto.OrderCreateDto;
+import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
 import com.example.i_commerce.domain.order.service.dto.OrderItemDto;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
@@ -66,7 +66,7 @@ class OrderServiceTest {
     void createOrder_success_multipleItems() {
         OrderItemDto item1Dto = OrderFixture.createItemDto(100L, 2);
         OrderItemDto item2Dto = OrderFixture.createItemDto(200L, 3);
-        OrderCreateDto dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, item1Dto, item2Dto);
+        CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, item1Dto, item2Dto);
 
         Member member = createMockMember();
 
@@ -91,7 +91,7 @@ class OrderServiceTest {
     @Test
     @DisplayName("실패: 상품 중 하나라도 존재하지 않으면 예외가 발생한다")
     void createOrder_fail_itemNotFound() {
-        OrderCreateDto dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, OrderFixture.createItemDto(999L, 1));
+        CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, OrderFixture.createItemDto(999L, 1));
 
         when(memberRepository.findById(OrderFixture.MEMBER_ID)).thenReturn(Optional.of(mock(Member.class)));
         when(productItemRepository.findAllById(anyList())).thenReturn(List.of());
@@ -108,8 +108,8 @@ class OrderServiceTest {
         public static final String DETAIL_ADDRESS = "101호";
 
         // 주문 요청 DTO 생성 헬퍼
-        public static OrderCreateDto createOrderDto(Long userId, OrderItemDto... items) {
-            return new OrderCreateDto(userId, List.of(items));
+        public static CreateOrderRequest createOrderDto(Long userId, OrderItemDto... items) {
+            return new CreateOrderRequest(userId, List.of(items));
         }
 
         // 개별 아이템 DTO 생성 헬퍼
