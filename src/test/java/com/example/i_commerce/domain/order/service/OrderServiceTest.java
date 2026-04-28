@@ -97,7 +97,7 @@ class OrderServiceTest {
         when(productItemRepository.findAllById(anyList())).thenReturn(List.of());
 
         AppException exception = assertThrows(AppException.class, () -> orderService.createOrder(dto));
-        assertEquals(ErrorCode.ORDER_TEMP_ERROR, exception.getErrorCode());
+        assertEquals(ErrorCode.PRODUCT_NOT_FOUND, exception.getErrorCode());
     }
 
 
