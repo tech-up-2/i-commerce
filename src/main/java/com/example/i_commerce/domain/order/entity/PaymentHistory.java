@@ -35,8 +35,8 @@ public class PaymentHistory extends BaseEntity {
     @JoinColumn(name = "payment_id", nullable = false)
     private Payment payment;
 
-    @Column(nullable = false)
-    private Long paymentId;
+//    @Column(nullable = false)
+//    private Long paymentId;
 
     @Column(length = 20)
     private String previousStatus;

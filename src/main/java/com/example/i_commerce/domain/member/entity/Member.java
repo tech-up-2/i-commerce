@@ -58,7 +58,7 @@ public class Member extends BaseEntity {
 
     @Builder.Default
     @Column(nullable = false)
-    private Integer point = 0;
+    private Integer point;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -74,7 +74,7 @@ public class Member extends BaseEntity {
 
     //Member 도메인 관련
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Seller seller;
+    private Seller seller = new Seller();
 
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)

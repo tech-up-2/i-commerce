@@ -36,14 +36,14 @@ public class MessageReadStatus extends BaseEntity {
     @JoinColumn(name = "chat_id", nullable = false)
     private ChatMessage chatMessage;
 
-    @Column(nullable = false)
-    private Long chatId;
+//    @Column(nullable = false)
+//    private Long chatId;
 
     @Column(nullable = false, length = 50)
     private String userId;
 
-    @Column(nullable = false)
-    private Long chatRoomId;
+//    @Column(nullable = false)
+//    private Long chatRoomId;
 
     private Boolean isRead;
 }

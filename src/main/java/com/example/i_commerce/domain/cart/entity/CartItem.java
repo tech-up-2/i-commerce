@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.product.entity;
+package com.example.i_commerce.domain.cart.entity;
 
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
@@ -17,33 +17,28 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "category_standard_options")
+@Table(name = "cart_items")
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CategoryStandardOption extends BaseEntity {
+public class CartItem extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sys_option_id", nullable = false)
-    private SystemOption systemOption;
-
+    @JoinColumn(name = "cart_id", nullable = false)
+    private Cart cart;
 
     @Column(nullable = false)
-    private Long categoryId;
+    private Long productItem;
 
     @Column(nullable = false)
-    private Long systemOptionId;
+    private Integer quantity;
 
     @Builder.Default
-    private Boolean required = false;
+    private Boolean isChecked = true;
 
 }

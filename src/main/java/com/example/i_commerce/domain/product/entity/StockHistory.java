@@ -32,14 +32,14 @@ public class StockHistory extends BaseEntity {
     @JoinColumn(name = "stock_id", nullable = false)
     private Stock stock;
 
-    @Column(nullable = false)
-    private Long stockId;
-
-    @Column(length = 50)
+    @Column(length = 50, nullable = false)
     private String changeType;
 
-    @Column(name = "change_q")
+    @Column(nullable = false)
     private Integer changeQuantity;
 
+    @Column(nullable = false)
     private Long orderId;
+
+
 }

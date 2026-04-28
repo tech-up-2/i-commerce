@@ -21,44 +21,38 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "product_variants")
+@Table(name = "product_option_values")
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductVariant extends BaseEntity {
+public class ProductOptionValue extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @Column(length = 100, nullable = false)
+    private String optionOrder;
+
+    @Column(length = 100, nullable = false)
+    private String optionName;
+
+    @Column(length = 100, nullable = false)
+    private String value;
+
     @Column(nullable = false)
-    private Long productId;
-
-    @Column(length = 100)
-    private String sku;
-
-    @Column(length = 500)
-    private String imageUrl;
-
-    private Integer price;
-
-    @Column(length = 50)
-    private String status;
+    private Integer displayOrder;
 
     @Builder.Default
-    @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductVariantOption> variantOptions = new ArrayList<>();
+    @OneToMany(mappedBy = "optionValue1", cascade = CascadeType.ALL)
+    private List<ProductItem> items1 = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "productVariant")
-    private List<CartItem> cartItems = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL)
-    private List<Stock> stocks = new ArrayList<>();
+    @OneToMany(mappedBy = "optionValue2", cascade = CascadeType.ALL)
+    private List<ProductItem> items2 = new ArrayList<>();
 }
