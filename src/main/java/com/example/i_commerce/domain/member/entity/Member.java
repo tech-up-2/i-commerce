@@ -88,8 +88,10 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PointHistory> pointHistories = new ArrayList<>();
 
-    @Builder.Default
-    @OneToMany(mappedBy = "member")
-    private List<ChatMessage> chatMessages = new ArrayList<>();
+//    @Builder.Default
+//    @OneToMany(mappedBy = "member")
+//    private List<ChatMessage> chatMessages = new ArrayList<>();
+
+
 
 }
