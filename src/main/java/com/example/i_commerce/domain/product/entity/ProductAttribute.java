@@ -16,27 +16,32 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
 @Entity
-@Table(name = "product_images")
+@Table(name = "product_variants")
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductImage extends BaseEntity {
+public class ProductAttribute extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @JoinColumn(name = "product_item_id", nullable = false)
+    private ProductItem productItem;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "attribute_id", nullable = false)
+    private Attribute attribute;
 
-    @Column(length = 500)
-    private String imageUrl;
+    @Column(nullable = false)
+    private String displayName;
 
-    @Column(length = 255)
-    private String description;
+    @Column(nullable = false)
+    private Integer displayOrder;
+
 
 }

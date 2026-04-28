@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.product.entity;
 
+
 import com.example.i_commerce.global.common.entity.BaseEntity;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -17,30 +17,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "cart_items")
+@Table(name = "category_attributes")
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CartItem extends BaseEntity {
+public class CategoryAttribute extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "p_variant_id", nullable = false)
-    private ProductVariant productVariant;
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
-    @Column(nullable = false)
-    private Long cartId;
-
-//    @Column(name = "p_variant_id", nullable = false)
-//    private Long productVariantId;
-
-    @Column(nullable = false)
-    private Integer quantity;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "attribute_id", nullable = false)
+    private Attribute attribute;
 
     @Builder.Default
-    private Boolean isChecked = true;
+    private Boolean required = false;
+
 }

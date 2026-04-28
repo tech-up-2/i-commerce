@@ -18,12 +18,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "system_options")
+@Table(name = "options")
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SystemOption extends BaseEntity {
+public class Option extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,20 +32,17 @@ public class SystemOption extends BaseEntity {
     @Column(length = 100)
     private String type;
 
-    @Column(length = 255)
+    @Column(length = 100)
     private String value;
 
-    @Column(length = 255)
+    @Column(length = 100)
     private String displayName;
 
-    @Column(length = 50)
+    @Column(length = 100)
     private String inputType;
 
     @Builder.Default
-    @OneToMany(mappedBy = "systemOption")
-    private List<ProductOption> productOptions = new ArrayList<>();
+    @OneToMany(mappedBy = "option", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CategoryOption> categoryOptions = new ArrayList<>();
 
-    @Builder.Default
-    @OneToMany(mappedBy = "systemOption", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CategoryStandardOption> categoryStandardOptions = new ArrayList<>();
 }

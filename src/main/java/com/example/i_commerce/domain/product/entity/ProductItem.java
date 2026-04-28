@@ -21,48 +21,47 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "product_options")
+@Table(name = "product_items")
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductOption extends BaseEntity {
+public class ProductItem extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
     private Product product;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sys_option_id", nullable = false)
-    private SystemOption systemOption;
+    @Column(unique = true, nullable = false)
+    private String sku;
 
-//    @Column(nullable = false)
-//    private Long productId;
+    @Column(nullable = false)
+    private Integer price;
 
-    private String sourceType;
+    private String mainImageUrl;
 
-    @Column(length = 100)
-    private String type;
+    @Column(length = 50, nullable = false)
+    private String status;
 
-    @Column(length = 100)
-    private String value; //옵션값
+    @ManyToOne
+    @JoinColumn(name = "option_value_1_id")
+    private ProductOptionValue optionValue1;
 
-    @Column(length = 255)
-    private String displayName;
-
-    @Column(length = 255)
-    private String inputType;
-
-    @Column(length = 255)
-    private String optionType;
-
-//    private Long sysOptionId;
+    @ManyToOne
+    @JoinColumn(name = "option_value_2_id")
+    private ProductOptionValue optionValue2;
 
     @Builder.Default
-    @OneToMany(mappedBy = "productOption", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductVariantOption> variantOptions = new ArrayList<>();
+    @OneToMany(mappedBy = "productItem", cascade = CascadeType.ALL)
+    private List<ProductAttribute> attributes = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "productItem", cascade = CascadeType.ALL)
+    private List<Stock> stocks = new ArrayList<>();
+
+
+
 }
