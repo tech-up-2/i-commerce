@@ -33,7 +33,7 @@ public class Order extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
-    private String userId;
+    private Long userId;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;

@@ -33,7 +33,7 @@ public class OrderService {
 
         // 주문 생성
         Member member = memberRepository.findById(dto.memberId())
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_TEMP_ERROR));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         List<Long> ids = dto.items().stream().map(OrderItemDto::productId).toList();
         List<ProductItem> productItems = productItemRepository.findAllById(ids);
@@ -45,7 +45,7 @@ public class OrderService {
                     ProductItem productItem = productMap.get(orderItemDto.productId());
 
                     if(productItem == null) {
-                        throw new AppException(ErrorCode.ORDER_TEMP_ERROR);
+                        throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
                     }
 
                     return OrderProduct.builder()
@@ -65,7 +65,7 @@ public class OrderService {
         DeliveryAddress deliveryAddress = member.getDeliveryAddresses().stream()
                 .filter(DeliveryAddress::getIsDefault)
                 .findFirst()
-                .orElseThrow(() -> new AppException(ErrorCode.ORDER_TEMP_ERROR));
+                .orElseThrow(() -> new AppException(ErrorCode.DEFAULT_ADDRESS_NOT_FOUND));
 
         orderRepository.save(Order.builder()
                 .userId(dto.memberId())

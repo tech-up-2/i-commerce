@@ -58,7 +58,7 @@ public class Member extends BaseEntity {
 
     @Builder.Default
     @Column(nullable = false)
-    private Integer point;
+    private Integer point = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
