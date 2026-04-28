@@ -44,6 +44,12 @@ public class Order extends BaseEntity {
 
     private Integer totalPayAmount;
 
+    @Column(length = 20)
+    private String receiverName;
+
+    @Column(length = 20)
+    private String receiverPhone;
+
     @Column(length = 10)
     private String zipCode;
 
