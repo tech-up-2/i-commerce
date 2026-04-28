@@ -36,12 +36,9 @@ public class AdminLoginHistory extends BaseEntity {
     @JoinColumn(name = "admin_id", nullable = false)
     private Admin admin;
 
-    @Column(nullable = false)
-    private Long adminId;
-
     @Builder.Default
     @Column(nullable = false)
-    private Boolean loginResult;
+    private Boolean loginResult = false;
 
     @Column(length = 50)
     private String ipAddress;

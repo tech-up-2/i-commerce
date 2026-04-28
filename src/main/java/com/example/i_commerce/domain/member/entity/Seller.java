@@ -32,7 +32,6 @@ import lombok.NoArgsConstructor;
 public class Seller extends BaseEntity {
 
     @Id
-    @Column(length = 50)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)

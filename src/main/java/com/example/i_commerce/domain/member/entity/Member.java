@@ -12,6 +12,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -33,7 +34,7 @@ import lombok.NoArgsConstructor;
 public class Member extends BaseEntity {
 
     @Id
-    @Column(length = 50)
+    @GeneratedValue
     private Long id;
 
     @Column(nullable = false, length = 50)
@@ -55,6 +56,7 @@ public class Member extends BaseEntity {
     @Column(nullable = false, length = 20)
     private String phoneNumber;
 
+    @Builder.Default
     @Column(nullable = false)
     private Integer point = 0;
 
@@ -66,8 +68,11 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private MemberType role;
 
-    //Member 도메인 관련
     @Builder.Default
+    @Column(nullable = false)
+    private Boolean isSeller = false;
+
+    //Member 도메인 관련
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Seller seller;
 
@@ -83,10 +88,8 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PointHistory> pointHistories = new ArrayList<>();
 
-
     @Builder.Default
     @OneToMany(mappedBy = "member")
     private List<ChatMessage> chatMessages = new ArrayList<>();
-
 
 }
