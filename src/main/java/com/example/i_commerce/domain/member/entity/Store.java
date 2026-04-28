@@ -36,12 +36,9 @@ public class Store extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "seller_id", nullable = false)
     private Seller seller;
-
-    @Column(nullable = false, length = 50)
-    private String userId;
 
     @Column(nullable = false, length = 50)
     private String storeName;
