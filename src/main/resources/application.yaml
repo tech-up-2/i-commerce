@@ -6,3 +6,7 @@ spring:
     name: i-commerce
   profiles: #기본 프로파일 설정
     default: dev
+
+app:
+  encryption:
+    key: "Gq1wXnzi+7PBHjbvIpEi4TwjuH+L64fFAFYQGE0x2bc="

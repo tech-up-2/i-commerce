@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -18,13 +20,13 @@ public class SecurityConfig {
 
                 // 전체 공개 API
                 .requestMatchers(
-                    "/api/products/**",
-                    "/api/categories/**"
+                    "/api/v1/products/**",
+                    "/api/v1/categories/**"
                 ).permitAll()
 
                 // 로그인 / 회원가입도 보통 공개
                 .requestMatchers(
-                    "/api/auth/**"
+                    "/api/v1/auth/**"
                 ).permitAll()
 
                 // 나머지는 기본적으로 인증 필요
@@ -32,5 +34,10 @@ public class SecurityConfig {
             );
 
         return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

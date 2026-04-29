@@ -9,12 +9,16 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     // --- 공통 에러 (COM) ---
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "COM-40001", "잘못된 입력값입니다."),
     INVALID_PERMISSION(HttpStatus.UNAUTHORIZED, "COM-40101", "권한이 없습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COM-50001", "서버 내부 에러가 발생했습니다."),
 
     // --- Member 도메인 (USR) ---
     DUPLICATED_USER_NAME(HttpStatus.CONFLICT, "USR-40901", "이미 존재하는 유저명입니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "USR-40101", "패스워드가 틀렸습니다."),
+    DUPLICATED_EMAIL(HttpStatus.CONFLICT, "USR-40902", "이미 가입된 이메일입니다."),
+    INVALID_SIGNUP_REQUEST(HttpStatus.BAD_REQUEST, "USR-40001", "회원가입 요청값이 올바르지 않습니다."),
+    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40401", "존재하지 않는 회원입니다."),
 
     // --- Post/Product 도메인 (PRD) ---
     // 게시글과 상품을 PRD(Product) 도메인으로 통합하여 구성했습니다.
