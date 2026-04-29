@@ -18,17 +18,20 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40401", "존재하지 않는 회원입니다."),
     DEFAULT_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40402", "기본 배송지가 설정되지 않았습니다."),
 
-
-    // --- Post/Product 도메인 (PRD) ---
-    // 게시글과 상품을 PRD(Product) 도메인으로 통합하여 구성했습니다.
-    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40401", "해당 게시글을 찾을 수 없습니다."),
-    ALREADY_LIKED(HttpStatus.CONFLICT, "PRD-40901", "이미 좋아요를 누른 게시글입니다."),
+    // --- Product 도메인 (PRD) ---
+    DUPLICATED_SKU(HttpStatus.CONFLICT, "PRD-40901", "SKU는 중복될 수 없습니다."),
+    INVALID_OPTION(HttpStatus.CONFLICT, "PRD-40902", "요청한 옵션 값이 유효하지 않습니다."),
+    EXCEEDED_MAX_OPTION(HttpStatus.CONFLICT, "PRD-40903", "최대 옵션 수를 초과했습니다."),
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40403", "카테고리가 존재하지 않습니다."),
+    NOT_SUPPORTED_ATTRIBUTE(HttpStatus.CONFLICT, "PRD-40904", "지원하지 않는 속성입니다."),
+    ATTRIBUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40405","속성이 존재하지 않습니다."),
+    OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40406","옵션이 존재하지 않습니다."),
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40402", "상품 정보를 찾을 수 없습니다."),
 
-
-
     // --- Order/Payment 도메인 (ORD) ---
-    ORDER_TEMP_ERROR(HttpStatus.NOT_FOUND, "ORD-40400", "order도메인에서 발생하는 임시 에러입니다.");
+    ORDER_TEMP_ERROR(HttpStatus.NOT_FOUND, "ORD-40400", "order도메인에서 발생하는 임시 에러입니다."),
+  
+    ;
 
     private final HttpStatus httpStatus;
     private final String code;
