@@ -23,6 +23,8 @@ public class ReviewListResponse {
 
     private String firstImageUrl;
 
+    private Long likeCount;
+
     public static ReviewListResponse from(Review review) {
 
         String firstUrl = (review.getImages() != null && !review.getImages().isEmpty())
@@ -34,6 +36,7 @@ public class ReviewListResponse {
             .userId(review.getUserId())
             .content(review.getContent())
             .starRate(review.getStarRate())
+            .likeCount(review.getLikeCount())
             .firstImageUrl(firstUrl)
             .isBest(review.getIsBest())
             .build();

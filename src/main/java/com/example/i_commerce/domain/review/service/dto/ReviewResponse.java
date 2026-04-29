@@ -24,6 +24,8 @@ public class ReviewResponse {
 
     private boolean isBest;
 
+    private Long likeCount;
+
     private LocalDateTime createdAt;
 
     private boolean isUpdated;
@@ -42,6 +44,7 @@ public class ReviewResponse {
             .starRate(review.getStarRate())
             .imageUrls(extractedUrls)
             .isBest(Boolean.TRUE.equals(review.getIsBest()))
+            .likeCount(review.getLikeCount())
             .createdAt(review.getCreatedAt())
             .isUpdated(Boolean.TRUE.equals(review.getIsUpdated()))
             .build();

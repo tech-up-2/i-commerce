@@ -139,6 +139,8 @@ public class Review extends BaseEntity {
             .userId(dto.getUserId())
             .content(dto.getContent())
             .starRate(dto.getStarRate())
+            .likeCount(0L)
+            .reportCount(0L)
             .isBest(false)
             .isUpdated(false)
             .build();
