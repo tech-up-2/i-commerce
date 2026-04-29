@@ -15,6 +15,8 @@ public enum ErrorCode {
     // --- Member 도메인 (USR) ---
     DUPLICATED_USER_NAME(HttpStatus.CONFLICT, "USR-40901", "이미 존재하는 유저명입니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "USR-40101", "패스워드가 틀렸습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40401", "존재하지 않는 회원입니다."),
+    DEFAULT_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40402", "기본 배송지가 설정되지 않았습니다."),
 
     // --- Product 도메인 (PRD) ---
     DUPLICATED_SKU(HttpStatus.CONFLICT, "PRD-40901", "SKU는 중복될 수 없습니다."),
@@ -24,7 +26,11 @@ public enum ErrorCode {
     NOT_SUPPORTED_ATTRIBUTE(HttpStatus.CONFLICT, "PRD-40904", "지원하지 않는 속성입니다."),
     ATTRIBUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40405","속성이 존재하지 않습니다."),
     OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40406","옵션이 존재하지 않습니다."),
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40402", "상품 정보를 찾을 수 없습니다."),
 
+    // --- Order/Payment 도메인 (ORD) ---
+    ORDER_TEMP_ERROR(HttpStatus.NOT_FOUND, "ORD-40400", "order도메인에서 발생하는 임시 에러입니다."),
+  
     ;
 
     private final HttpStatus httpStatus;

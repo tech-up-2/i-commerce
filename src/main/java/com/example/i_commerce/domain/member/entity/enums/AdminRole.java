@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.member.entity.enums;
 
 public enum AdminRole {
-    SUPER_ADMIN,
+    MASTER, //가장 높음
     ADMIN,
-    OPERATOR
+    OPERATOR //가장 낮음
 }
