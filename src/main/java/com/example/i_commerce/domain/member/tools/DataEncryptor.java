@@ -1,4 +1,4 @@
-package com.example.i_commerce.global.security.tools;
+package com.example.i_commerce.domain.member.tools;
 
 import org.springframework.stereotype.Component;
 

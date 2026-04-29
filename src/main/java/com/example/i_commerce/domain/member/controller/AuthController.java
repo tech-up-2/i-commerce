@@ -2,7 +2,7 @@ package com.example.i_commerce.domain.member.controller;
 
 import com.example.i_commerce.domain.member.service.AuthService;
 import com.example.i_commerce.domain.member.service.MemberService;
-import com.example.i_commerce.domain.member.service.dto.MemberSignUpDto;
+import com.example.i_commerce.domain.member.service.dto.MemberSignUpRequest;
 import com.example.i_commerce.domain.member.service.dto.SignUpResponse;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -21,7 +21,7 @@ public class AuthController {
     private final MemberService memberService;
 
     @PostMapping("/signup")
-    public ApiResponse<SignUpResponse> signUp(@RequestBody @Valid MemberSignUpDto dto) {
+    public ApiResponse<SignUpResponse> signUp(@RequestBody @Valid MemberSignUpRequest dto) {
 
         SignUpResponse response = authService.signUp(dto);
         return ApiResponse.success(response);

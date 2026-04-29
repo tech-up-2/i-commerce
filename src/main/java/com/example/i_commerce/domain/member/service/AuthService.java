@@ -2,11 +2,11 @@ package com.example.i_commerce.domain.member.service;
 
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.repo.MemberRepository;
-import com.example.i_commerce.domain.member.service.dto.MemberSignUpDto;
+import com.example.i_commerce.domain.member.service.dto.MemberSignUpRequest;
 import com.example.i_commerce.domain.member.service.dto.SignUpResponse;
+import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.global.error.AppException;
 import com.example.i_commerce.global.error.ErrorCode;
-import com.example.i_commerce.global.security.tools.DataEncryptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +22,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public SignUpResponse signUp(MemberSignUpDto dto) {
+    public SignUpResponse signUp(MemberSignUpRequest dto) {
         if (memberRepository.findByEmail(dto.email()).isPresent()) {//이메일 중복시 예외처리
             throw new AppException(ErrorCode.DUPLICATED_EMAIL);
         }
