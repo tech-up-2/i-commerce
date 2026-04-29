@@ -2,6 +2,7 @@ package com.example.i_commerce.global.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,6 +29,9 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/v1/auth/**"
                 ).permitAll()
+
+                // 리뷰 조회 공개
+                .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
 
                 // 나머지는 기본적으로 인증 필요
                 .anyRequest().authenticated()
