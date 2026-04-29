@@ -22,8 +22,9 @@ public class JwtTokenProvider {
             SignatureAlgorithm.HS512.getJcaName());
     }
 
-    public String createToken(String email, String role){
+    public String createToken(Long id,String email, String role){
         Claims claims = Jwts.claims().setSubject(email); //claims 는 페이로드라고 생각하면 된다.
+        claims.put("memberId", id);
         claims.put("role",role);
         Date now = new Date();//현재시간
         String token = Jwts.builder()

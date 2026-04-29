@@ -56,7 +56,6 @@ public class Member extends BaseEntity {
     @Column(nullable = false, length = 20)
     private String phoneNumber;
 
-    @Builder.Default
     @Column(nullable = false)
     private Integer point;
 
