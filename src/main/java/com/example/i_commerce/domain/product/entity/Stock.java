@@ -46,4 +46,14 @@ public class Stock extends BaseEntity {
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
     private List<StockHistory> histories = new ArrayList<>();
 
+    public static Stock of(Integer quantity) {
+        return Stock.builder()
+            .quantity(quantity)
+            .build();
+    }
+
+    void setProductItem(ProductItem productItem) {
+        this.productItem = productItem;
+    }
+
 }

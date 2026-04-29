@@ -44,4 +44,21 @@ public class ProductAttribute extends BaseEntity {
     private Integer displayOrder;
 
 
+    public static ProductAttribute of(
+        Attribute attribute,
+        String displayName,
+        Integer displayOrder
+    ) {
+        return ProductAttribute.builder()
+            .attribute(attribute)
+            .displayName(displayName)
+            .displayOrder(displayOrder)
+            .build();
+    }
+
+    void setProductItem(ProductItem productItem) {
+        this.productItem = productItem;
+    }
+
+
 }

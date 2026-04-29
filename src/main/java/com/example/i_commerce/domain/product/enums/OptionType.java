@@ -1,7 +1,9 @@
 package com.example.i_commerce.domain.product.enums;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
 @AllArgsConstructor
 public enum OptionType {
 
