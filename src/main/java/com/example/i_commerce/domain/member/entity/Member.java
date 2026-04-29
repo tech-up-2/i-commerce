@@ -58,7 +58,7 @@ public class Member extends BaseEntity {
 
     @Builder.Default
     @Column(nullable = false)
-    private Integer point;
+    private Integer point = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -88,8 +88,10 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PointHistory> pointHistories = new ArrayList<>();
 
-    @Builder.Default
-    @OneToMany(mappedBy = "member")
-    private List<ChatMessage> chatMessages = new ArrayList<>();
+//    @Builder.Default
+//    @OneToMany(mappedBy = "member")
+//    private List<ChatMessage> chatMessages = new ArrayList<>();
+
+
 
 }
