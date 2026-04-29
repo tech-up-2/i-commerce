@@ -40,7 +40,6 @@ public class UserLoginHistory extends BaseEntity {
 //    @Column(nullable = false, length = 50)
 //    private String userId;
 
-    @Builder.Default
     @Column(nullable = false)
     private Boolean loginResult = false;
 

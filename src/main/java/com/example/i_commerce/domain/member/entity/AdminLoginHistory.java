@@ -39,7 +39,6 @@ public class AdminLoginHistory extends BaseEntity {
 //    @Column(nullable = false)
 //    private Long adminId;
 
-    @Builder.Default
     @Column(nullable = false)
     private Boolean loginResult = false;
 

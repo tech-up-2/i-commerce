@@ -2,9 +2,6 @@ package com.example.i_commerce.domain.member.entity;
 
 
 import com.example.i_commerce.domain.chat.entity.ChatMessage;
-import com.example.i_commerce.domain.chat.entity.ChatParticipant;
-import com.example.i_commerce.domain.chat.entity.ChatReport;
-import com.example.i_commerce.domain.chat.entity.MessageReadStatus;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberRole;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
@@ -69,8 +66,6 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private MemberRole role;
 
-    //Member 도메인 관련
-    @Builder.Default
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Seller seller = new Seller();
 

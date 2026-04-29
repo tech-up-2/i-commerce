@@ -19,8 +19,13 @@ public enum ErrorCode {
     // --- Post/Product 도메인 (PRD) ---
     // 게시글과 상품을 PRD(Product) 도메인으로 통합하여 구성했습니다.
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40401", "해당 게시글을 찾을 수 없습니다."),
-    ALREADY_LIKED(HttpStatus.CONFLICT, "PRD-40901", "이미 좋아요를 누른 게시글입니다.");
+    ALREADY_LIKED(HttpStatus.CONFLICT, "PRD-40901", "이미 좋아요를 누른 게시글입니다."),
 
+    // ---Review 도메인 (REV) ---
+    ALREADY_REVIEWED(HttpStatus.CONFLICT, "REV-40901", "이미 리뷰를 작성한 상품입니다."),
+    ALREADY_COMMENTED(HttpStatus.CONFLICT, "REV-40902", "이미 답글을 작성한 상품입니다."),
+    INVALID_STAR_RATING(HttpStatus.BAD_REQUEST, "REV-40903", "별점은 1~5점 사이여야 합니다."),
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REV-40904", "해당 리뷰를 찾을 수 없습니다.");
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
