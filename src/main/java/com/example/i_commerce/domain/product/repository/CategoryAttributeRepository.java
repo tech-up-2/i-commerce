@@ -13,8 +13,7 @@ public interface CategoryAttributeRepository extends JpaRepository<CategoryAttri
 
     @Query("SELECT ca FROM CategoryAttribute ca "
         + "JOIN FETCH ca.attribute "
-        + "WHERE ca.category.id = :categoryId "
-        + "ORDER BY ca.displayOrder")
+        + "WHERE ca.category.id = :categoryId ")
     List<CategoryAttribute> findByCategoryIdWithAttribute(@Param("categoryId") Long categoryId);
 
 
