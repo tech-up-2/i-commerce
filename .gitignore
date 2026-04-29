@@ -263,3 +263,6 @@ gradle-app.setting
 # End of https://www.toptal.com/developers/gitignore/api/java,git,intellij,gradle,macos,windows,visualstudiocode
 .idea/
 .gitattributes
+
+# 테스트용 temp_member 제거
+**/temp_member/

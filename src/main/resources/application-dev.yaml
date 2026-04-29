@@ -24,6 +24,12 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto:
     show-sql: true
     open-in-view: false
+
+#임시적인 JWT 설정 추후 필수 삭제
+jwt:
+  # chatserversecretaccesstokenchatserversecretaccesstokenchatserversecretaccesstoken
+  secretKey: Y2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2VuY2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2VuY2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2Vu
+  expiration: 3000 # 3000?

@@ -46,4 +46,8 @@ public class MessageReadStatus extends BaseEntity {
 //    private Long chatRoomId;
 
     private Boolean isRead;
+
+    public void isRead(Boolean isRead) {
+        this.isRead = isRead;
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.chat.entity;
 
+import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -36,13 +37,14 @@ public class ChatMessage extends BaseEntity {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-//    @Column(nullable = false)
-//    private Long chatRoomId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)// 부모는 FK로 member_id를 가져감
+    private Member member;
 
-    @Column(nullable = false, length = 50)
-    private String userId;
-
-    @Column(columnDefinition = "TEXT")
+//    @Column(columnDefinition = "TEXT")
+//    private String content;
+//  TEXT를 500자로 제한하여 채팅 길이를 조절 추후 TEXT 방식을 채택할 수 있음.
+    @Column(nullable = false, length = 500)
     private String content;
 
     @Builder.Default
