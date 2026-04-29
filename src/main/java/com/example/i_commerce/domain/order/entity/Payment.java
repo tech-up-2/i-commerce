@@ -39,9 +39,6 @@ public class Payment extends BaseEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-//    @Column(nullable = false)
-//    private Long orderId;
-
   /*  @Enumerated(EnumType.STRING)
     private  method;*/
 
@@ -56,9 +53,5 @@ public class Payment extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     private List<PaymentHistory> paymentHistories = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
-    private List<OrderProduct> payments = new ArrayList<>();
 
 }
