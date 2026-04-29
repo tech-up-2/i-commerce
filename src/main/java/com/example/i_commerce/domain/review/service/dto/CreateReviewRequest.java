@@ -1,6 +1,8 @@
 package com.example.i_commerce.domain.review.service.dto;
 
+import com.example.i_commerce.domain.review.entity.Review;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +20,6 @@ public class CreateReviewRequest {
 
     private Integer starRate;
 
-    private String imgUrl;
+    private List<String> imageUrls;
 
-    private LocalDateTime createdAt;
 }

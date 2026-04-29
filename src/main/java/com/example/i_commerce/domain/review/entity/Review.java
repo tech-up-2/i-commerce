@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.review.entity;
 
+import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -35,7 +36,7 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private Long orderProductId;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false)
     private Long userId;
 
     @Column(columnDefinition = "TEXT")
@@ -48,11 +49,9 @@ public class Review extends BaseEntity {
 
     private Long likeCount;
 
-    private String imageUrl;
+    private Boolean isBest;
 
-    private Boolean isBest = false;
-
-    private Boolean isUpdated = false;
+    private Boolean isUpdated;
 
 
     @Builder.Default
@@ -72,8 +71,16 @@ public class Review extends BaseEntity {
     private List<ReviewReport> reports = new ArrayList<>();
 
 
-    public void update(String newContent, Integer newStarRate, String newImageUrl) {
-        if (!Objects.equals(this.content, newContent)){
+    public void addImage(String imageUrl) {
+        ReviewImage reviewImage = ReviewImage.builder()
+            .imageUrl(imageUrl)
+            .review(this)
+            .build();
+        this.images.add(reviewImage);
+    }
+
+    public void update(String newContent, Integer newStarRate, List<String> newImageUrls) {
+        if (!Objects.equals(this.content, newContent)) {
             this.content = newContent;
             isUpdated = true;
         }
@@ -81,9 +88,21 @@ public class Review extends BaseEntity {
             this.starRate = newStarRate;
             isUpdated = true;
         }
-        if (!Objects.equals(this.imageUrl, newImageUrl)) {
-            this.imageUrl = newImageUrl;
+        List<String> currentUrls = this.images.stream()
+            .map(ReviewImage::getImageUrl)
+            .toList();
+
+        if (!Objects.equals(currentUrls, newImageUrls)) {
+            this.images.clear();
+
+            if (newImageUrls != null) {
+                newImageUrls.forEach(this::addImage);
+            }
             isUpdated = true;
+        }
+
+        if (isUpdated) {
+            this.isUpdated = true;
         }
     }
 
@@ -91,19 +110,42 @@ public class Review extends BaseEntity {
         this.isBest = isBest;
     }
 
+
     public double calculateRecommendationScore() {
         double score = 0;
 
-        score += Math.min(this.content.length() / 100.0, 1.0) * 30;
+        if (this.content != null) {
+            score += Math.min(this.content.length() / 100.0, 1.0) * 30;
+        }
 
-        score += (this.starRate / 5.0) * 20;
+        if (this.starRate != null) {
+            score += (this.starRate / 5.0) * 20;
+        }
 
-        score += Math.min(this.likeCount / 50.0, 1) * 40;
+        long count = (this.likeCount == null) ? 0L : this.likeCount;
+        score += Math.min(count / 50.0, 1.0) * 40;
 
-        if (this.imageUrl != null && this.imageUrl.isEmpty()) {
+        if (this.images != null && !this.images.isEmpty()) {
             score += 10;
         }
 
         return score;
+    }
+
+
+    public static Review from(CreateReviewRequest dto) {
+        Review review = Review.builder()
+            .orderProductId(dto.getOrderProductId())
+            .userId(dto.getUserId())
+            .content(dto.getContent())
+            .starRate(dto.getStarRate())
+            .isBest(false)
+            .isUpdated(false)
+            .build();
+
+        if (dto.getImageUrls() != null) {
+            dto.getImageUrls().forEach(review::addImage);
+        }
+        return review;
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.i_commerce.global.common.response.ApiResponse;
 
@@ -36,8 +37,8 @@ public class ReviewController {
     @GetMapping("/{productOrderId}")
     public ResponseEntity<ApiResponse<List<ReviewListResponse>>> viewReviewList(
         @PathVariable Long productOrderId) {
-        List<ReviewListResponse> resDtos = reviewService.viewReviewList(productOrderId);
-        return ResponseEntity.ok(ApiResponse.success(resDtos));
+        List<ReviewListResponse> responses = reviewService.viewReviewList(productOrderId);
+        return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
     @GetMapping("/{productOrderId}/{reviewId}")
@@ -61,5 +62,14 @@ public class ReviewController {
         @RequestBody DeleteReviewRequest dto) {
         reviewService.deleteReview(dto.getUserId(), reviewId);
         return ResponseEntity.ok(ApiResponse.success());
+    }
+
+    @GetMapping("/best-candidates")
+    public ResponseEntity<ApiResponse<List<ReviewListResponse>>> getBestReviewCandidates(
+        @RequestParam Long productOrderId
+    ) {
+        List<ReviewListResponse> responses = reviewService.getBestReviewCandidates(productOrderId);
+
+        return ResponseEntity.ok(ApiResponse.success(responses));
     }
 }

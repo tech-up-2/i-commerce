@@ -32,8 +32,7 @@ import lombok.NoArgsConstructor;
 public class Seller extends BaseEntity {
 
     @Id
-    @Column(length = 50)
-    private String id;
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId  //Seller의 PK를 Member의 PK와 동기화
@@ -67,7 +66,7 @@ public class Seller extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String bankAccount;
 
-    @Column( nullable = false, length = 50)
+    @Column(nullable = false, length = 50)
     private String depositorName;
 
     @Builder.Default

@@ -15,17 +15,28 @@ public enum ErrorCode {
     // --- Member 도메인 (USR) ---
     DUPLICATED_USER_NAME(HttpStatus.CONFLICT, "USR-40901", "이미 존재하는 유저명입니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "USR-40101", "패스워드가 틀렸습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40401", "존재하지 않는 회원입니다."),
+    DEFAULT_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40402", "기본 배송지가 설정되지 않았습니다."),
+
 
     // --- Post/Product 도메인 (PRD) ---
     // 게시글과 상품을 PRD(Product) 도메인으로 통합하여 구성했습니다.
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40401", "해당 게시글을 찾을 수 없습니다."),
     ALREADY_LIKED(HttpStatus.CONFLICT, "PRD-40901", "이미 좋아요를 누른 게시글입니다."),
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40402", "상품 정보를 찾을 수 없습니다."),
 
-    // ---Review 도메인 (REV) ---
+
+
+    // --- Order/Payment 도메인 (ORD) ---
+    ORDER_TEMP_ERROR(HttpStatus.NOT_FOUND, "ORD-40400", "order도메인에서 발생하는 임시 에러입니다."),
+
+
+    // --- Review 도메인 (REV) ---
     ALREADY_REVIEWED(HttpStatus.CONFLICT, "REV-40901", "이미 리뷰를 작성한 상품입니다."),
     ALREADY_COMMENTED(HttpStatus.CONFLICT, "REV-40902", "이미 답글을 작성한 상품입니다."),
     INVALID_STAR_RATING(HttpStatus.BAD_REQUEST, "REV-40903", "별점은 1~5점 사이여야 합니다."),
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REV-40904", "해당 리뷰를 찾을 수 없습니다.");
+
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;

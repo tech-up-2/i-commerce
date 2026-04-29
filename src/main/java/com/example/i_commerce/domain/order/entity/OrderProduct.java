@@ -34,11 +34,9 @@ public class OrderProduct extends BaseEntity {
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id", nullable = false)
-    private Payment payment;
+    @JoinColumn(name = "delivery_id", nullable = false)
+    private Delivery delivery;
 
-    @Column(nullable = false)
-    private Long deliveryId;
 
     @Column(nullable = false)
     private Long productSkuId;
