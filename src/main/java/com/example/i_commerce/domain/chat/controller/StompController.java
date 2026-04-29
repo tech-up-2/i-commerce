@@ -25,8 +25,8 @@ DestinationVariable은 @MessageMapping 어노테이션으로 정의된 Websocket
  */
     @MessageMapping("/{roomId")
     public void sendMessage(@DestinationVariable Long roomId, ChatMessageSendRequest  request) {
-        ChatMessageSendResponse response = chatService.saveMessage(roomId, request);
-        messagingTemplate.convertAndSend("/topic/"+roomId, response);
+//        ChatMessageSendResponse response = chatService.saveMessage(roomId, request);
+        messagingTemplate.convertAndSend("/topic/"+roomId, request);
     }
 }
 
