@@ -14,6 +14,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,7 +39,7 @@ public class ProductOptionValue extends BaseEntity {
     private Product product;
 
     @Column(length = 100, nullable = false)
-    private String optionOrder;
+    private Integer optionOrder;
 
     @Column(length = 100, nullable = false)
     private String optionName;
@@ -55,4 +57,31 @@ public class ProductOptionValue extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "optionValue2", cascade = CascadeType.ALL)
     private List<ProductItem> items2 = new ArrayList<>();
+
+
+    public static ProductOptionValue of(
+        Integer optionOrder,
+        String optionName,
+        String value,
+        Integer displayOrder
+    ) {
+        return ProductOptionValue.builder()
+            .optionOrder(optionOrder)
+            .optionName(optionName)
+            .value(value)
+            .displayOrder(displayOrder)
+            .build();
+    }
+
+    void setProduct(Product product) {
+        this.product = product;
+    }
+
 }
+
+
+
+
+
+
+
