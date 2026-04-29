@@ -1,7 +1,10 @@
 package com.example.i_commerce.domain.product.entity;
 
 
+import com.example.i_commerce.domain.product.enums.ProductStatus;
 import com.example.i_commerce.global.common.entity.BaseEntity;
+import com.example.i_commerce.global.error.AppException;
+import com.example.i_commerce.global.error.ErrorCode;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -63,5 +66,36 @@ public class Product extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<ProductImage> images = new ArrayList<>();
+
+    public static Product of(
+        Long storeId,
+        Category category,
+        String name,
+        String description,
+        Integer optionType
+    ) {
+        return Product.builder()
+            .storeId(storeId)
+            .category(category)
+            .name(name)
+            .description(description)
+            .optionType(optionType)
+            .status(ProductStatus.ON_SALE.name())
+            .build();
+    }
+
+    public void addItem(ProductItem item) {
+        if(this.items.stream().anyMatch(
+            existingItem -> existingItem.getSku().equals(item.getSku()))) {
+            throw new AppException(ErrorCode.DUPLICATED_SKU);
+        }
+        this.items.add(item);
+        item.setProduct(this);
+    }
+
+    public void addOptionValue(ProductOptionValue value) {
+        this.options.add(value);
+        value.setProduct(this);
+    }
 
 }
