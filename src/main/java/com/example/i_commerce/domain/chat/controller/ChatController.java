@@ -24,8 +24,11 @@ public class ChatController {
         return chatService.getOrCreatePrivateRoom(myId, otherMemberId);
     }
 //    단체 채팅방 개설
-
-
-
+    @PostMapping("/group/{productId}/{myId}")
+    public ApiResponse<Long> getOrCreateGroupRoom(
+        @PathVariable Long productId, @PathVariable Long myId
+    ){
+        return chatService.createGroupRoom(productId, myId);
+    }
 
 }
