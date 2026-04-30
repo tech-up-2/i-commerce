@@ -22,7 +22,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-
+    //STOMP 사용을 위한 라이브러리
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -34,6 +35,10 @@ dependencies {
 
   //Spring Security
   implementation 'org.springframework.boot:spring-boot-starter-security'
+//    jwt 0.11버전 라이브러리 임시 추가(추후 변동시 삭제)
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
 }
 

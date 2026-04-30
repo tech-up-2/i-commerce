@@ -14,13 +14,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatService chatService;
-//개인 채팅방 개설 또는 기존 roomId를 리턴하는 컨트롤러
+//  개인 1:1 채팅방 개설
     @PostMapping("/room/create")
     public ApiResponse<Long> getOrCreatePrivateRoom(
         @RequestParam Long myId, @RequestParam Long otherMemberId){
 
         return chatService.getOrCreatePrivateRoom(myId, otherMemberId);
     }
+//    단체 채팅방 개설
+
 
 
 

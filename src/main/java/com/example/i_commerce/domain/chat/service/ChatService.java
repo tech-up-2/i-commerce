@@ -8,6 +8,7 @@ import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.product.entity.Product;
+import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.error.AppException;
 import com.example.i_commerce.global.error.ErrorCode;
@@ -27,6 +28,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatParticipantRepository chatParticipantRepository;
+    private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
 
     public void addParticipantToRoom(ChatRoom chatRoom, Member member) {
@@ -62,10 +64,29 @@ public class ChatService {
         return ApiResponse.success(newRoom.getId());
     }
     public ApiResponse<Long> createGroupRoom(Long productId, Long myId){
+//      채팅방 참여 멤버 검증
         Member member = memberRepository.findById(myId).orElseThrow(() -> new AppException(
             ErrorCode.USER_NOT_FOUND));
-        Product product = 
+//      상품 존재여부 검증
+        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
+//      채팅방 중복 여부 검증
+        if(chatRoomRepository.existsByProductIdAndIsGroupChat(productId, false)) {
+            throw new AppException(ErrorCode.CHAT_ROOM_ALREADY_EXISTS);
+        }
 
+//      채팅방 생성
+        ChatRoom chatRoom = ChatRoom.builder()
+            .name(product.getName()+"상품 채팅방")
+            .isGroupChat(true)
+            .product(product)
+            .build();
+
+        chatRoomRepository.save(chatRoom);
+
+//      최초 생성자를 방에 참가시킨다.
+        addParticipantToRoom(chatRoom, member);
+
+        return ApiResponse.success(chatRoom.getId());
     }
 }
