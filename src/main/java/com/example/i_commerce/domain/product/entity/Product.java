@@ -2,9 +2,9 @@ package com.example.i_commerce.domain.product.entity;
 
 
 import com.example.i_commerce.domain.product.enums.ProductStatus;
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.global.common.entity.BaseEntity;
-import com.example.i_commerce.global.error.AppException;
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -87,7 +87,7 @@ public class Product extends BaseEntity {
     public void addItem(ProductItem item) {
         if(this.items.stream().anyMatch(
             existingItem -> existingItem.getSku().equals(item.getSku()))) {
-            throw new AppException(ErrorCode.DUPLICATED_SKU);
+            throw new AppException(ProductErrorCode.DUPLICATED_SKU);
         }
         this.items.add(item);
         item.setProduct(this);

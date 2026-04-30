@@ -1,15 +1,15 @@
 package com.example.i_commerce.domain.review.service;
 
 import com.example.i_commerce.domain.review.entity.Review;
+import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repo.ReviewRepository;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
 import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
-import com.example.i_commerce.global.error.AppException;
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.exception.common.CommonErrorCode;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ public class ReviewService {
         validateStarRating(dto.getStarRate());
 
         if (reviewRepo.existsByOrderProductIdAndUserId(dto.getOrderProductId(), dto.getUserId())) {
-            throw new AppException(ErrorCode.ALREADY_REVIEWED);
+            throw new AppException(ReviewErrorCode.ALREADY_REVIEWED);
         }
 
         Review review = Review.from(dto);
@@ -109,18 +109,18 @@ public class ReviewService {
 
     private void validateStarRating(int starRate) {
         if (starRate < 1 || starRate > 5) {
-            throw new AppException(ErrorCode.INVALID_STAR_RATING);
+            throw new AppException(ReviewErrorCode.INVALID_STAR_RATING);
         }
     }
 
     private Review getReviewOrThrow(Long reviewId) {
         return reviewRepo.findById(reviewId)
-        .orElseThrow(() -> new AppException(ErrorCode.REVIEW_NOT_FOUND));
+        .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
     }
 
     private void validateAuthor(Review review, Long userId) {
         if (!review.getUserId().equals(userId)) {
-            throw(new AppException(ErrorCode.INVALID_PERMISSION));
+            throw(new AppException(CommonErrorCode.INVALID_PERMISSION));
         }
     }
 }
