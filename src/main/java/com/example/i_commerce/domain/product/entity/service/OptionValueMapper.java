@@ -1,8 +1,8 @@
 package com.example.i_commerce.domain.product.entity.service;
 
 import com.example.i_commerce.domain.product.entity.ProductOptionValue;
-import com.example.i_commerce.global.error.AppException;
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +21,7 @@ public class OptionValueMapper {
     public ProductOptionValue get(Integer optionOrder, String value) {
         ProductOptionValue optionValue = map.get(new OptionKey(optionOrder, value));
         if (optionValue == null) {
-            throw new AppException(ErrorCode.OPTION_NOT_FOUND);
+            throw new AppException(ProductErrorCode.OPTION_NOT_FOUND);
         }
         return optionValue;
     }

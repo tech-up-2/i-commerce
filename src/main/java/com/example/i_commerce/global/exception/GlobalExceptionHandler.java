@@ -1,6 +1,7 @@
-package com.example.i_commerce.global.error;
+package com.example.i_commerce.global.exception;
 
 import com.example.i_commerce.global.common.response.ApiResponse;
+import com.example.i_commerce.global.exception.common.CommonErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,6 +21,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<?>> handleAllException(Exception e) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage()));
+                .body(ApiResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR, e.getMessage()));
     }
 }

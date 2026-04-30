@@ -10,11 +10,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.example.i_commerce.domain.review.entity.Review;
+import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repo.ReviewRepository;
 import com.example.i_commerce.domain.review.service.ReviewService;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
-import com.example.i_commerce.global.error.AppException;
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -82,7 +82,7 @@ public class ReviewServiceTest {
         //when&then
         assertThatThrownBy(() -> reviewService.createReview(dto))
             .isInstanceOf(AppException.class)
-            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ALREADY_REVIEWED);
+            .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.ALREADY_REVIEWED);
 
         verify(reviewRepo, never()).save(any(Review.class));
 
@@ -103,7 +103,7 @@ public class ReviewServiceTest {
         //when&then
         assertThatThrownBy(() -> reviewService.createReview(overStarRateDto))
             .isInstanceOf(AppException.class)
-            .hasFieldOrPropertyWithValue("errorCode", ErrorCode.INVALID_STAR_RATING);
+            .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.INVALID_STAR_RATING);
 
         verify(reviewRepo, never()).existsByOrderProductIdAndUserId(anyLong(), anyLong());
         verify(reviewRepo, never()).save(any(Review.class));

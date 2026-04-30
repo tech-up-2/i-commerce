@@ -2,6 +2,7 @@ package com.example.i_commerce.domain.order.service;
 
 import com.example.i_commerce.domain.member.entity.DeliveryAddress;
 import com.example.i_commerce.domain.member.entity.Member;
+import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
@@ -10,10 +11,10 @@ import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
 import com.example.i_commerce.domain.order.service.dto.OrderItemDto;
 import com.example.i_commerce.domain.product.entity.ProductItem;
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
-import com.example.i_commerce.global.error.AppException;
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -33,7 +34,7 @@ public class OrderService {
 
         // 주문 생성
         Member member = memberRepository.findById(dto.memberId())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         List<Long> ids = dto.items().stream().map(OrderItemDto::productId).toList();
         List<ProductItem> productItems = productItemRepository.findAllById(ids);
@@ -45,7 +46,7 @@ public class OrderService {
                     ProductItem productItem = productMap.get(orderItemDto.productId());
 
                     if(productItem == null) {
-                        throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+                        throw new AppException(ProductErrorCode.PRODUCT_NOT_FOUND);
                     }
 
                     return OrderProduct.builder()
@@ -65,7 +66,7 @@ public class OrderService {
         DeliveryAddress deliveryAddress = member.getDeliveryAddresses().stream()
                 .filter(DeliveryAddress::getIsDefault)
                 .findFirst()
-                .orElseThrow(() -> new AppException(ErrorCode.DEFAULT_ADDRESS_NOT_FOUND));
+                .orElseThrow(() -> new AppException(MemberErrorCode.DEFAULT_ADDRESS_NOT_FOUND));
 
         orderRepository.save(Order.builder()
                 .userId(dto.memberId())
