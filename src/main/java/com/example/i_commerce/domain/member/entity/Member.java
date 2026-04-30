@@ -1,7 +1,6 @@
 package com.example.i_commerce.domain.member.entity;
 
 
-import com.example.i_commerce.domain.chat.entity.ChatMessage;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
@@ -37,36 +36,41 @@ public class Member extends BaseEntity {
     @GeneratedValue
     private Long id;
 
-    @Column(nullable = false, length = 50)
-    private String email;
+    @Column(nullable = false, unique = true)
+    private String emailHash;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false)
+    private byte[] emailEncrypted;
+
+    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, length = 50)
-    private String name;
+    @Column(nullable = false)
+    private byte[] name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Gender sex;
 
-    @Column(nullable = false, length = 10)
-    private String birthday;
+    @Column(nullable = false)
+    private byte[] birthday;
 
-    @Column(nullable = false, length = 20)
-    private String phoneNumber;
+    @Column(nullable = false)
+    private byte[] phoneNumber;
 
     @Builder.Default
     @Column(nullable = false)
     private Integer point = 0;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MemberStatus status;
+    private MemberStatus status = MemberStatus.ACTIVE;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private MemberType role;
+    private MemberType role = MemberType.CUSTOMER;
 
     @Builder.Default
     @Column(nullable = false)
@@ -74,7 +78,7 @@ public class Member extends BaseEntity {
 
     //Member 도메인 관련
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Seller seller = new Seller();
+    private Seller seller;
 
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -91,7 +95,5 @@ public class Member extends BaseEntity {
 //    @Builder.Default
 //    @OneToMany(mappedBy = "member")
 //    private List<ChatMessage> chatMessages = new ArrayList<>();
-
-
 
 }

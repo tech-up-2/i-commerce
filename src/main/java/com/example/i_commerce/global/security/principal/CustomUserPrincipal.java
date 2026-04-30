@@ -53,7 +53,7 @@ public class CustomUserPrincipal implements UserDetails {
         return new CustomUserPrincipal(
             PrincipalType.MEMBER,
             member.getId(),
-            member.getEmail(),
+            member.getEmailHash(),
             member.getPassword(),
             authorities
         );
