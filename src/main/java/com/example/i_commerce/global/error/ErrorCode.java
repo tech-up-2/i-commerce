@@ -33,6 +33,7 @@ public enum ErrorCode {
     // --- Order/Payment 도메인 (ORD) ---
     ORDER_TEMP_ERROR(HttpStatus.NOT_FOUND, "ORD-40400", "order도메인에서 발생하는 임시 에러입니다."),
 
+<<<<<<< Updated upstream
     // --- Review 도메인 (REV) ---
     ALREADY_REVIEWED(HttpStatus.CONFLICT, "REV-40901", "이미 리뷰를 작성한 상품입니다."),
     ALREADY_COMMENTED(HttpStatus.CONFLICT, "REV-40902", "이미 답글을 작성한 상품입니다."),
@@ -40,6 +41,12 @@ public enum ErrorCode {
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REV-40904", "해당 리뷰를 찾을 수 없습니다.")
 
     ;
+=======
+    // --- Chat 도메인(CHT) ---
+    CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "CHT-40401", "해당 채팅방을 찾을 수 없습니다."),
+    ALREADY_PARTICIPANT(HttpStatus.CONFLICT, "CHT-40901", "이미 채팅방에 참여 중인 유저입니다."),
+    CHAT_ROOM_ALREADY_EXISTS(HttpStatus.CONFLICT, "CHT-40902", "이미 존재하는 채팅방입니다.");
+>>>>>>> Stashed changes
 
     private final HttpStatus httpStatus;
     private final String code;
