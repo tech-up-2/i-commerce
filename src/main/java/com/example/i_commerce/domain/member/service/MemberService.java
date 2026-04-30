@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.member.service;
 
 import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.repo.MemberRepository;
+import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.service.dto.MemberChatInfo;
 import com.example.i_commerce.domain.member.service.dto.MemberNotificationInfo;
 import com.example.i_commerce.domain.member.service.dto.MemberOrderInfo;
@@ -26,7 +26,7 @@ public class MemberService {
 
         return new MemberOrderInfo(
             member.getId(),
-            member.getEmail(),
+            dataEncryptor.decrypt(member.getEmailEncrypted()),
             dataEncryptor.decrypt(member.getName()),
             dataEncryptor.decrypt(member.getPhoneNumber())
         );
@@ -50,7 +50,7 @@ public class MemberService {
 
         return new MemberNotificationInfo(
             member.getId(),
-            member.getEmail(),
+            dataEncryptor.decrypt(member.getEmailEncrypted()),
             dataEncryptor.decrypt(member.getPhoneNumber())
         );
     }

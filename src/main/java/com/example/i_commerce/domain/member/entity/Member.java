@@ -36,8 +36,11 @@ public class Member extends BaseEntity {
     @GeneratedValue
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 255)
-    private String email;
+    @Column(nullable = false, unique = true)
+    private String emailHash;
+
+    @Column(nullable = false)
+    private byte[] emailEncrypted;
 
     @Column(nullable = false)
     private String password;

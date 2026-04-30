@@ -27,6 +27,11 @@ public class AuthController {
         return ApiResponse.success(response);
     }
 
+//    @PostMapping("/login")
+//    public ApiResponse<SignUpResponse> signUp(@RequestBody @Valid LoginRequest dto) {
+//
+//    }
+
     //복호화 테스트
 //    @GetMapping("/getget/{id}")
 //    public ApiResponse<MemberOrderInfo> testGetMemberOrderInfo(@PathVariable Long id) {

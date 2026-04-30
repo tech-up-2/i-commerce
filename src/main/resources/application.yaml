@@ -10,3 +10,6 @@ spring:
 app:
   encryption:
     key: "Gq1wXnzi+7PBHjbvIpEi4TwjuH+L64fFAFYQGE0x2bc="
+
+security:
+  email-hmac-key: "m+Mtv+DxZbk0psKymGWCsAMTx1jSMIJnIV/SVtlCTT8="
