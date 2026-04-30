@@ -1,6 +1,8 @@
 package com.example.i_commerce.domain.product.entity;
 
 import com.example.i_commerce.global.common.entity.BaseEntity;
+import com.example.i_commerce.global.error.AppException;
+import com.example.i_commerce.global.error.ErrorCode;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,6 +51,9 @@ public class ProductItem extends BaseEntity {
 
     private String displayOptionName;
 
+    @OneToOne(mappedBy = "productItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Stock stock;
+
     @ManyToOne
     @JoinColumn(name = "option_value_1_id")
     private ProductOptionValue optionValue1;
@@ -63,10 +68,6 @@ public class ProductItem extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "productItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductAttribute> attributes = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "productItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Stock> stocks = new ArrayList<>();
 
 
     public static ProductItem of(
@@ -92,9 +93,11 @@ public class ProductItem extends BaseEntity {
         attribute.setProductItem(this);
     }
 
-    public void addStock(Stock stock) {
-        this.stocks.add(stock);
-        stock.setProductItem(this);
+    public void initStock(Integer quantity) {
+        if(this.stock != null) {
+            throw new AppException(ErrorCode.STOCK_ALREADY_INITIALIZED);
+        }
+        this.stock = Stock.of(this, quantity);
     }
 
     void setProduct(Product product) {

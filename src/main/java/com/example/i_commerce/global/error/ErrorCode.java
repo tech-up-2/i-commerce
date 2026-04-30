@@ -20,6 +20,8 @@ public enum ErrorCode {
 
     // --- Product 도메인 (PRD) ---
     DUPLICATED_SKU(HttpStatus.CONFLICT, "PRD-40901", "SKU는 중복될 수 없습니다."),
+    NEGATIVE_QUANTITY_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "STK-40003", "재고 수량은 음수일 수 없습니다."),
+    STOCK_ALREADY_INITIALIZED(HttpStatus.CONFLICT, "STK-40903", "재고가 이미 초기화되었습니다."),
     INVALID_OPTION(HttpStatus.CONFLICT, "PRD-40902", "요청한 옵션 값이 유효하지 않습니다."),
     EXCEEDED_MAX_OPTION(HttpStatus.CONFLICT, "PRD-40903", "최대 옵션 수를 초과했습니다."),
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40403", "카테고리가 존재하지 않습니다."),

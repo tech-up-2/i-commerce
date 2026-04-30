@@ -102,8 +102,8 @@ public class ProductService {
                 pov1, pov2, itemReq.isDefault()
             );
 
+            productItem.initStock(itemReq.stock());
             addAttribute(productItem, itemReq.attributes(), attributeMap);
-            createStock(productItem, itemReq.stock());
             product.addItem(productItem);
         }
     }
@@ -148,22 +148,7 @@ public class ProductService {
 
     }
 
-    private void createStock(ProductItem productItem, Integer quantity) {
-        Stock stock = Stock.of(quantity);
-        productItem.addStock(stock);
-    }
-
 }
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -202,7 +202,7 @@ public class ProductServiceTest {
             .allMatch(item -> item.getProduct() == product);
 
         assertThat(product.getItems())
-            .allMatch(item -> item.getStocks() != null);
+            .allMatch(item -> item.getStock() != null);
     }
 
 
