@@ -1,6 +1,8 @@
 package com.example.i_commerce.domain.product.entity;
 
 import com.example.i_commerce.global.common.entity.BaseEntity;
+import com.example.i_commerce.global.error.AppException;
+import com.example.i_commerce.global.error.ErrorCode;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +49,11 @@ public class ProductItem extends BaseEntity {
     @Column(length = 50, nullable = false)
     private String status;
 
+    private String displayOptionName;
+
+    @OneToOne(mappedBy = "productItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Stock stock;
+
     @ManyToOne
     @JoinColumn(name = "option_value_1_id")
     private ProductOptionValue optionValue1;
@@ -54,14 +62,47 @@ public class ProductItem extends BaseEntity {
     @JoinColumn(name = "option_value_2_id")
     private ProductOptionValue optionValue2;
 
+    @Column(nullable = false)
+    private boolean isDefault;
+
     @Builder.Default
-    @OneToMany(mappedBy = "productItem", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "productItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductAttribute> attributes = new ArrayList<>();
 
-    @Builder.Default
-    @OneToMany(mappedBy = "productItem", cascade = CascadeType.ALL)
-    private List<Stock> stocks = new ArrayList<>();
 
+    public static ProductItem of(
+        String sku,
+        Integer price,
+        String displayOptionName,
+        ProductOptionValue optionValue1,
+        ProductOptionValue optionValue2,
+        Boolean isDefault
+    ) {
+        return ProductItem.builder()
+            .sku(sku)
+            .price(price)
+            .displayOptionName(displayOptionName)
+            .optionValue1(optionValue1)
+            .optionValue2(optionValue2)
+            .isDefault(isDefault)
+            .build();
+    }
+
+    public void addAttribute(ProductAttribute attribute) {
+        this.attributes.add(attribute);
+        attribute.setProductItem(this);
+    }
+
+    public void initStock(Integer quantity) {
+        if(this.stock != null) {
+            throw new AppException(ErrorCode.STOCK_ALREADY_INITIALIZED);
+        }
+        this.stock = Stock.of(this, quantity);
+    }
+
+    void setProduct(Product product) {
+        this.product = product;
+    }
 
 
 }

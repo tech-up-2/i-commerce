@@ -37,7 +37,7 @@ public class ReviewComment extends BaseEntity {
 //    private Long reviewId;
 
     @Column(nullable = false, length = 50)
-    private String sellerId;
+    private Long sellerId;
 
     @Column(columnDefinition = "TEXT")
     private String content;
