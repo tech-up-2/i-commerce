@@ -7,6 +7,7 @@ import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.error.AppException;
 import com.example.i_commerce.global.error.ErrorCode;
@@ -46,7 +47,7 @@ public class ChatService {
 //       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 해당 roomId를 return
         Optional<ChatRoom> chatRoom = chatParticipantRepository.findExistingPrivateRoom(member.getId(), otherMember.getId());
         if (chatRoom.isPresent()) {
-            return ApiResponse.success(chatRoom.get().getId());
+            throw new AppException(ErrorCode.CHAT_ROOM_ALREADY_EXISTS);
         }
 //      만약에 1:1 채팅방이 없을 경우 기존 채팅방 개설
         ChatRoom newRoom = ChatRoom.builder()
@@ -60,5 +61,11 @@ public class ChatService {
 
         return ApiResponse.success(newRoom.getId());
     }
+    public ApiResponse<Long> createGroupRoom(Long productId, Long myId){
+        Member member = memberRepository.findById(myId).orElseThrow(() -> new AppException(
+            ErrorCode.USER_NOT_FOUND));
+        Product product = 
 
+
+    }
 }

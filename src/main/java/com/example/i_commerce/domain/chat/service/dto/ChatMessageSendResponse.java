@@ -6,11 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class ChatMessageSendResponse {
-    private String message;
-    private Long senderId;
-}
+
+public record ChatMessageSendResponse(
+    String message,
+    Long senderId
+)
+{}

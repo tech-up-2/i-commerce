@@ -1,6 +1,8 @@
 package com.example.i_commerce.domain.product.entity;
 
 import com.example.i_commerce.global.common.entity.BaseEntity;
+import com.example.i_commerce.global.error.AppException;
+import com.example.i_commerce.global.error.ErrorCode;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +35,8 @@ public class Stock extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_item_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_item_id", nullable = false, unique = true)
     private ProductItem productItem;
 
     @Column(nullable = false)
@@ -45,5 +48,15 @@ public class Stock extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
     private List<StockHistory> histories = new ArrayList<>();
+
+    public static Stock of(ProductItem item, Integer quantity) {
+        if(quantity < 0) {
+            throw new AppException(ErrorCode.NEGATIVE_QUANTITY_NOT_ALLOWED);
+        }
+        return Stock.builder()
+            .productItem(item)
+            .quantity(quantity)
+            .build();
+    }
 
 }
