@@ -15,8 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatService chatService;
-//  개인 1:1 채팅방 개설
-    @PostMapping("/room/create")
+//    개인 1:1 채팅방 개설
+//    JWT 도입시 수정해야하는 내용: 파라미터 어노테이션에서 myId 제거와 ReqParam으로 어노테이션 변경
+    @PostMapping("/room/create/{myId}/{otherMemberId}")
     public ApiResponse<Long> getOrCreatePrivateRoom(
         @PathVariable Long myId, @PathVariable Long otherMemberId){
 
