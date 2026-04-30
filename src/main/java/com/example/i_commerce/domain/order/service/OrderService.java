@@ -6,8 +6,13 @@ import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
+import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
+import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
+import com.example.i_commerce.domain.order.event.dto.OrderCreatedEvent;
+import com.example.i_commerce.domain.order.event.listener.OrderCreatedPaymentListener;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
+import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
 import com.example.i_commerce.domain.order.service.dto.OrderItemDto;
 import com.example.i_commerce.domain.product.entity.ProductItem;
@@ -20,6 +25,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,6 +35,8 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductItemRepository productItemRepository;
     private final MemberRepository memberRepository;
+    private final PaymentRepository paymentRepository;
+    private final ApplicationEventPublisher publisher;
 
     public ApiResponse<Void> createOrder(CreateOrderRequest dto) {
 
@@ -68,8 +76,8 @@ public class OrderService {
                 .findFirst()
                 .orElseThrow(() -> new AppException(MemberErrorCode.DEFAULT_ADDRESS_NOT_FOUND));
 
-        orderRepository.save(Order.builder()
-                .userId(dto.memberId())
+        Order order = orderRepository.save(Order.builder()
+                .userId(member.getId())
                 .orderStatus(OrderStatus.PENDING)
                 .orderProducts(orderProducts)
                 .totalProductAmount(totalPrice) // 총 금액
@@ -79,12 +87,22 @@ public class OrderService {
                 .addressDetail(deliveryAddress.getDetailAddress())
                 .build());
 
-        // 결제
+        Payment payment = paymentRepository.save(Payment.builder()
+                .order(order)
+                .amount(totalPrice)
+                .payStatus(PaymentStatus.READY)
+                .build());
 
-        // 배송
+       //TODO : 재고 차감
+        publisher.publishEvent(new OrderCreatedEvent(order.getId(), payment.getId(), member.getId(), totalPrice));
 
         return ApiResponse.success();
 
     }
 
+    public void updateOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_TEMP_ERROR));
+
+        order.changeOrderStatus(OrderStatus.CONFIRMED);
+    }
 }
