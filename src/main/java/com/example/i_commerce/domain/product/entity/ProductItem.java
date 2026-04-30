@@ -1,8 +1,8 @@
 package com.example.i_commerce.domain.product.entity;
 
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.global.common.entity.BaseEntity;
-import com.example.i_commerce.global.error.AppException;
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -95,7 +95,7 @@ public class ProductItem extends BaseEntity {
 
     public void initStock(Integer quantity) {
         if(this.stock != null) {
-            throw new AppException(ErrorCode.STOCK_ALREADY_INITIALIZED);
+            throw new AppException(ProductErrorCode.STOCK_ALREADY_INITIALIZED);
         }
         this.stock = Stock.of(this, quantity);
     }

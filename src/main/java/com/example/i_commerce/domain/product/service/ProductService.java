@@ -13,14 +13,13 @@ import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductAttribute;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.entity.ProductOptionValue;
-import com.example.i_commerce.domain.product.entity.Stock;
 import com.example.i_commerce.domain.product.entity.service.OptionValueMapper;
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.domain.product.validator.ProductAttributeValidator;
 import com.example.i_commerce.domain.product.validator.ProductOptionValidator;
-import com.example.i_commerce.global.error.AppException;
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -47,7 +46,7 @@ public class ProductService {
         Map<Long, Attribute> attributeMap = attributeValidator.validateAndFetchAttributes(request);
 
         Category category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(() ->  new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() ->  new AppException(ProductErrorCode.CATEGORY_NOT_FOUND));
 
         Product product = productRepository.save(Product.of(
             request.storeId(),
@@ -134,7 +133,7 @@ public class ProductService {
             Attribute attribute = attributeMap.get(attReq.attributeId());
 
             if (attribute == null) {
-                throw new AppException(ErrorCode.ATTRIBUTE_NOT_FOUND);
+                throw new AppException(ProductErrorCode.ATTRIBUTE_NOT_FOUND);
             }
 
             ProductAttribute productAttribute = ProductAttribute.of(

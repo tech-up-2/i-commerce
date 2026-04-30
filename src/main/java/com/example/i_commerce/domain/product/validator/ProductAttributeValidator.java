@@ -6,10 +6,10 @@ import com.example.i_commerce.domain.product.controller.request.CreateProductReq
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ProductItemRequest;
 import com.example.i_commerce.domain.product.entity.Attribute;
 import com.example.i_commerce.domain.product.entity.CategoryAttribute;
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.AttributeRepository;
 import com.example.i_commerce.domain.product.repository.CategoryAttributeRepository;
-import com.example.i_commerce.global.error.AppException;
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,7 +62,7 @@ public class ProductAttributeValidator {
             .collect(Collectors.toSet());
 
         if (!unsupportedAttributes.isEmpty()) {
-            throw new AppException(ErrorCode.NOT_SUPPORTED_ATTRIBUTE);
+            throw new AppException(ProductErrorCode.NOT_SUPPORTED_ATTRIBUTE);
         }
     }
 
