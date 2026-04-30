@@ -1,8 +1,8 @@
 package com.example.i_commerce.domain.product.entity;
 
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.global.common.entity.BaseEntity;
-import com.example.i_commerce.global.error.AppException;
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,7 +11,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -51,7 +50,7 @@ public class Stock extends BaseEntity {
 
     public static Stock of(ProductItem item, Integer quantity) {
         if(quantity < 0) {
-            throw new AppException(ErrorCode.NEGATIVE_QUANTITY_NOT_ALLOWED);
+            throw new AppException(ProductErrorCode.NEGATIVE_QUANTITY_NOT_ALLOWED);
         }
         return Stock.builder()
             .productItem(item)
