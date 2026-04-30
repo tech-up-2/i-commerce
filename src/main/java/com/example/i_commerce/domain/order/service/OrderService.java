@@ -10,7 +10,7 @@ import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.event.dto.OrderCreatedEvent;
-import com.example.i_commerce.domain.order.event.listener.OrderCreatedPaymentListener;
+import com.example.i_commerce.domain.order.exception.OrderErrorCode;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
@@ -101,7 +101,7 @@ public class OrderService {
     }
 
     public void updateOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_TEMP_ERROR));
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(OrderErrorCode.ORDER_TEMP_ERROR));
 
         order.changeOrderStatus(OrderStatus.CONFIRMED);
     }
