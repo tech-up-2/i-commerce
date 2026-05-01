@@ -15,18 +15,19 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 @RequiredArgsConstructor
 public class StompController {
+
     private final SimpMessageSendingOperations messagingTemplate;
     private final ChatService chatService;
 
-/*    Stomp 방식의 MessageMapping 어노테이션을 활용
-//클라이언트에서 특정 publish/roomId 형태로 메시지를 발행시 MessageMapping이 해당 메시지를 수신합니다.
-DestinationVariable은 @MessageMapping 어노테이션으로 정의된 Websocket Controller 내에서만 사용한다.
-기존 RequestParam, PathVariable과 같은 매핑 역할을 하는 어노테이션
- */
+    /*    Stomp 방식의 MessageMapping 어노테이션을 활용
+    //클라이언트에서 특정 publish/roomId 형태로 메시지를 발행시 MessageMapping이 해당 메시지를 수신합니다.
+    DestinationVariable은 @MessageMapping 어노테이션으로 정의된 Websocket Controller 내에서만 사용한다.
+    기존 RequestParam, PathVariable과 같은 매핑 역할을 하는 어노테이션
+     */
     @MessageMapping("/{roomId")
-    public void sendMessage(@DestinationVariable Long roomId, ChatMessageSendRequest  request) {
+    public void sendMessage(@DestinationVariable Long roomId, ChatMessageSendRequest request) {
 //        ChatMessageSendResponse response = chatService.saveMessage(roomId, request);
-        messagingTemplate.convertAndSend("/topic/"+roomId, request);
+        messagingTemplate.convertAndSend("/topic/" + roomId, request);
     }
 }
 

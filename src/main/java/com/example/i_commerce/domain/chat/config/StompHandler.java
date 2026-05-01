@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class StompHandler implements ChannelInterceptor {
+
     @Value("${jwt.secretKey}")
     private String secretKey;
     private final ChatService chatService;

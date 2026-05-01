@@ -41,7 +41,7 @@ public class ChatMessage extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)// 부모는 FK로 member_id를 가져감
     private Member member;
 
-//    @Column(columnDefinition = "TEXT")
+    //    @Column(columnDefinition = "TEXT")
 //    private String content;
 //  TEXT를 500자로 제한하여 채팅 길이를 조절 추후 TEXT 방식을 채택할 수 있음.
     @Column(nullable = false, length = 500)

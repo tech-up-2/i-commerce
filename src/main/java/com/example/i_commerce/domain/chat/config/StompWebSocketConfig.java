@@ -12,6 +12,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker//특정 토픽에 메시지를 전달하는 브로커 역할
 @RequiredArgsConstructor
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
     private final StompHandler stompHandler;
 
     @Override
@@ -21,6 +22,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 //            ws://가 아닌 http:// 엔드포인트를 사용할 수 있게 해주는 sockJs라이브러리를 통한 요청을 허용하는 설정
             .withSockJS();
     }
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
 //        /publish/1 ->이러한 형태(룰)을 가지고 메시지를 발행
@@ -29,7 +31,8 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 //        /topic/1형태로 메시지를 수신(subscribe)해야 함을 설정
         registry.enableSimpleBroker("/topic");
     }
-//    웹소켓요청(connect, subscribe, disconnect)등의 요청시에는 http header등 http메시지를 넣어 올 수 있고,
+
+    //    웹소켓요청(connect, subscribe, disconnect)등의 요청시에는 http header등 http메시지를 넣어 올 수 있고,
 //    이를 interceptor을 통해 가로채 토큰 등을 검증할 수 있음
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {

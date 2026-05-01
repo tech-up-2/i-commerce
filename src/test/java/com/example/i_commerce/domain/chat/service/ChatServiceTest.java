@@ -58,11 +58,10 @@ class ChatServiceTest {
     private Category category;
 
 
-
     @BeforeEach
-    public void MemberInit(){
+    public void MemberInit() {
         // 카테고리 생성
-             category = Category.builder()
+        category = Category.builder()
             .id(1L)
             .name("테스트 카테고리")
             .depth(1)
@@ -79,7 +78,7 @@ class ChatServiceTest {
             .status("ON_SALE")
             .build();
 
-             member = Member.builder()
+        member = Member.builder()
             .id(1L)
             .email("user1@test.com")
             .password("1234")
@@ -91,7 +90,7 @@ class ChatServiceTest {
             .status(MemberStatus.ACTIVE)
             .role(MemberType.CUSTOMER)
             .build();
-             otherMember =  Member.builder()
+        otherMember = Member.builder()
             .id(2L)
             .email("user2@test.com")
             .password("4321")
@@ -104,13 +103,12 @@ class ChatServiceTest {
             .role(MemberType.SELLER)
             .build();
 
-
-             singlechatRoom = ChatRoom.builder()
+        singlechatRoom = ChatRoom.builder()
             .id(5L)
             .isGroupChat(false)
             .name("테스트 1:1채팅")
             .build();
-             groupchatRoom = ChatRoom.builder()
+        groupchatRoom = ChatRoom.builder()
             .id(6L)
             .isGroupChat(true)
             .name("테스트 그룹채팅")
@@ -132,13 +130,15 @@ class ChatServiceTest {
 
         when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
         when(memberRepository.findById(otherMember.getId())).thenReturn(Optional.of(otherMember));
-        when(chatParticipantRepository.findExistingPrivateRoom(member.getId(), otherMember.getId())).thenReturn(Optional.of(singlechatRoom));
+        when(chatParticipantRepository.findExistingPrivateRoom(member.getId(),
+            otherMember.getId())).thenReturn(Optional.of(singlechatRoom));
 
+        AppException exception = assertThrows(AppException.class,
+            () -> chatService.getOrCreatePrivateRoom(
+                member.getId(), otherMember.getId()));
 
-        AppException exception = assertThrows(AppException.class, () -> chatService.getOrCreatePrivateRoom(
-            member.getId(),  otherMember.getId()));
-
-        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
+        Assertions.assertThat(exception.getErrorCode())
+            .isEqualTo(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
     }
 
     @Test
@@ -147,20 +147,23 @@ class ChatServiceTest {
 
         when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
-        when(chatRoomRepository.existsByProductIdAndIsGroupChat(product.getId(), true)).thenReturn(true);
-
+        when(chatRoomRepository.existsByProductIdAndIsGroupChat(product.getId(), true)).thenReturn(
+            true);
 
         AppException exception = assertThrows(AppException.class, () ->
             chatService.createGroupRoom(product.getId(), member.getId()));
 
-        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
+        Assertions.assertThat(exception.getErrorCode())
+            .isEqualTo(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
     }
+
     @Test
     @DisplayName("그룹 채팅방이 없으면 새로 생성합니다.")
-    void createGroupRoomSuccess(){
+    void createGroupRoomSuccess() {
         when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
-        when(chatRoomRepository.existsByProductIdAndIsGroupChat(product.getId(), true)).thenReturn(false);
+        when(chatRoomRepository.existsByProductIdAndIsGroupChat(product.getId(), true)).thenReturn(
+            false);
 
         ApiResponse<Long> response = chatService.createGroupRoom(product.getId(), member.getId());
 
@@ -168,15 +171,16 @@ class ChatServiceTest {
     }
 
 
-
     @Test
     @DisplayName("그룹 채팅방에 참여합니다.")
     void joinGroupChatRoom() {
         //when
         when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
-        when(chatRoomRepository.findById(groupchatRoom.getId())).thenReturn(Optional.of(groupchatRoom));
+        when(chatRoomRepository.findById(groupchatRoom.getId())).thenReturn(
+            Optional.of(groupchatRoom));
 
-        ApiResponse<Void> response = chatService.joinGroupRoom(groupchatRoom.getId(), member.getId());
+        ApiResponse<Void> response = chatService.joinGroupRoom(groupchatRoom.getId(),
+            member.getId());
 
         assertEquals("SUCCESS", response.code());
     }
@@ -184,12 +188,14 @@ class ChatServiceTest {
     @Test
     @DisplayName("그룹 채팅방에서 퇴장합니다.")
     void leaveGroupRoom() {
-        when(chatRoomRepository.findById(groupchatRoom.getId())).thenReturn(Optional.of(groupchatRoom));
+        when(chatRoomRepository.findById(groupchatRoom.getId())).thenReturn(
+            Optional.of(groupchatRoom));
         when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
         when(chatParticipantRepository.findByChatRoomAndMember(groupchatRoom, member))
             .thenReturn(Optional.of(chatParticipant));
 
-        ApiResponse<Void> response = chatService.leaveGroupRoom(groupchatRoom.getId(), member.getId());
+        ApiResponse<Void> response = chatService.leaveGroupRoom(groupchatRoom.getId(),
+            member.getId());
 
         assertEquals("SUCCESS", response.code());
 

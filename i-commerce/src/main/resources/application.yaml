@@ -1,8 +1,0 @@
-server:
-  port: 8080
-
-spring:
-  application:
-    name: i-commerce
-  profiles: #기본 프로파일 설정
-    default: dev
