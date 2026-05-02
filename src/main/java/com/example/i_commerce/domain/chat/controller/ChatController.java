@@ -21,7 +21,7 @@ public class ChatController {
 
     //    개인 1:1 채팅방 개설
 //    JWT 도입시 파라미터 변경
-    @PostMapping("/room/create/{myId}/{otherMemberId}")
+    @PostMapping("/room/{myId}/{otherMemberId}")
     public ApiResponse<Long> getOrCreatePrivateRoom(
         @PathVariable Long myId, @PathVariable Long otherMemberId) {
 

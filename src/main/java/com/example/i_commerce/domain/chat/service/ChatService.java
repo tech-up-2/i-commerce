@@ -52,7 +52,8 @@ public class ChatService {
         Member otherMember = memberRepository.findById(otherMemberId)
             .orElseThrow(() -> new AppException(
                 MemberErrorCode.USER_NOT_FOUND));
-//       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 해당 roomId를 return
+//       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 에러코드를 return
+//       사용자 입장에서는 에러코드 보다는 참여하고있는 채팅 리다이렉션이 훨씬 편리할 것 같음.
         Optional<ChatRoom> chatRoom = chatParticipantRepository.findExistingPrivateRoom(
             member.getId(), otherMember.getId());
         if (chatRoom.isPresent()) {
@@ -100,14 +101,14 @@ public class ChatService {
     }
 
 
-    public ApiResponse<Void> joinGroupRoom(Long roomId, Long myId) {
-        //실제로 채팅방이 존재하는지 검증
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        //해당 채팅방이 그룹채팅인지 검증
-        if (!chatRoom.getIsGroupChat()) {
-            throw new AppException(ChatErrorCode.CHAT_ROOM_FORBIDDEN);
-        }
+        public ApiResponse<Void> joinGroupRoom(Long roomId, Long myId) {
+            //실제로 채팅방이 존재하는지 검증
+            ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
+            //해당 채팅방이 그룹채팅인지 검증
+            if (!chatRoom.getIsGroupChat()) {
+                throw new AppException(ChatErrorCode.CANNOT_JOIN_PRIVATE_ROOM);
+            }
         //참여하고자 하는 멤버가 존재하는지 검증
         Member member = memberRepository.findById(myId)
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
@@ -130,12 +131,12 @@ public class ChatService {
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
         //해당 채팅방이 그룹채팅인지 검증
         if (!chatRoom.getIsGroupChat()) {
-            throw new AppException(ChatErrorCode.CHAT_ROOM_FORBIDDEN);
+            throw new AppException(ChatErrorCode.ONLY_GROUP_CHAT_CAN_LEAVE);
         }
         //해당 사용자가 해당 채팅방에 참가하고 있는지 검증
         ChatParticipant chatParticipant = chatParticipantRepository.findByChatRoomAndMember(
                 chatRoom, member)
-            .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
+            .orElseThrow(() -> new AppException(ChatErrorCode.NOT_A_ROOM_MEMBER));
         //유저를 해당 채팅방에서 제거
         chatParticipantRepository.delete(chatParticipant);
 

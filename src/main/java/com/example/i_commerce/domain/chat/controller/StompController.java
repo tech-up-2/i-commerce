@@ -24,7 +24,7 @@ public class StompController {
     DestinationVariable은 @MessageMapping 어노테이션으로 정의된 Websocket Controller 내에서만 사용한다.
     기존 RequestParam, PathVariable과 같은 매핑 역할을 하는 어노테이션
      */
-    @MessageMapping("/{roomId")
+    @MessageMapping("/{roomId}")
     public void sendMessage(@DestinationVariable Long roomId, ChatMessageSendRequest request) {
 //        ChatMessageSendResponse response = chatService.saveMessage(roomId, request);
         messagingTemplate.convertAndSend("/topic/" + roomId, request);
