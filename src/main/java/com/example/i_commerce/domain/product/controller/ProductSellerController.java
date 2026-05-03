@@ -3,7 +3,7 @@ package com.example.i_commerce.domain.product.controller;
 
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
 import com.example.i_commerce.domain.product.controller.response.CreatedProductResponse;
-import com.example.i_commerce.domain.product.service.ProductService;
+import com.example.i_commerce.domain.product.application.service.ProductService;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.validation.annotation.Validated;

@@ -6,6 +6,8 @@ import com.example.i_commerce.global.exception.AppException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -46,8 +48,9 @@ public class ProductItem extends BaseEntity {
 
     private String mainImageUrl;
 
-    @Column(length = 50, nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private ProductItemStatus status;
 
     private String displayOptionName;
 
@@ -98,6 +101,10 @@ public class ProductItem extends BaseEntity {
             throw new AppException(ProductErrorCode.STOCK_ALREADY_INITIALIZED);
         }
         this.stock = Stock.of(this, quantity);
+    }
+
+    public void changeStatus(ProductItemStatus status) {
+        this.status = status;
     }
 
     void setProduct(Product product) {
