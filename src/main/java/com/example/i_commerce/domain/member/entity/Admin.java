@@ -33,18 +33,26 @@ public class Admin extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 50)
-    private String email;
+    @Column(nullable = false, unique = true)
+    private String emailHash;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false)
+    private byte[] emailEncrypted;
+
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private byte[] name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AdminRole adminRole;
 
+    @Builder.Default
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private AdminStatus adminStatus;
+    private AdminStatus adminStatus = AdminStatus.ACTIVE;
 
     @Builder.Default
     @OneToMany(mappedBy = "admin")

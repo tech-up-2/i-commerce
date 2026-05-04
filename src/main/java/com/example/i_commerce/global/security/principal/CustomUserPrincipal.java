@@ -3,6 +3,8 @@ package com.example.i_commerce.global.security.principal;
 import com.example.i_commerce.domain.member.entity.Admin;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.Seller;
+import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
+import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +34,26 @@ public class CustomUserPrincipal implements UserDetails {
         this.email = email;
         this.password = password;
         this.authorities = authorities;
+    }
+
+    public static CustomUserPrincipal fromJwtMember(
+        Long id,
+        String email,
+        MemberType role,
+        MemberStatus status
+    ) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
+        authorities.add(new SimpleGrantedAuthority("STATUS_" + status.name()));
+
+        return new CustomUserPrincipal(
+            PrincipalType.MEMBER,
+            id,
+            email,
+            null,
+            authorities
+        );
     }
 
     //member 생성

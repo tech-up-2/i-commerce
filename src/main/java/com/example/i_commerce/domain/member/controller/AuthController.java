@@ -2,6 +2,8 @@ package com.example.i_commerce.domain.member.controller;
 
 import com.example.i_commerce.domain.member.service.AuthService;
 import com.example.i_commerce.domain.member.service.MemberService;
+import com.example.i_commerce.domain.member.service.dto.LoginRequest;
+import com.example.i_commerce.domain.member.service.dto.LoginResponse;
 import com.example.i_commerce.domain.member.service.dto.MemberSignUpRequest;
 import com.example.i_commerce.domain.member.service.dto.SignUpResponse;
 import com.example.i_commerce.global.common.response.ApiResponse;
@@ -22,15 +24,15 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ApiResponse<SignUpResponse> signUp(@RequestBody @Valid MemberSignUpRequest dto) {
-
         SignUpResponse response = authService.signUp(dto);
         return ApiResponse.success(response);
     }
 
-//    @PostMapping("/login")
-//    public ApiResponse<SignUpResponse> signUp(@RequestBody @Valid LoginRequest dto) {
-//
-//    }
+    @PostMapping("/login")
+    public ApiResponse<LoginResponse> signUp(@RequestBody @Valid LoginRequest dto) {
+        LoginResponse response = authService.login(dto);
+        return ApiResponse.success(response);
+    }
 
     //복호화 테스트
 //    @GetMapping("/getget/{id}")
