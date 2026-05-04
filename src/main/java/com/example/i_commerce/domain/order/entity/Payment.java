@@ -54,4 +54,8 @@ public class Payment extends BaseEntity {
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     private List<PaymentHistory> paymentHistories = new ArrayList<>();
 
+    public void changePayStatus(PaymentStatus status) {
+        this.payStatus = status;
+    }
+
 }

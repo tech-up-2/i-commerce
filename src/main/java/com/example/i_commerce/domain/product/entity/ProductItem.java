@@ -1,9 +1,13 @@
 package com.example.i_commerce.domain.product.entity;
 
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.global.common.entity.BaseEntity;
+import com.example.i_commerce.global.exception.AppException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -44,10 +48,14 @@ public class ProductItem extends BaseEntity {
 
     private String mainImageUrl;
 
-    @Column(length = 50, nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private ProductItemStatus status;
 
     private String displayOptionName;
+
+    @OneToOne(mappedBy = "productItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Stock stock;
 
     @ManyToOne
     @JoinColumn(name = "option_value_1_id")
@@ -63,10 +71,6 @@ public class ProductItem extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "productItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductAttribute> attributes = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "productItem", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Stock> stocks = new ArrayList<>();
 
 
     public static ProductItem of(
@@ -92,9 +96,15 @@ public class ProductItem extends BaseEntity {
         attribute.setProductItem(this);
     }
 
-    public void addStock(Stock stock) {
-        this.stocks.add(stock);
-        stock.setProductItem(this);
+    public void initStock(Integer quantity) {
+        if(this.stock != null) {
+            throw new AppException(ProductErrorCode.STOCK_ALREADY_INITIALIZED);
+        }
+        this.stock = Stock.of(this, quantity);
+    }
+
+    public void changeStatus(ProductItemStatus status) {
+        this.status = status;
     }
 
     void setProduct(Product product) {

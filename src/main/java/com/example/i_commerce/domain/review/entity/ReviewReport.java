@@ -38,7 +38,7 @@ public class ReviewReport {
 //    private Long reviewId;
 
     @Column(nullable = false, length = 50)
-    private String reporterId;
+    private Long reporterId;
 
     @Column(nullable = false)
     private Long adminId;

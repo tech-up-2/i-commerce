@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.product.enums;
+package com.example.i_commerce.domain.product.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

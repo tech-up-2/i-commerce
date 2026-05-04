@@ -32,6 +32,9 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
+    //  STOMP 사용을 위한 라이브러리
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
     //Spring Security
     implementation 'org.springframework.boot:spring-boot-starter-security'
 

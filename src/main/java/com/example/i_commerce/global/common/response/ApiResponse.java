@@ -1,9 +1,8 @@
 package com.example.i_commerce.global.common.response;
 
 
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.global.exception.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiResponse<T> (
