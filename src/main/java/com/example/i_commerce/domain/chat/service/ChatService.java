@@ -152,4 +152,11 @@ public class ChatService {
 
         return ApiResponse.success();
     }
+
+    public Boolean isRoomParticipant(Long myId, Long roomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
+        Member member = memberRepository.findById(myId).orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+
+        return chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).isPresent();
+    }
 }

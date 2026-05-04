@@ -37,6 +37,7 @@ public class ChatMessage extends BaseEntity {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
+//    강결합이 발생하므로 id만 받도록 수정하는 것이 맞음 (리펙토링 필요)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)// 부모는 FK로 member_id를 가져감
     private Member member;

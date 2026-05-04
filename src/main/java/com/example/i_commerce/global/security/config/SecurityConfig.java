@@ -15,6 +15,12 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                //임시 권한 추가
+                .requestMatchers(
+                    "/connect",
+                    "/connect/**"
+                ).permitAll()
+
 
                 // 전체 공개 API
                 .requestMatchers(
