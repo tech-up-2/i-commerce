@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.product.service;
+package com.example.i_commerce.domain.product.application.service;
 
 
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
@@ -17,8 +17,8 @@ import com.example.i_commerce.domain.product.entity.service.OptionValueMapper;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
-import com.example.i_commerce.domain.product.validator.ProductAttributeValidator;
-import com.example.i_commerce.domain.product.validator.ProductOptionValidator;
+import com.example.i_commerce.domain.product.application.validator.ProductAttributeValidator;
+import com.example.i_commerce.domain.product.application.validator.ProductOptionValidator;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
 import java.util.Map;

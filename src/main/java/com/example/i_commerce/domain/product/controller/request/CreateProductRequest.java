@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.product.controller.request;
 
 
-import com.example.i_commerce.domain.product.enums.OptionType;
+import com.example.i_commerce.domain.product.entity.OptionType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;

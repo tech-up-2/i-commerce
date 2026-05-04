@@ -5,7 +5,7 @@ import com.example.i_commerce.domain.product.controller.request.CreateProductReq
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionRequest;
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionValueRequest;
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ProductItemRequest;
-import com.example.i_commerce.domain.product.enums.OptionType;
+import com.example.i_commerce.domain.product.entity.OptionType;
 import java.util.List;
 
 public class CreateProductRequestFixture {

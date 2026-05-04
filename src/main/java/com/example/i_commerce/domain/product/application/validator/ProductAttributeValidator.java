@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.product.validator;
+package com.example.i_commerce.domain.product.application.validator;
 
 
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
