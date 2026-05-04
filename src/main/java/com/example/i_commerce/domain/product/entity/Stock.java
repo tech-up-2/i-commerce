@@ -6,6 +6,8 @@ import com.example.i_commerce.global.exception.AppException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -41,8 +43,9 @@ public class Stock extends BaseEntity {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private StockStatus status;
 
     @Builder.Default
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
@@ -58,4 +61,33 @@ public class Stock extends BaseEntity {
             .build();
     }
 
+    public void deduct(int amount, Long orderId) {
+        if(this.quantity < amount) {
+            throw new AppException(ProductErrorCode.INSUFFICIENT_STOCK);
+        }
+        this.quantity -= amount;
+
+        if(this.quantity == 0) {
+            this.status = StockStatus.OUT_OF_STOCK;
+        }
+
+        this.histories.add(StockHistory.ofDeduct(this, amount, orderId));
+    }
+
+    public void restore(int amount, Long orderId) {
+        this.quantity += amount;
+        this.status = StockStatus.IN_STOCK;
+        this.histories.add(StockHistory.ofRestore(this, amount, orderId));
+    }
+
+    public boolean isOutOfStock() {
+        return this.status == StockStatus.OUT_OF_STOCK;
+    }
+
 }
+
+
+
+
+
+

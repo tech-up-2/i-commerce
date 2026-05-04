@@ -2,7 +2,6 @@ package com.example.i_commerce.domain.product.service;
 
 
 import static com.example.i_commerce.domain.product.fixture.AttributeFixture.colorAttribute;
-import static com.example.i_commerce.domain.product.fixture.AttributeFixture.materialAttribute;
 import static com.example.i_commerce.domain.product.fixture.AttributeFixture.volumeAttribute1;
 import static com.example.i_commerce.domain.product.fixture.AttributeFixture.volumeAttribute2;
 import static com.example.i_commerce.domain.product.fixture.CategoryFixture.devicesCategory;
@@ -15,6 +14,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
+import com.example.i_commerce.domain.product.application.service.ProductService;
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ProductItemRequest;
 import com.example.i_commerce.domain.product.controller.response.CreatedProductResponse;
@@ -22,11 +22,11 @@ import com.example.i_commerce.domain.product.entity.Attribute;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.enums.OptionType;
+import com.example.i_commerce.domain.product.entity.OptionType;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
-import com.example.i_commerce.domain.product.validator.ProductAttributeValidator;
-import com.example.i_commerce.domain.product.validator.ProductOptionValidator;
+import com.example.i_commerce.domain.product.application.validator.ProductAttributeValidator;
+import com.example.i_commerce.domain.product.application.validator.ProductOptionValidator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
