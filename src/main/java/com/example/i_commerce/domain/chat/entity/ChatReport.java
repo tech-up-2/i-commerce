@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.chat.entity;
 
 import com.example.i_commerce.domain.chat.entity.enums.ChatReportStatus;
+import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -45,8 +46,9 @@ public class ChatReport extends BaseEntity {
 //    @Column(nullable = false)
 //    private Long chatRoomId;
 
-    @Column(nullable = false, length = 50)
-    private String userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)// 부모는 FK로 member_id를 가져감
+    private Member member;
 
     @Column(columnDefinition = "TEXT")
     private String reportText;
