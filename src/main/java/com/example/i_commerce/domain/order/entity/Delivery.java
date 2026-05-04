@@ -35,13 +35,10 @@ public class Delivery extends BaseEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-
-//    private Long orderId;
-
     @Column(nullable = false, length = 50)
-    private String sellerId;
+    private Long storeId;// TODO: 추후 출고지 기준으로 변경
 
-    private Long deliveryGroupId;
+    private String deliveryGroupId;
 
     @Enumerated(EnumType.STRING)
     private DeliveryStatus deliveryStatus;
