@@ -174,13 +174,13 @@ public class Review extends BaseEntity {
 
     public void increaseLikeCount() {
         this.likeCount++;
-        //updateBestStatus()
+        this.calculateRecommendationScore();
     }
 
     public void decreaseLikeCount() {
         if (this.likeCount > 0) {
             this.likeCount --;
-            //updateBestStatus()
+            this.calculateRecommendationScore();
         }
     }
 

@@ -1,7 +1,6 @@
 package com.example.i_commerce.domain.review.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.given;
 
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.enums.ReviewIsBestStatus;
