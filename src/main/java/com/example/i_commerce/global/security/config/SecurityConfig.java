@@ -19,7 +19,8 @@ public class SecurityConfig {
                 // 전체 공개 API
                 .requestMatchers(
                     "/api/products/**",
-                    "/api/categories/**"
+                    "/api/categories/**",
+                    "/api/v1/reviews/**"
                 ).permitAll()
 
                 // 로그인 / 회원가입도 보통 공개

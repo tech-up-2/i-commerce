@@ -1,15 +1,19 @@
 package com.example.i_commerce.domain.review.entity;
 
+import com.example.i_commerce.domain.review.entity.enums.ReviewIsBestStatus;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -47,12 +51,20 @@ public class Review extends BaseEntity {
 
     private Long reportCount;
 
-    private Long likeCount;
+    private Long likeCount = 0L;
 
     private Boolean isBest;
 
     private Boolean isUpdated;
 
+    private boolean isExcluded = false;
+
+    @Version
+    private Long version;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private ReviewIsBestStatus status = ReviewIsBestStatus.NORMAL;
 
     @Builder.Default
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -106,10 +118,6 @@ public class Review extends BaseEntity {
         }
     }
 
-    public void updateBestStatus(boolean isBest) {
-        this.isBest = isBest;
-    }
-
 
     public double calculateRecommendationScore() {
         double score = 0;
@@ -132,6 +140,49 @@ public class Review extends BaseEntity {
         return score;
     }
 
+    public void checkBestEligibility(double threshold) {
+        if (this.isExcluded || this.status == ReviewIsBestStatus.BEST) {
+            return;
+        }
+
+        double currentScore = this.calculateRecommendationScore();
+
+        this.status = (currentScore >= threshold) ? ReviewIsBestStatus.CANDIDATE : ReviewIsBestStatus.NORMAL;
+    }
+
+    public void excludeFromBest() {
+        this.isExcluded = true;
+        this.status = ReviewIsBestStatus.NORMAL;
+        this.isBest = false;
+    }
+
+    public void updateBestStatus(boolean isBest) {
+        this.isBest = isBest;
+        this.status = isBest ? ReviewIsBestStatus.BEST : ReviewIsBestStatus.CANDIDATE;
+    }
+
+    public void approveAsBest() {
+        this.isBest = true;
+        this.status = ReviewIsBestStatus.BEST;
+        this.isExcluded = false;
+    }
+
+    public void cancelBestStatus() {
+        this.isBest = false;
+        this.status = ReviewIsBestStatus.CANDIDATE;
+    }
+
+    public void increaseLikeCount() {
+        this.likeCount++;
+        //updateBestStatus()
+    }
+
+    public void decreaseLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount --;
+            //updateBestStatus()
+        }
+    }
 
     public static Review from(CreateReviewRequest dto) {
         Review review = Review.builder()

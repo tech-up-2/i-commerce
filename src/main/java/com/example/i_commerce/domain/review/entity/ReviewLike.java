@@ -31,9 +31,7 @@ public class ReviewLike {
     @JoinColumn(name = "review_id", nullable = false)
     private Review review;
 
-//    @Column(nullable = false)
-//    private Long reviewId;
-
     @Column(nullable = false, length = 50)
-    private String likerId;
+    private Long likerId;
+
 }
