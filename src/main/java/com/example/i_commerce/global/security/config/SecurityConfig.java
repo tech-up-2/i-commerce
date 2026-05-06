@@ -1,10 +1,14 @@
 package com.example.i_commerce.global.security.config;
 
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity
@@ -15,6 +19,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+
                 //임시 권한 추가
                 .requestMatchers(
                     "/connect",
@@ -32,11 +37,13 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/**"
                 ).permitAll()
+                .anyRequest().permitAll()
 
                 // 나머지는 기본적으로 인증 필요
-                .anyRequest().authenticated()
+//                .anyRequest().authenticated()
             );
 
         return http.build();
     }
+
 }

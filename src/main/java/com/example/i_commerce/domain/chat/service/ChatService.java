@@ -2,10 +2,13 @@ package com.example.i_commerce.domain.chat.service;
 
 import com.example.i_commerce.domain.chat.entity.ChatParticipant;
 import com.example.i_commerce.domain.chat.entity.ChatRoom;
+import com.example.i_commerce.domain.chat.entity.MessageReadStatus;
 import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
+import com.example.i_commerce.domain.chat.repository.ChatStatusRepository;
+import com.example.i_commerce.domain.chat.service.dto.MyChatListResponse;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
@@ -15,6 +18,7 @@ import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +38,7 @@ public class ChatService {
     private final ChatParticipantRepository chatParticipantRepository;
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
+    private final ChatStatusRepository chatStatusRepository;
 
 
     public void addParticipantToRoom(ChatRoom chatRoom, Member member) {
@@ -158,5 +163,35 @@ public class ChatService {
         Member member = memberRepository.findById(myId).orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         return chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).isPresent();
+    }
+
+    public ApiResponse<Void> messageRead(Long roomId, Long myId){
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
+        Member member = memberRepository.findById(myId).orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+//      기존 강의에서는 읽은 채팅과 안읽은 채팅을 모두 불러왔지만 안읽은 채팅만 불러오는 것이 조회 측면에서 효율적임
+        List<MessageReadStatus> readStatuses = chatStatusRepository.findByChatRoomAndMemberAndIsReadFalse(chatRoom, member);
+        for(MessageReadStatus r :readStatuses){
+             r.updateIsRead(true);
+        }
+        return ApiResponse.success();
+    }
+    public  ApiResponse<List<MyChatListResponse>> getMyChatList(Long myId){
+        Member member = memberRepository.findById(myId).orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        List<ChatParticipant> participants = chatParticipantRepository.findAllByMember(member);
+        List<MyChatListResponse> myChatListResponses = new ArrayList<>();
+        log.info("participants size: {}", participants.size());
+        for(ChatParticipant p :participants){
+//            find와 같이 JPA에는 count라는 네이밍 규칙이 존재 Long 형태로 반환해줌
+            Long count = chatStatusRepository.countByChatRoomAndMemberAndIsReadFalse(p.getChatRoom(), member);
+            MyChatListResponse responseDto = MyChatListResponse.builder()
+                .roomId(p.getChatRoom().getId())
+                .roomName(p.getChatRoom().getName())
+                .isGroupChat(p.getChatRoom().getIsGroupChat())
+                .unReadCount(count)
+                .build();
+            myChatListResponses.add(responseDto);
+            log.info(myChatListResponses.toString());
+        }
+        return ApiResponse.success(myChatListResponses);
     }
 }

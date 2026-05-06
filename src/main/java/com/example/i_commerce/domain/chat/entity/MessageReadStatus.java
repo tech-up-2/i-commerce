@@ -49,7 +49,7 @@ public class MessageReadStatus extends BaseEntity {
 
     private Boolean isRead;
 
-    public void isRead(Boolean isRead) {
+    public void updateIsRead(boolean isRead) {
         this.isRead = isRead;
     }
 }
