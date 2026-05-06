@@ -5,7 +5,7 @@ import com.example.i_commerce.domain.product.controller.request.CreateProductReq
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionRequest;
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionValueRequest;
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ProductItemRequest;
-import com.example.i_commerce.domain.product.entity.OptionType;
+import com.example.i_commerce.domain.product.entity.ProductOptionType;
 import java.util.List;
 
 public class CreateProductRequestFixture {
@@ -18,7 +18,7 @@ public class CreateProductRequestFixture {
             .categoryId(1L)
             .name("아이폰 15 프로")
             .description("최신 아이폰입니다")
-            .optionType(OptionType.SINGLE)
+            .productOptionType(ProductOptionType.SINGLE)
             .options(List.of(
                 OptionRequest.builder()
                     .optionOrder(1)
@@ -66,7 +66,7 @@ public class CreateProductRequestFixture {
             .categoryId(1L)
             .name("갤럭시 S24")
             .description("삼성 플래그십")
-            .optionType(OptionType.DOUBLE)
+            .productOptionType(ProductOptionType.DOUBLE)
             .options(List.of(
                 OptionRequest.builder()
                     .optionOrder(1)
@@ -124,7 +124,7 @@ public class CreateProductRequestFixture {
             .categoryId(1L)
             .name("맥북 프로")
             .description("애플 노트북")
-            .optionType(OptionType.NONE)
+            .productOptionType(ProductOptionType.NONE)
             .options(List.of())
             .items(List.of(
                 ProductItemRequest.builder()

@@ -6,7 +6,7 @@ import com.example.i_commerce.domain.product.controller.request.CreateProductReq
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionValueRequest;
 import com.example.i_commerce.domain.product.entity.CategoryOption;
 import com.example.i_commerce.domain.product.entity.Option;
-import com.example.i_commerce.domain.product.entity.OptionType;
+import com.example.i_commerce.domain.product.entity.ProductOptionType;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.CategoryOptionRepository;
 import com.example.i_commerce.global.exception.AppException;
@@ -25,7 +25,7 @@ public class ProductOptionValidator {
 
     public void validateOptions(CreateProductRequest request) {
 
-        if(request.optionType() == OptionType.NONE) {
+        if(request.productOptionType() == ProductOptionType.NONE) {
             return;
         }
 
