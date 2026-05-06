@@ -1,5 +1,5 @@
 server:
- port: 8080
+  port: 8080
 logging:
   level:
     root: INFO
@@ -24,7 +24,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop #update
     show-sql: true
     open-in-view: false
 

@@ -1,10 +1,9 @@
 package com.example.i_commerce.domain.chat.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import com.example.i_commerce.domain.chat.entity.ChatMessage;
 import com.example.i_commerce.domain.chat.entity.ChatParticipant;
 import com.example.i_commerce.domain.chat.entity.ChatRoom;
 import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
@@ -23,8 +22,6 @@ import com.example.i_commerce.domain.product.entity.ProductStatus;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
-
-import java.util.List;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
