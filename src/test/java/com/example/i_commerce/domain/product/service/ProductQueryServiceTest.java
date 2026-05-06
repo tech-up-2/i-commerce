@@ -125,7 +125,27 @@ public class ProductQueryServiceTest {
 
     }
 
+    @Nested
+    @DisplayName("상품 조회 실패 테스트")
+    class GetProductFailTest {
 
+        @Test
+        @DisplayName("존재하지 않는 상품 조회 시 PRODUCT_NOT_FOUND 예외가 발생한다.")
+        void getProductDetail_productNotFound_throwsException() {
+            // given
+
+            Long productId = 999L;
+            given(productQueryRepository.findProductWithItems(productId))
+                .willReturn(Optional.empty());
+
+            // when + then
+            assertThatThrownBy(() -> productQueryService.getProductDetail(productId, null))
+                .isInstanceOf(AppException.class)
+                .extracting("errorCode")
+                .isEqualTo(ProductErrorCode.PRODUCT_NOT_FOUND);
+        }
+
+    }
 
 }
 
