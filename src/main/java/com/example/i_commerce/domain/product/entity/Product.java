@@ -101,4 +101,17 @@ public class Product extends BaseEntity {
         value.setProduct(this);
     }
 
+    public ProductItem findItemOrDefault(Long itemId) {
+        if(itemId == null) {
+            return items.stream()
+                .filter(ProductItem::isDefault)
+                .findFirst()
+                .orElseThrow(() -> new AppException(ProductErrorCode.DEFAULT_ITEM_NOT_FOUND));
+        }
+        return items.stream()
+            .filter(item -> item.getId().equals(itemId))
+            .findFirst()
+            .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_ITEM_NOT_FOUND));
+    }
+
 }
