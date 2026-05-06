@@ -7,6 +7,8 @@ import com.example.i_commerce.global.exception.AppException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -48,11 +50,13 @@ public class Product extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private Integer optionType;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private ProductOptionType optionType;
 
-    @Column(length = 50, nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private ProductStatus status;
 
     @Builder.Default
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
@@ -71,7 +75,7 @@ public class Product extends BaseEntity {
         Category category,
         String name,
         String description,
-        Integer optionType
+        ProductOptionType optionType
     ) {
         return Product.builder()
             .storeId(storeId)
@@ -79,7 +83,7 @@ public class Product extends BaseEntity {
             .name(name)
             .description(description)
             .optionType(optionType)
-            .status(ProductStatus.ON_SALE.name())
+            .status(ProductStatus.ON_SALE)
             .build();
     }
 

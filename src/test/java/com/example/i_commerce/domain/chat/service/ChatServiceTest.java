@@ -18,6 +18,8 @@ import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
+import com.example.i_commerce.domain.product.entity.ProductOptionType;
+import com.example.i_commerce.domain.product.entity.ProductStatus;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
@@ -74,8 +76,8 @@ class ChatServiceTest {
             .category(category)
             .name("테스트 상품")
             .description("테스트 상품 설명")
-            .optionType(1)
-            .status("ON_SALE")
+            .optionType(ProductOptionType.SINGLE)
+            .status(ProductStatus.ON_SALE)
             .build();
 
         member = Member.builder()
