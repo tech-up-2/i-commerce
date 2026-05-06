@@ -27,6 +27,7 @@ public enum ProductErrorCode implements ErrorCode {
     INVALID_OPTION(HttpStatus.CONFLICT, "PRD-40902", "요청한 옵션 값이 유효하지 않습니다."),
     EXCEEDED_MAX_OPTION(HttpStatus.BAD_REQUEST, "PRD-40903", "최대 옵션 수를 초과했습니다."),
 
+    INVALID_OPTION_TYPE(HttpStatus.CONFLICT, "PRD-40905", "존재하지 않는 옵션 타입입니다."),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "PRD-40903", "재고가 충분하지 않습니다.")
 
 
