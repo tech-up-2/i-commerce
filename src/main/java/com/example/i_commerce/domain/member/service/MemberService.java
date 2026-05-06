@@ -1,13 +1,13 @@
 package com.example.i_commerce.domain.member.service;
 
 import com.example.i_commerce.domain.member.entity.Member;
+import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.service.dto.MemberChatInfo;
 import com.example.i_commerce.domain.member.service.dto.MemberNotificationInfo;
 import com.example.i_commerce.domain.member.service.dto.MemberOrderInfo;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
-import com.example.i_commerce.global.error.AppException;
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberOrderInfo getMemberOrderInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new AppException(ErrorCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new AppException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         return new MemberOrderInfo(
             member.getId(),
@@ -35,7 +35,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberChatInfo getMemberChatInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new AppException(ErrorCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new AppException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         return new MemberChatInfo(
             member.getId(),
@@ -46,7 +46,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberNotificationInfo getMemberNotificationInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new AppException(ErrorCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new AppException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         return new MemberNotificationInfo(
             member.getId(),

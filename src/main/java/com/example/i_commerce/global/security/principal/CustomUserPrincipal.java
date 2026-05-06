@@ -3,8 +3,10 @@ package com.example.i_commerce.global.security.principal;
 import com.example.i_commerce.domain.member.entity.Admin;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.Seller;
-import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
+import com.example.i_commerce.domain.member.entity.enums.AdminRole;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
+import com.example.i_commerce.global.security.SecurityAuthority;
+import com.example.i_commerce.global.security.jwt.TokenPayload;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,11 +17,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 public class CustomUserPrincipal implements UserDetails {
 
     private final PrincipalType type;
-
     private final Long id;
     private final String email;
     private final String password;
-
     private final Collection<? extends GrantedAuthority> authorities;
 
     public CustomUserPrincipal(
@@ -36,38 +36,50 @@ public class CustomUserPrincipal implements UserDetails {
         this.authorities = authorities;
     }
 
-    public static CustomUserPrincipal fromJwtMember(
-        Long id,
-        String email,
-        MemberType role,
-        MemberStatus status
-    ) {
+    public static CustomUserPrincipal fromTokenPayload(TokenPayload payload) {
         List<GrantedAuthority> authorities = new ArrayList<>();
 
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
-        authorities.add(new SimpleGrantedAuthority("STATUS_" + status.name()));
+        if (payload.principalType() == PrincipalType.MEMBER) {
+            MemberType role = (MemberType) payload.role();
+
+            authorities.add(new SimpleGrantedAuthority(SecurityAuthority.ROLE_MEMBER));
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
+            authorities.add(
+                new SimpleGrantedAuthority("STATUS_" + payload.accountStatus().getAuthority()));
+
+            if (role == MemberType.SELLER && payload.sellerStatus() != null) {
+                authorities.add(
+                    new SimpleGrantedAuthority("SELLER_" + payload.sellerStatus().getAuthority()));
+            }
+        }
+
+        if (payload.principalType() == PrincipalType.ADMIN) {
+            AdminRole role = (AdminRole) payload.role();
+
+            authorities.add(new SimpleGrantedAuthority(SecurityAuthority.ROLE_ADMIN));
+            authorities.add(
+                new SimpleGrantedAuthority("STATUS_" + payload.accountStatus().getAuthority()));
+            authorities.add(new SimpleGrantedAuthority("ADMIN_" + role.name()));
+        }
 
         return new CustomUserPrincipal(
-            PrincipalType.MEMBER,
-            id,
-            email,
+            payload.principalType(),
+            payload.accountId(),
+            payload.email(),
             null,
             authorities
         );
     }
 
-    //member 생성
     public static CustomUserPrincipal fromMember(Member member, Seller seller) {
-
         List<GrantedAuthority> authorities = new ArrayList<>();
 
-        // 기본 회원 권한
-        authorities.add(new SimpleGrantedAuthority("ROLE_MEMBER"));
+        authorities.add(new SimpleGrantedAuthority(SecurityAuthority.ROLE_MEMBER));
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + member.getRole().getAuthority()));
         authorities.add(new SimpleGrantedAuthority("STATUS_" + member.getStatus().name()));
 
-        // 판매자라면 추가
         if (seller != null) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_SELLER"));
+            authorities.add(new SimpleGrantedAuthority(SecurityAuthority.ROLE_SELLER));
             authorities.add(
                 new SimpleGrantedAuthority("SELLER_" + seller.getSellerStatus().name()));
         }
@@ -81,28 +93,22 @@ public class CustomUserPrincipal implements UserDetails {
         );
     }
 
-    //admin생성
     public static CustomUserPrincipal fromAdmin(Admin admin) {
-
         List<GrantedAuthority> authorities = new ArrayList<>();
 
-        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        authorities.add(new SimpleGrantedAuthority(SecurityAuthority.ROLE_ADMIN));
         authorities.add(new SimpleGrantedAuthority("STATUS_" + admin.getAdminStatus().name()));
         authorities.add(new SimpleGrantedAuthority("ADMIN_" + admin.getAdminRole().name()));
 
         return new CustomUserPrincipal(
             PrincipalType.ADMIN,
             admin.getId(),
-            admin.getEmail(),
+            admin.getEmailHash(),
             admin.getPassword(),
             authorities
         );
     }
 
-
-    // =========================
-    // Getter
-    // =========================
     public Long getId() {
         return id;
     }
@@ -119,9 +125,6 @@ public class CustomUserPrincipal implements UserDetails {
         return type == PrincipalType.ADMIN;
     }
 
-    // =========================
-    // UserDetails 구현
-    // =========================
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
@@ -134,16 +137,14 @@ public class CustomUserPrincipal implements UserDetails {
 
     @Override
     public String getPassword() {
-        return password;
+        return null;
     }
 
-    /**
-     * 탈퇴 계정 로그인 차단
-     */
     @Override
     public boolean isEnabled() {
         return authorities.stream()
-            .noneMatch(a -> a.getAuthority().equals("STATUS_WITHDRAWN"));
+            .noneMatch(a
+                -> a.getAuthority().equals(SecurityAuthority.STATUS_WITHDRAWN));
     }
 
     @Override
@@ -151,9 +152,6 @@ public class CustomUserPrincipal implements UserDetails {
         return true;
     }
 
-    /**
-     * 정지는 로그인 허용 (기능만 제한)
-     */
     @Override
     public boolean isAccountNonLocked() {
         return true;
@@ -164,8 +162,5 @@ public class CustomUserPrincipal implements UserDetails {
         return true;
     }
 
-    public enum PrincipalType {
-        MEMBER,
-        ADMIN
-    }
+    public enum PrincipalType {MEMBER, ADMIN}
 }

@@ -34,6 +34,11 @@ public class AuthController {
         return ApiResponse.success(response);
     }
 
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout() {//나중에 redis를 붙이면 토큰을 blacklist로 전달해야함.
+        return ApiResponse.success();
+    }
+
     //복호화 테스트
 //    @GetMapping("/getget/{id}")
 //    public ApiResponse<MemberOrderInfo> testGetMemberOrderInfo(@PathVariable Long id) {

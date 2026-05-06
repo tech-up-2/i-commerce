@@ -1,5 +1,6 @@
 package com.example.i_commerce.global.security.checker;
 
+import com.example.i_commerce.global.security.SecurityAuthority;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.security.core.Authentication;
@@ -17,31 +18,34 @@ public class AuthChecker {
     // 정보조회
     public boolean canViewMemberInfo() {
         return isMember()
-            && hasAny("STATUS_ACTIVE", "STATUS_SUSPENDED");
+            && hasAny(SecurityAuthority.STATUS_ACTIVE,
+            SecurityAuthority.STATUS_SUSPENDED);
     }
 
     // 장바구니
     public boolean canUseCart() {
         return isMember()
-            && hasAny("STATUS_ACTIVE", "STATUS_SUSPENDED");
+            && hasAny(SecurityAuthority.STATUS_ACTIVE,
+            SecurityAuthority.STATUS_SUSPENDED);
     }
 
     // 주문 / 결제
     public boolean canOrderAndPay() {
         return isMember()
-            && has("STATUS_ACTIVE");
+            && has(SecurityAuthority.STATUS_ACTIVE);
     }
 
     // 리뷰 작성
     public boolean canWriteReviewAsMember() {
         return isMember()
-            && has("STATUS_ACTIVE");
+            && has(SecurityAuthority.STATUS_ACTIVE);
     }
 
     // 탈퇴 요청
     public boolean canWithdrawMember() {
         return isMember()
-            && hasAny("STATUS_ACTIVE", "STATUS_SUSPENDED");
+            && hasAny(SecurityAuthority.STATUS_ACTIVE,
+            SecurityAuthority.STATUS_SUSPENDED);
     }
 
     // =========================
@@ -51,43 +55,49 @@ public class AuthChecker {
     // 판매자 정보 조회
     public boolean canViewSellerInfo() {
         return isSeller()
-            && hasAny("STATUS_ACTIVE", "STATUS_SUSPENDED")
-            && hasAny("SELLER_PENDING", "SELLER_APPROVED", "SELLER_BLOCKED");
+            && hasAny(SecurityAuthority.STATUS_ACTIVE,
+            SecurityAuthority.STATUS_SUSPENDED)
+            && hasAny(SecurityAuthority.SELLER_PENDING,
+            SecurityAuthority.SELLER_APPROVED,
+            SecurityAuthority.SELLER_BLOCKED);
     }
 
     // 상점 조회
     public boolean canViewStore() {
         return isSeller()
-            && has("STATUS_ACTIVE")
-            && has("SELLER_APPROVED");
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && has(SecurityAuthority.SELLER_APPROVED);
     }
 
     // 상품 관리
     public boolean canManageSellerProduct() {
         return isSeller()
-            && has("STATUS_ACTIVE")
-            && has("SELLER_APPROVED");
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && has(SecurityAuthority.SELLER_APPROVED);
     }
 
     // 주문 관리
     public boolean canManageSellerOrder() {
         return isSeller()
-            && has("STATUS_ACTIVE")
-            && has("SELLER_APPROVED");
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && has(SecurityAuthority.SELLER_APPROVED);
     }
 
     // 리뷰 관리
     public boolean canManageSellerReview() {
         return isSeller()
-            && has("STATUS_ACTIVE")
-            && has("SELLER_APPROVED");
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && has(SecurityAuthority.SELLER_APPROVED);
     }
 
     // 판매자 탈퇴 요청
     public boolean canWithdrawSeller() {
         return isSeller()
-            && hasAny("STATUS_ACTIVE", "STATUS_SUSPENDED")
-            && hasAny("SELLER_PENDING", "SELLER_APPROVED", "SELLER_BLOCKED");
+            && hasAny(SecurityAuthority.STATUS_ACTIVE,
+            SecurityAuthority.STATUS_SUSPENDED)
+            && hasAny(SecurityAuthority.SELLER_PENDING,
+            SecurityAuthority.SELLER_APPROVED,
+            SecurityAuthority.SELLER_BLOCKED);
     }
 
     // =========================
@@ -97,43 +107,51 @@ public class AuthChecker {
     // 관리자 관리
     public boolean canManageAdmin() {
         return isAdmin()
-            && has("STATUS_ACTIVE")
-            && has("ADMIN_MASTER");
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && has(SecurityAuthority.ADMIN_MASTER);
     }
 
     // 사용자, 판매자 관리
     public boolean canManageUserAndSeller() {
         return isAdmin()
-            && has("STATUS_ACTIVE")
-            && hasAny("ADMIN_MASTER", "ADMIN_ADMIN", "ADMIN_OPERATOR");
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && hasAny(SecurityAuthority.ADMIN_MASTER,
+            SecurityAuthority.ADMIN_ADMIN,
+            SecurityAuthority.ADMIN_OPERATOR);
     }
 
     // 카테고리 관리
     public boolean canManageCategory() {
         return isAdmin()
-            && has("STATUS_ACTIVE")
-            && hasAny("ADMIN_MASTER", "ADMIN_ADMIN");
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && hasAny(SecurityAuthority.ADMIN_MASTER,
+            SecurityAuthority.ADMIN_ADMIN);
     }
 
     // 시스템 옵션
     public boolean canManageSystemOption() {
         return isAdmin()
-            && has("STATUS_ACTIVE")
-            && hasAny("ADMIN_MASTER", "ADMIN_ADMIN");
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && hasAny(SecurityAuthority.ADMIN_MASTER,
+            SecurityAuthority.ADMIN_ADMIN);
     }
 
     // 리뷰 관리
     public boolean canManageReviewAsAdmin() {
         return isAdmin()
-            && has("STATUS_ACTIVE")
-            && hasAny("ADMIN_MASTER", "ADMIN_ADMIN", "ADMIN_OPERATOR");
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && hasAny(SecurityAuthority.ADMIN_MASTER,
+            SecurityAuthority.ADMIN_ADMIN,
+            SecurityAuthority.ADMIN_OPERATOR);
     }
 
     // 채팅 관리
     public boolean canManageChatAsAdmin() {
         return isAdmin()
-            && has("STATUS_ACTIVE")
-            && hasAny("ADMIN_MASTER", "ADMIN_ADMIN", "ADMIN_OPERATOR");
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && hasAny(SecurityAuthority.ADMIN_MASTER,
+            SecurityAuthority.ADMIN_ADMIN,
+            SecurityAuthority.ADMIN_OPERATOR);
     }
 
     // =========================
@@ -149,8 +167,9 @@ public class AuthChecker {
 
     //문의 작성: member / seller
     public boolean canWriteInquiry() {
-        return isSeller()
-            && hasAny("STATUS_ACTIVE", "STATUS_SUSPENDED");
+        return isMember()
+            && hasAny(SecurityAuthority.STATUS_ACTIVE,
+            SecurityAuthority.STATUS_SUSPENDED);
     }
 
     // 리뷰 삭제: 작성자(member) 또는 관리자
@@ -162,25 +181,26 @@ public class AuthChecker {
     // 좋아요: member, seller
     public boolean canLike() {
         return isMember()
-            && has("STATUS_ACTIVE");
+            && has(SecurityAuthority.STATUS_ACTIVE);
     }
 
     // 리뷰 신고: member, seller
     public boolean canReportReview() {
         return isMember()
-            && has("STATUS_ACTIVE");
+            && has(SecurityAuthority.STATUS_ACTIVE);
     }
 
     // 채팅: member, seller
     public boolean chat() {
         return isMember()
-            && has("STATUS_ACTIVE");
+            && has(SecurityAuthority.STATUS_ACTIVE);
     }
 
 
     //마스터 권한
     public boolean master() {
-        return isAdmin() && has("ADMIN_MASTER");
+        return isAdmin() && has(SecurityAuthority.STATUS_ACTIVE)
+            && has(SecurityAuthority.ADMIN_MASTER);
     }
 
 
@@ -189,16 +209,16 @@ public class AuthChecker {
     // =========================
 
     private boolean isMember() {
-        return has("ROLE_MEMBER");
+        return has(SecurityAuthority.ROLE_MEMBER);
     }
 
     private boolean isSeller() {
-        return has("ROLE_MEMBER")
-            && has("ROLE_SELLER");
+        return has(SecurityAuthority.ROLE_MEMBER)
+            && has(SecurityAuthority.ROLE_SELLER);
     }
 
     private boolean isAdmin() {
-        return has("ROLE_ADMIN");
+        return has(SecurityAuthority.ROLE_ADMIN);
     }
 
     private boolean has(String authority) {

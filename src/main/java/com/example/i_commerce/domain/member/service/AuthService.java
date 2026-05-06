@@ -1,18 +1,21 @@
 package com.example.i_commerce.domain.member.service;
 
 import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.entity.enums.MemberErrorCode;
-import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
+import com.example.i_commerce.domain.member.entity.Seller;
+import com.example.i_commerce.domain.member.entity.enums.MemberType;
+import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.repository.SellerRepository;
 import com.example.i_commerce.domain.member.service.dto.LoginRequest;
 import com.example.i_commerce.domain.member.service.dto.LoginResponse;
 import com.example.i_commerce.domain.member.service.dto.MemberSignUpRequest;
 import com.example.i_commerce.domain.member.service.dto.SignUpResponse;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
-import com.example.i_commerce.global.error.AppException;
-import com.example.i_commerce.global.error.ErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
+import com.example.i_commerce.global.security.jwt.TokenPayload;
+import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,12 +31,13 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailHashEncoder emailHashEncoder;
     private final JwtTokenUtil jwtTokenUtil;
+    private final SellerRepository sellerRepository;
 
     @Transactional
     public SignUpResponse signUp(MemberSignUpRequest dto) {
         String emailHash = emailHashEncoder.encode(dto.email());
         if (memberRepository.findByEmailHash(emailHash).isPresent()) {//이메일 중복시 예외처리
-            throw new AppException(ErrorCode.DUPLICATED_EMAIL);
+            throw new AppException(MemberErrorCode.DUPLICATED_EMAIL);
         }
 
         Member member = Member.builder()
@@ -53,7 +57,7 @@ public class AuthService {
                 dataEncryptor.decrypt(savedMember.getEmailEncrypted())
             );
         } catch (DataIntegrityViolationException e) {
-            throw new AppException(ErrorCode.DUPLICATED_EMAIL);
+            throw new AppException(MemberErrorCode.DUPLICATED_EMAIL);
         }
 
     }
@@ -61,25 +65,46 @@ public class AuthService {
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest dto) {
         Member member = memberRepository.findByEmailHash(emailHashEncoder.encode(dto.email()))
-            .orElseThrow(() -> new AppException(ErrorCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new AppException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
-            throw new AppException(ErrorCode.INVALID_PASSWORD);
+            throw new AppException(MemberErrorCode.INVALID_PASSWORD);
         }
 
-        if (member.getStatus() == MemberStatus.INACTIVE ||
-            member.getStatus() == MemberStatus.WITHDRAWN) {
-            throw new AppException(MemberErrorCode.INVALID_MEMBER);
-        }
+        validateLoginStatus(member);// status상태 검즘
 
         String email = dataEncryptor.decrypt(member.getEmailEncrypted());
 
-        String accessToken = jwtTokenUtil.createToken(
-            member.getId(),
-            email,
-            member.getRole(),
-            member.getStatus()
-        );
+        TokenPayload payload;
+
+        Seller seller = null;
+
+        if (member.getIsSeller()) {
+            seller = sellerRepository.findById(member.getId())
+                .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
+        }
+
+        if (seller != null) {
+            payload = new TokenPayload(
+                PrincipalType.MEMBER,
+                member.getId(),
+                email,
+                MemberType.SELLER,
+                member.getStatus(),
+                seller.getSellerStatus()
+            );
+        } else {
+            payload = new TokenPayload(
+                PrincipalType.MEMBER,
+                member.getId(),
+                email,
+                MemberType.CUSTOMER,
+                member.getStatus(),
+                null
+            );
+        }
+
+        String accessToken = jwtTokenUtil.createToken(payload);
 
         return new LoginResponse(
             member.getId(),
