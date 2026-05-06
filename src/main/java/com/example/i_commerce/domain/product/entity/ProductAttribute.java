@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 
 
 @Entity
-@Table(name = "product_variants")
+@Table(name = "product_attributes")
 @Getter
 @Builder
 @AllArgsConstructor
