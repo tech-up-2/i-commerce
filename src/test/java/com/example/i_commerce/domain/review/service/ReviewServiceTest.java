@@ -1,4 +1,4 @@
-package com.example.i_commerce.review.service;
+package com.example.i_commerce.domain.review.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
