@@ -18,8 +18,8 @@ import org.springframework.stereotype.Repository;
 public class ProductQueryRepository {
     private final JPAQueryFactory queryFactory;
 
-    QProductOptionValue productOptionValue1 = new QProductOptionValue("ov1");
-    QProductOptionValue productOptionValue2 = new QProductOptionValue("ov2");
+    private final QProductOptionValue productOptionValue1 = new QProductOptionValue("ov1");
+    private final QProductOptionValue productOptionValue2 = new QProductOptionValue("ov2");
 
     public Optional<Product> findProductWithItems(Long productId) {
         Product result = queryFactory
