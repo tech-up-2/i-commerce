@@ -34,7 +34,7 @@ public class OrderProduct extends BaseEntity {
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "delivery_id", nullable = false)
+    @JoinColumn(name = "delivery_id", nullable = true)
     private Delivery delivery;
 
 
@@ -47,5 +47,19 @@ public class OrderProduct extends BaseEntity {
     private Integer orderPrice;
 
     private Integer count; // 주문 수량
+
+    public void assignOrder(Order order) {
+        if (order == null) {
+            throw new IllegalArgumentException("배송 정보는 필수입니다.");
+        }
+        this.order = order;
+    }
+
+    public void assignDelivery(Delivery delivery) {
+        if (delivery == null) {
+            throw new IllegalArgumentException("배송 정보는 필수입니다.");
+        }
+        this.delivery = delivery;
+    }
 
 }
