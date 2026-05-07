@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.order.entity;
 
 import com.example.i_commerce.domain.order.entity.emuns.ActorType;
+import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,18 +36,20 @@ public class PaymentHistory extends BaseEntity {
     @JoinColumn(name = "payment_id", nullable = false)
     private Payment payment;
 
-//    @Column(nullable = false)
-//    private Long paymentId;
 
-    @Column(length = 20)
-    private String previousStatus;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus previousStatus;
 
-    @Column(length = 20)
-    private String currentStatus;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus currentStatus;
+
+    private String pgTid;
 
     private Integer amount;
 
     private String reason;
+
+    private String rawData;
 
     @Enumerated(EnumType.STRING)
     private ActorType actorType;

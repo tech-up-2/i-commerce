@@ -2,9 +2,12 @@ package com.example.i_commerce.domain.order.controller;
 
 import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
+import com.example.i_commerce.domain.order.service.dto.CreateOrderResponse;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,8 +18,9 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    @PreAuthorize("hasRole('MEMBER')")
     @PostMapping
-    public ApiResponse<Void> createOrder(CreateOrderRequest dto) {
+    public ApiResponse<CreateOrderResponse> createOrder(@RequestBody CreateOrderRequest dto) {
         return orderService.createOrder(dto);
     }
 }
