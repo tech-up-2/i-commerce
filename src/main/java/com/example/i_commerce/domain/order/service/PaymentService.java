@@ -94,8 +94,7 @@ public class PaymentService {
                 PaymentStatus previousStatus = payment.getPayStatus();
                 String pgTid = (String) response.getBody().get("paymentKey");
 
-                payment.setPgTid(pgTid);
-                payment.changePayStatus(PaymentStatus.PAID);
+                payment.completePayment(pgTid);
                 payment.getOrder().changeOrderStatus(OrderStatus.CONFIRMED);
                 payment.getOrder().getDeliveries().forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.PREPARING));
 

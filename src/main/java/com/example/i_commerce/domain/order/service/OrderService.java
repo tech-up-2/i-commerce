@@ -92,7 +92,7 @@ public class OrderService {
                 .addressDetail(deliveryAddress.getDetailAddress())
                 .build();
 
-        orderProducts.forEach(orderProduct -> orderProduct.setOrder(order));
+        orderProducts.forEach(orderProduct -> orderProduct.assignOrder(order));
 
         orderRepository.save(order);
 

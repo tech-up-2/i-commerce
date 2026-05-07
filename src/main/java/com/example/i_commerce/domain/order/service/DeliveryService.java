@@ -53,7 +53,7 @@ public class DeliveryService {
                         .deliveryStatus(DeliveryStatus.PREPARING)
                         .build());
 
-                item.setDelivery(delivery);
+                item.assignDelivery(delivery);
             });
         });
 
