@@ -86,7 +86,7 @@ public class ProductQueryServiceTest {
 
             // then
             assertThat(response).isNotNull();
-            assertThat(response.productId()).isEqualTo(defaultItem.getId());
+            assertThat(response.selectedItem().itemId()).isEqualTo(defaultItem.getId());
         }
 
         @Test
