@@ -10,11 +10,13 @@ import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
+import com.example.i_commerce.domain.chat.util.TempChatUtil;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
@@ -77,24 +79,24 @@ class ChatServiceTest {
 
         member = Member.builder()
             .id(1L)
-            .email("user1@test.com")
+            .emailHash("user1@test.com")
             .password("1234")
-            .name("테스트 유저1")
+            .name("테스트 유저1".getBytes())
             .sex(Gender.MALE)
-            .birthday("20050505")
-            .phoneNumber("01011111111")
+            .birthday("20050505".getBytes())
+            .phoneNumber("01011111111".getBytes())
             .point(0)
             .status(MemberStatus.ACTIVE)
             .role(MemberType.CUSTOMER)
             .build();
         otherMember = Member.builder()
             .id(2L)
-            .email("user2@test.com")
+            .emailHash("user2@test.com")
             .password("4321")
-            .name("테스트 유저2")
+            .name("테스트 유저2".getBytes())
             .sex(Gender.MALE)
-            .birthday("20060606")
-            .phoneNumber("01022222222")
+            .birthday("20060606".getBytes())
+            .phoneNumber("01022222222".getBytes())
             .point(0)
             .status(MemberStatus.ACTIVE)
             .role(MemberType.SELLER)
@@ -125,14 +127,13 @@ class ChatServiceTest {
     @DisplayName("1:1 채팅방이 이미 존재하면 예외를 터트립니다.")
     void existingChatRoom() {
 
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when(memberRepository.findById(TempChatUtil.getCurrentUserId())).thenReturn(Optional.of(member));
         when(memberRepository.findById(otherMember.getId())).thenReturn(Optional.of(otherMember));
         when(chatParticipantRepository.findExistingPrivateRoom(member.getId(),
             otherMember.getId())).thenReturn(Optional.of(singlechatRoom));
 
         AppException exception = assertThrows(AppException.class,
-            () -> chatService.getOrCreatePrivateRoom(
-                member.getId(), otherMember.getId()));
+            () -> chatService.getOrCreatePrivateRoom(otherMember.getId()));
 
         Assertions.assertThat(exception.getErrorCode())
             .isEqualTo(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);

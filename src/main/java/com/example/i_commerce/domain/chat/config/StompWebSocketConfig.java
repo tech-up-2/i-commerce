@@ -14,7 +14,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final StompHandler stompHandler;
-    private final TempStompHandler TempStompHandler;
+
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -37,7 +37,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 //    이를 interceptor을 통해 가로채 토큰 등을 검증할 수 있음
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(TempStompHandler);
+        registration.interceptors(stompHandler);
     }
 
 }
