@@ -263,3 +263,4 @@ gradle-app.setting
 # End of https://www.toptal.com/developers/gitignore/api/java,git,intellij,gradle,macos,windows,visualstudiocode
 .idea/
 .gitattributes
+.env

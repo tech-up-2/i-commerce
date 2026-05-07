@@ -24,7 +24,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create-drop #update
+      ddl-auto: update
     show-sql: true
     open-in-view: false
 
@@ -33,3 +33,6 @@ jwt:
   # chatserversecretaccesstokenchatserversecretaccesstokenchatserversecretaccesstoken
   secretKey: Y2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2VuY2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2VuY2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2Vu
   expiration: 3000 # 3000?
+
+toss:
+  secretKey: ${TOSS_SECRET_KEY}

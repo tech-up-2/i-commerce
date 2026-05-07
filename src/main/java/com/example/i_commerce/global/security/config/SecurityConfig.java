@@ -30,6 +30,8 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
 
+                .requestMatchers("/style.css", "/static/**").permitAll()
+
                 // 전체 공개 API
                 .requestMatchers(
                     "/api/v1/products/**",
@@ -39,6 +41,12 @@ public class SecurityConfig {
                 // 로그인 / 회원가입도 보통 공개
                 .requestMatchers(
                     "/api/v1/auth/**"
+                ).permitAll()
+
+                //임시 추후 삭제
+                .requestMatchers(
+                        "/api/v1/payments/**",
+                        "/payment/**"
                 ).permitAll()
 
                 // 리뷰 조회 공개
