@@ -51,12 +51,11 @@ class DeliveryAddressServiceTest {
     @BeforeEach
     void setUp() {
         member = memberRepository.save(
-            Member.builder()
-                .emailHash(emailHashEncoder.encode("user@test.com"))
-                .password(passwordEncoder.encode("password123!"))
-                .name(dataEncryptor.encrypt("홍길동"))
-                .phoneNumber(dataEncryptor.encrypt("01012345678"))
-                .build()
+            MemberFixture.createMember(
+                passwordEncoder,
+                emailHashEncoder,
+                dataEncryptor
+            )
         );
     }
 
@@ -175,9 +174,10 @@ class DeliveryAddressServiceTest {
 
         assertThat(defaultCount).isEqualTo(1);
 
-        assertThat(
-            dataEncryptor.decrypt(addresses.get(0).getLabel().getBytes())
-        );
+        DeliveryAddress defaultAddress = addresses.get(0);
+
+        assertThat(defaultAddress.getLabel()).isEqualTo("회사");
+        assertThat(defaultAddress.getIsDefault()).isTrue();
     }
 
     @Test

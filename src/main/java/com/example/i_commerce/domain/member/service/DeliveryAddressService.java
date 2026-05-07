@@ -107,6 +107,7 @@ public class DeliveryAddressService {
 
         if (isDefault) {
             deliveryAddressRepository.clearDefaultAddresses(memberId);
+            address.changeDefault(true);
         }
 
         address.update(

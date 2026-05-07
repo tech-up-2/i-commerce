@@ -39,7 +39,7 @@ public class DeliveryAddressController {
     @PostMapping
     @PreAuthorize("@authChecker.canUpdateMemberInfo()")
     public ApiResponse<DeliveryAddressResponse> createNewAddress(
-        @RequestBody DeliveryAddressRequest dto,
+        @RequestBody @Valid DeliveryAddressRequest dto,
         @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
         DeliveryAddressResponse response =
