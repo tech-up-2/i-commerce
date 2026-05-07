@@ -27,7 +27,6 @@ public enum MemberErrorCode implements ErrorCode {
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "USR-40101", "패스워드가 틀렸습니다."),
 
     // --- 404
-    MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40401", "존재하지 않는 회원입니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40401", "존재하지 않는 회원입니다."),
     DEFAULT_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND,
         "USR-40402", "기본 배송지가 설정되지 않았습니다."),

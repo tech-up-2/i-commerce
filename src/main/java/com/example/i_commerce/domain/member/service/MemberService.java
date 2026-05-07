@@ -22,7 +22,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberOrderInfo getMemberOrderInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new AppException(MemberErrorCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         return new MemberOrderInfo(
             member.getId(),
@@ -35,7 +35,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberChatInfo getMemberChatInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new AppException(MemberErrorCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         return new MemberChatInfo(
             member.getId(),
@@ -46,7 +46,7 @@ public class MemberService {
     @Transactional(readOnly = true)
     public MemberNotificationInfo getMemberNotificationInfo(Long memberId) {
         Member member = memberRepository.findById(memberId)
-            .orElseThrow(() -> new AppException(MemberErrorCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         return new MemberNotificationInfo(
             member.getId(),

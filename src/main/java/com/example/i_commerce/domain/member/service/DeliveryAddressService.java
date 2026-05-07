@@ -87,7 +87,7 @@ public class DeliveryAddressService {
             .deliveryMemo(encryptNullable(dto.deliveryMemo()))
             .build();
 
-        DeliveryAddress savedAddress = deliveryAddressRepository.saveAndFlush(deliveryAddress);
+        DeliveryAddress savedAddress = deliveryAddressRepository.save(deliveryAddress);
 
         return toResponse(savedAddress);
     }
