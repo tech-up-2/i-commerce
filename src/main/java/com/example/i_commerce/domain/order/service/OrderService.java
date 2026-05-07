@@ -14,6 +14,7 @@ import com.example.i_commerce.domain.order.exception.OrderErrorCode;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
+import com.example.i_commerce.domain.order.service.dto.CreateOrderResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderItemDto;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +40,8 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher publisher;
 
-    public ApiResponse<Void> createOrder(CreateOrderRequest dto) {
+    @Transactional
+    public ApiResponse<CreateOrderResponse> createOrder(CreateOrderRequest dto) {
 
         // 주문 생성
         Member member = memberRepository.findById(dto.memberId())
@@ -76,16 +79,22 @@ public class OrderService {
                 .findFirst()
                 .orElseThrow(() -> new AppException(MemberErrorCode.DEFAULT_ADDRESS_NOT_FOUND));
 
-        Order order = orderRepository.save(Order.builder()
+        Order order = Order.builder()
                 .userId(member.getId())
                 .orderStatus(OrderStatus.PENDING)
                 .orderProducts(orderProducts)
                 .totalProductAmount(totalPrice) // 총 금액
                 .totalPayAmount(totalPrice) // 실제 결제 금액
+                .receiverName(deliveryAddress.getRecipientName())
+                .receiverPhone(deliveryAddress.getRecipientPhone())
                 .zipCode(deliveryAddress.getZipCode())
                 .address(deliveryAddress.getRoadAddress())
                 .addressDetail(deliveryAddress.getDetailAddress())
-                .build());
+                .build();
+
+        orderProducts.forEach(orderProduct -> orderProduct.setOrder(order));
+
+        orderRepository.save(order);
 
         Payment payment = paymentRepository.save(Payment.builder()
                 .order(order)
@@ -96,7 +105,9 @@ public class OrderService {
        //TODO : 재고 차감
         publisher.publishEvent(new OrderCreatedEvent(order.getId(), payment.getId(), member.getId(), totalPrice));
 
-        return ApiResponse.success();
+        String firstProductName = order.getOrderProducts().getFirst().getProductName();
+
+        return ApiResponse.success(CreateOrderResponse.of(order, payment, firstProductName));
 
     }
 

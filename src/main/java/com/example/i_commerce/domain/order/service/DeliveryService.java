@@ -17,6 +17,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,9 +28,10 @@ public class DeliveryService {
     private final DeliveryRepository deliveryRepository;
     private final ProductItemRepository productItemRepository;
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createDelivery(PaymentCompletedEvent event) {
 
-        Order order = orderRepository.findById(event.orderId()).orElseThrow(() -> new AppException(OrderErrorCode.ORDER_TEMP_ERROR));
+        Order order = orderRepository.findById(event.payment().getOrder().getId()).orElseThrow(() -> new AppException(OrderErrorCode.ORDER_TEMP_ERROR));
 
         List<Long> productIds = order.getOrderProducts().stream()
                 .map(OrderProduct::getProductSkuId).toList();
@@ -41,16 +44,17 @@ public class DeliveryService {
 
         itemsBySeller.forEach((storeId, items) -> {
             String groupId = UUID.randomUUID().toString();
-            List<Delivery> deliveries = items.stream().map(item -> {
-                return Delivery.builder()
+
+            items.forEach(item -> {
+                Delivery delivery = deliveryRepository.save(Delivery.builder()
                         .order(item.getOrder())
                         .deliveryGroupId(groupId)
                         .storeId(storeId) // 조회한 판매자 ID 할당
                         .deliveryStatus(DeliveryStatus.PREPARING)
-                        .build();
-            }).toList();
+                        .build());
 
-            deliveryRepository.saveAll(deliveries);
+                item.setDelivery(delivery);
+            });
         });
 
     }
