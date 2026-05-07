@@ -110,10 +110,4 @@ public class OrderService {
         return ApiResponse.success(CreateOrderResponse.of(order, payment, firstProductName));
 
     }
-
-    public void updateOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(OrderErrorCode.ORDER_TEMP_ERROR));
-
-        order.changeOrderStatus(OrderStatus.CONFIRMED);
-    }
 }

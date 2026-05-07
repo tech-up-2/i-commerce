@@ -35,7 +35,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher publisher;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     @Value("${toss.secretKey}")
     private String SECRET_KEY;
@@ -66,6 +66,10 @@ public class PaymentService {
         Long paymentId = Long.valueOf(dto.orderId().split("_")[1]);
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+
+        if(payment.getPayStatus() != PaymentStatus.READY) {
+            throw new AppException(PaymentErrorCode.INVALID_PAYMENT_STATUS);
+        }
 
         if (!payment.getAmount().equals(dto.amount())) {
             throw new AppException(PaymentErrorCode.INVALID_PAYMENT_AMOUNT);
@@ -107,6 +111,7 @@ public class PaymentService {
                         response.getBody().toString()));
             }
         } catch (Exception e) {
+            // TODO: 외부 API가 응답하지 않거나, 응답이 예상과 다를 때의 예외 처리 로직 보완
             log.info("something wrong");
             payment.changePayStatus(PaymentStatus.FAILED);
             throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
