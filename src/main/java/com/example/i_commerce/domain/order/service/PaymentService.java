@@ -112,7 +112,7 @@ public class PaymentService {
             // TODO: 외부 API가 응답하지 않거나, 응답이 예상과 다를 때의 예외 처리 로직 보완
             log.info("something wrong");
             payment.changePayStatus(PaymentStatus.FAILED);
-//            throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
+            throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
         }
     }
 

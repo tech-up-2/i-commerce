@@ -2,17 +2,15 @@ package com.example.i_commerce.domain.order.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.then;
 
-import com.example.i_commerce.domain.member.entity.DeliveryAddress;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
-import com.example.i_commerce.domain.order.event.dto.OrderCreatedEvent;
+import com.example.i_commerce.domain.member.service.MemberService;
+import com.example.i_commerce.domain.member.service.dto.MemberOrderInfo;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
@@ -27,6 +25,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -48,20 +47,20 @@ class OrderServiceTest {
     PaymentRepository paymentRepository;
 
     @Mock
-    ApplicationEventPublisher publisher;
+    MemberService memberService;
 
     @InjectMocks
     OrderService orderService;
 
-    private Member createMockMember() {
-        Member member = mock(Member.class);
-        DeliveryAddress address = mock(DeliveryAddress.class);
-        given(address.getIsDefault()).willReturn(true);
-        given(address.getZipCode()).willReturn(OrderFixture.ZIP_CODE);
-        given(address.getRoadAddress()).willReturn(OrderFixture.ADDRESS);
-        given(address.getDetailAddress()).willReturn(OrderFixture.DETAIL_ADDRESS);
-        given(member.getDeliveryAddresses()).willReturn(List.of(address));
-        return member;
+    private MemberOrderInfo createMockMemberOrderInfo() {
+        MemberOrderInfo info = mock(MemberOrderInfo.class);
+
+        given(info.id()).willReturn(OrderFixture.MEMBER_ID);
+//        given(info.email()).willReturn("test1@naver.com");
+        given(info.name()).willReturn("홍길동");
+        given(info.phoneNumber()).willReturn("010-1234-1234");
+
+        return info;
     }
 
     private ProductItem createMockProductItem(Long id, int price, String name) {
@@ -77,17 +76,17 @@ class OrderServiceTest {
     @Test
     @DisplayName("성공: 다중 상품 주문 시 총액이 정확히 계산되고 저장된다")
     void createOrder_success_multipleItems() {
+        MemberOrderInfo memberOrderInfo = createMockMemberOrderInfo();
+
         OrderItemDto item1Dto = OrderFixture.createItemDto(100L, 2);
         OrderItemDto item2Dto = OrderFixture.createItemDto(200L, 3);
         CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, item1Dto, item2Dto);
 
-        Member member = createMockMember();
-
         ProductItem p1 = createMockProductItem(100L, 10000, "상품1");
         ProductItem p2 = createMockProductItem(200L, 5000, "상품2");
 
-        given(memberRepository.findById(OrderFixture.MEMBER_ID))
-                .willReturn(Optional.of(member));
+        given(memberService.getMemberOrderInfo(OrderFixture.MEMBER_ID)).willReturn(memberOrderInfo);
+
         given(productItemRepository.findAllById(anyList()))
                 .willReturn(List.of(p1, p2));
 
@@ -102,11 +101,10 @@ class OrderServiceTest {
 
         then(orderRepository).should().save(argThat(order ->
                 order.getTotalProductAmount() == 35000 &&
-                        order.getZipCode().equals(OrderFixture.ZIP_CODE) &&
+//                        order.getZipCode().equals(OrderFixture.ZIP_CODE) &&
                         order.getOrderProducts().size() == 2
         ));
 
-        then(publisher).should().publishEvent(any(OrderCreatedEvent.class));
     }
 
     @Test
@@ -114,7 +112,7 @@ class OrderServiceTest {
     void createOrder_fail_itemNotFound() {
         CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, OrderFixture.createItemDto(999L, 1));
 
-        given(memberRepository.findById(OrderFixture.MEMBER_ID)).willReturn(Optional.of(mock(Member.class)));
+        given(memberService.getMemberOrderInfo(OrderFixture.MEMBER_ID)).willReturn(Optional.of(mock(MemberOrderInfo.class)).orElseThrow());
         given(productItemRepository.findAllById(anyList())).willReturn(List.of());
 
         AppException exception = assertThrows(AppException.class, () -> orderService.createOrder(dto));

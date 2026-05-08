@@ -1,16 +1,12 @@
 package com.example.i_commerce.domain.order.service;
 
-import com.example.i_commerce.domain.member.entity.DeliveryAddress;
-import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.exception.MemberErrorCode;
-import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.service.MemberService;
+import com.example.i_commerce.domain.member.service.dto.MemberOrderInfo;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
-import com.example.i_commerce.domain.order.event.dto.OrderCreatedEvent;
-import com.example.i_commerce.domain.order.exception.OrderErrorCode;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
@@ -34,9 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class OrderService {
 
+    private final MemberService memberService;
     private final OrderRepository orderRepository;
     private final ProductItemRepository productItemRepository;
-    private final MemberRepository memberRepository;
     private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher publisher;
 
@@ -44,8 +40,7 @@ public class OrderService {
     public ApiResponse<CreateOrderResponse> createOrder(CreateOrderRequest dto) {
 
         // 주문 생성
-        Member member = memberRepository.findById(dto.memberId())
-                .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        MemberOrderInfo memberInfo = memberService.getMemberOrderInfo(dto.memberId());
 
         List<Long> ids = dto.items().stream().map(OrderItemDto::productId).toList();
         List<ProductItem> productItems = productItemRepository.findAllById(ids);
@@ -74,22 +69,18 @@ public class OrderService {
                 .mapToInt(op -> op.getOrderPrice() * op.getCount())
                 .sum();
 
-        DeliveryAddress deliveryAddress = member.getDeliveryAddresses().stream()
-                .filter(DeliveryAddress::getIsDefault)
-                .findFirst()
-                .orElseThrow(() -> new AppException(MemberErrorCode.DEFAULT_ADDRESS_NOT_FOUND));
-
+        String cleanedNumber = memberInfo.phoneNumber().replaceAll("[^0-9]", "");
         Order order = Order.builder()
-                .userId(member.getId())
+                .userId(memberInfo.id())
                 .orderStatus(OrderStatus.PENDING)
                 .orderProducts(orderProducts)
                 .totalProductAmount(totalPrice) // 총 금액
                 .totalPayAmount(totalPrice) // 실제 결제 금액
-                .receiverName(deliveryAddress.getRecipientName())
-                .receiverPhone(deliveryAddress.getRecipientPhone())
-                .zipCode(deliveryAddress.getZipCode())
-                .address(deliveryAddress.getRoadAddress())
-                .addressDetail(deliveryAddress.getDetailAddress())
+                .receiverName(memberInfo.name())
+                .receiverPhone(cleanedNumber)
+//                .zipCode(memberInfo.zipCode())
+//                .address(memberInfo.address())
+//                .addressDetail(memberInfo.addressDetail())
                 .build();
 
         orderProducts.forEach(orderProduct -> orderProduct.assignOrder(order));
@@ -103,8 +94,6 @@ public class OrderService {
                 .build());
 
        //TODO : 재고 차감
-        publisher.publishEvent(new OrderCreatedEvent(order.getId(), payment.getId(), member.getId(), totalPrice));
-
         String firstProductName = order.getOrderProducts().getFirst().getProductName();
 
         return ApiResponse.success(CreateOrderResponse.of(order, payment, firstProductName));
