@@ -50,7 +50,7 @@ public class OrderProduct extends BaseEntity {
 
     public void assignOrder(Order order) {
         if (order == null) {
-            throw new IllegalArgumentException("배송 정보는 필수입니다.");
+            throw new IllegalArgumentException("주문 정보는 필수입니다.");
         }
         this.order = order;
     }

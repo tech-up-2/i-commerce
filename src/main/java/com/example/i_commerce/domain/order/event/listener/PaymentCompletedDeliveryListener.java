@@ -17,7 +17,7 @@ public class PaymentCompletedDeliveryListener {
     private final DeliveryService deliveryService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void updateOrderStatus(PaymentCompletedEvent event) {
+    public void createDelivery(PaymentCompletedEvent event) {
         deliveryService.createDelivery(event);
     }
 }
