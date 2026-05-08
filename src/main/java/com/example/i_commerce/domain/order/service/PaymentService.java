@@ -2,7 +2,6 @@ package com.example.i_commerce.domain.order.service;
 
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
-import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.event.dto.PaymentCompletedEvent;
@@ -63,7 +62,7 @@ public class PaymentService {
 
     @Transactional
     public void confirmPayment(PaymentConfirmRequest dto) {
-        Long paymentId = Long.valueOf(dto.orderId().split("_")[1]);
+        Long paymentId = Long.valueOf(dto.tossOrderId().split("_")[1]);
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
@@ -80,7 +79,7 @@ public class PaymentService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("orderId", dto.orderId());
+        params.put("orderId", dto.tossOrderId());
         params.put("amount", dto.amount());
         params.put("paymentKey", dto.paymentKey());
 
@@ -100,7 +99,6 @@ public class PaymentService {
 
                 payment.completePayment(pgTid);
                 payment.getOrder().changeOrderStatus(OrderStatus.CONFIRMED);
-                payment.getOrder().getDeliveries().forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.PREPARING));
 
                 publisher.publishEvent(new PaymentCompletedEvent(
                         payment,
@@ -114,7 +112,7 @@ public class PaymentService {
             // TODO: 외부 API가 응답하지 않거나, 응답이 예상과 다를 때의 예외 처리 로직 보완
             log.info("something wrong");
             payment.changePayStatus(PaymentStatus.FAILED);
-            throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
+//            throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
         }
     }
 
