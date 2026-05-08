@@ -6,9 +6,8 @@ import lombok.Builder;
 
 @Builder
 public record PaymentDetailResponse(
-        String orderId,
+        String tossOrderId,
         String customerKey,
-//        Long paymentId,
         Integer amount,
         String orderName,
         String customerName,
@@ -19,9 +18,8 @@ public record PaymentDetailResponse(
 ) {
     public static PaymentDetailResponse of(Payment payment, Order order, String firstProductName) {
         return PaymentDetailResponse.builder()
-                .orderId("PAYMENT_" + order.getId() + "_" +System.currentTimeMillis())
+                .tossOrderId("PAYMENT_" + payment.getId() + "_" +System.currentTimeMillis())
                 .customerKey("USER_ID_" + order.getUserId())
-//                .paymentId(payment.getId())
                 .amount(order.getTotalPayAmount())
                 .orderName(firstProductName + "항목 외 " + (order.getOrderProducts().size() - 1) + "건")
                 .customerName(order.getReceiverName())

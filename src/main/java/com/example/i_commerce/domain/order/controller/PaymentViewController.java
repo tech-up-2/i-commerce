@@ -1,13 +1,7 @@
 package com.example.i_commerce.domain.order.controller;
 
-import com.example.i_commerce.domain.order.entity.Payment;
-import com.example.i_commerce.domain.order.exception.OrderErrorCode;
-import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
-import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.PaymentService;
 import com.example.i_commerce.domain.order.service.dto.PaymentDetailResponse;
-import com.example.i_commerce.global.exception.AppException;
-import com.example.i_commerce.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,7 +21,7 @@ public class PaymentViewController {
 
         PaymentDetailResponse info = paymentService.getPaymentDetails(paymentId);
 
-        model.addAttribute("orderId", info.orderId());
+        model.addAttribute("orderId", info.tossOrderId());
         model.addAttribute("customerKey", info.customerKey());
         model.addAttribute("amount", info.amount());
         model.addAttribute("orderName", info.orderName());
