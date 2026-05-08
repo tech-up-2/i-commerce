@@ -10,8 +10,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ChatStatusRepository extends JpaRepository<MessageReadStatus, Long> {
- List<MessageReadStatus> findByChatRoomAndMember(ChatRoom chatRoom, Member member);
- List<MessageReadStatus> findByChatRoomAndMemberAndIsReadFalse(ChatRoom chatRoom, Member member);
- Long countByChatRoomAndMemberAndIsReadFalse(ChatRoom chatRoom, Member member);
+ List<MessageReadStatus> findByChatRoomAndMemberId(ChatRoom chatRoom, Long memberId);
+ List<MessageReadStatus> findByChatRoomAndMemberIdAndIsReadFalse(ChatRoom chatRoom, Long memberId);
+ Long countByChatRoomAndMemberIdAndIsReadFalse(ChatRoom chatRoom, Long memberId);
 
 }

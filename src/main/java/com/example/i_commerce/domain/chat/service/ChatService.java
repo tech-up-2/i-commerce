@@ -47,10 +47,10 @@ public class ChatService {
     private final DataEncryptor dataEncryptor;
 
 
-    public void addParticipantToRoom(ChatRoom chatRoom, Member member) {
+    public void addParticipantToRoom(ChatRoom chatRoom, Long memberId) {
         ChatParticipant chatParticipant = ChatParticipant.builder()
             .chatRoom(chatRoom)
-            .member(member)
+            .memberId(memberId)
             .build();
         chatParticipantRepository.save(chatParticipant);
     }
@@ -63,6 +63,9 @@ public class ChatService {
         Member otherMember = memberRepository.findById(otherMemberId)
             .orElseThrow(() -> new AppException(
                 MemberErrorCode.USER_NOT_FOUND));
+        if(member.getRole().equals(otherMember.getRole())){
+            throw new AppException(ChatErrorCode.CANNOT_CHAT_SAME_ROLE);
+        }
 //       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 에러코드를 return
 //       사용자 입장에서는 에러코드 보다는 참여하고있는 채팅 리다이렉션이 훨씬 편리할 것 같음.
         Optional<ChatRoom> chatRoom = chatParticipantRepository.findExistingPrivateRoom(
@@ -79,8 +82,8 @@ public class ChatService {
             .build();
         chatRoomRepository.save(newRoom);
 //        두 사람을 채팅방에 참여자로 새롭게 추가
-        addParticipantToRoom(newRoom, member);
-        addParticipantToRoom(newRoom, otherMember);
+        addParticipantToRoom(newRoom, member.getId());
+        addParticipantToRoom(newRoom, otherMember.getId());
 
         return ApiResponse.success(newRoom.getId());
     }
@@ -109,7 +112,7 @@ public class ChatService {
         chatRoomRepository.save(chatRoom);
 
 //      최초 생성자를 방에 참가시킨다.
-        addParticipantToRoom(chatRoom, member);
+        addParticipantToRoom(chatRoom, member.getId());
 
         return ApiResponse.success(chatRoom.getId());
     }
@@ -129,12 +132,12 @@ public class ChatService {
         //강퇴 여부 확인(미구현)
 
         //이미 참여하고 있는지 검증 및 멤버 추가
-        Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndMember(
-            chatRoom, member);
+        Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndMemberId(
+            chatRoom, member.getId());
         if (participant.isPresent()) {
             throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
         }
-        addParticipantToRoom(chatRoom, member);
+        addParticipantToRoom(chatRoom, member.getId());
         return ApiResponse.success();
     }
 
@@ -148,8 +151,8 @@ public class ChatService {
             throw new AppException(ChatErrorCode.ONLY_GROUP_CHAT_CAN_LEAVE);
         }
         //해당 사용자가 해당 채팅방에 참가하고 있는지 검증
-        ChatParticipant chatParticipant = chatParticipantRepository.findByChatRoomAndMember(
-                chatRoom, member)
+        ChatParticipant chatParticipant = chatParticipantRepository.findByChatRoomAndMemberId(
+                chatRoom, member.getId())
             .orElseThrow(() -> new AppException(ChatErrorCode.NOT_A_ROOM_MEMBER));
         //유저를 해당 채팅방에서 제거
         chatParticipantRepository.delete(chatParticipant);
@@ -170,10 +173,9 @@ public class ChatService {
     public Boolean isRoomParticipant(Long myId, Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        Member member = memberRepository.findById(myId)
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
-        return chatParticipantRepository.findByChatRoomAndMember(chatRoom, member).isPresent();
+
+        return chatParticipantRepository.findByChatRoomAndMemberId(chatRoom, myId).isPresent();
     }
 
     public ApiResponse<Void> messageRead(Long roomId) {
@@ -182,8 +184,8 @@ public class ChatService {
         Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 //      기존 강의에서는 읽은 채팅과 안읽은 채팅을 모두 불러왔지만 안읽은 채팅만 불러오는 것이 조회 측면에서 효율적임
-        List<MessageReadStatus> readStatuses = chatStatusRepository.findByChatRoomAndMemberAndIsReadFalse(
-            chatRoom, member);
+        List<MessageReadStatus> readStatuses = chatStatusRepository.findByChatRoomAndMemberIdAndIsReadFalse(
+            chatRoom, member.getId());
         for (MessageReadStatus r : readStatuses) {
             r.updateIsRead(true);
         }
@@ -193,13 +195,14 @@ public class ChatService {
     public ApiResponse<List<MyChatListResponse>> getMyChatList() {
         Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
-        List<ChatParticipant> participants = chatParticipantRepository.findAllByMember(member);
+        List<ChatParticipant> participants = chatParticipantRepository.findAllByMemberId(
+            member.getId());
         List<MyChatListResponse> myChatListResponses = new ArrayList<>();
         log.info("participants size: {}", participants.size());
         for (ChatParticipant p : participants) {
 //            find와 같이 JPA에는 count라는 네이밍 규칙이 존재 Long 형태로 반환해줌
-            Long count = chatStatusRepository.countByChatRoomAndMemberAndIsReadFalse(
-                p.getChatRoom(), member);
+            Long count = chatStatusRepository.countByChatRoomAndMemberIdAndIsReadFalse(
+                p.getChatRoom(), member.getId());
             MyChatListResponse responseDto = MyChatListResponse.builder()
                 .roomId(p.getChatRoom().getId())
                 .roomName(p.getChatRoom().getName())
@@ -219,7 +222,7 @@ public class ChatService {
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
         ChatMessage chatMessage = ChatMessage.builder()
             .chatRoom(chatRoom)
-            .member(member)
+            .memberId(member.getId())
             .content(chatMessageSendRequest.message())
             .build();
         chatMessageRepository.save(chatMessage);
@@ -232,7 +235,7 @@ public class ChatService {
         List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
         boolean check = false;
         for (ChatParticipant p : chatParticipants) {
-            if (p.getMember().equals(member)) {
+            if (p.getMemberId().equals(member.getId())) {
                 check = true;
             }
         }
@@ -245,7 +248,7 @@ public class ChatService {
             ChatMessageSendResponse messagesDto = ChatMessageSendResponse.builder()
                 .message(messages.getContent())
                 .messageId(messages.getId())
-                .senderId(messages.getMember().getId())
+                .senderId(messages.getMemberId())
                 .build();
             chatMessageSendResponses.add(messagesDto);
         }

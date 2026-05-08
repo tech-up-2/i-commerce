@@ -40,9 +40,8 @@ public class MessageReadStatus extends BaseEntity {
 //    @Column(nullable = false)
 //    private Long chatId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)// 부모는 FK로 member_id를 가져감
-    private Member member;
+    @Column(nullable = false)
+    private Long memberId;
 
 //    @Column(nullable = false)
 //    private Long chatRoomId;
