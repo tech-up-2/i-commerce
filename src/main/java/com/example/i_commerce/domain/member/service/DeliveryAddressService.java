@@ -105,7 +105,7 @@ public class DeliveryAddressService {
 
         boolean isDefault = Boolean.TRUE.equals(dto.isDefault());
 
-        if (isDefault) {
+        if (isDefault && !address.getIsDefault()) {
             deliveryAddressRepository.clearDefaultAddresses(memberId);
             address.changeDefault(true);
         }

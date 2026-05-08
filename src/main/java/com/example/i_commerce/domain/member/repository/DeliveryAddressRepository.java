@@ -30,11 +30,12 @@ public interface DeliveryAddressRepository extends JpaRepository<DeliveryAddress
         """)
     long countByMemberId(Long memberId);//최대 갯수를 제어하기 위해 필요
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Modifying(flushAutomatically = true)
     @Query("""
             update DeliveryAddress d
             set d.isDefault = false
             where d.memberId = :memberId
+              and d.id != :excludeAddressId
               and d.isDefault = true
               and d.deletedAt is null
         """)
