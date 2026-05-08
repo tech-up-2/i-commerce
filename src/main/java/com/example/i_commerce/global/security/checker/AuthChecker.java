@@ -22,6 +22,11 @@ public class AuthChecker {
             SecurityAuthority.STATUS_SUSPENDED);
     }
 
+    //정보수정
+    public boolean canUpdateMemberInfo() {
+        return isMember() && has(SecurityAuthority.STATUS_ACTIVE);
+    }
+
     // 장바구니
     public boolean canUseCart() {
         return isMember()
