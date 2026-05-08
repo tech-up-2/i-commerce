@@ -4,6 +4,13 @@ import com.example.i_commerce.domain.product.entity.Category;
 
 public class CategoryFixture {
 
+    public static Category.CategoryBuilder defaultCategory() {
+        return Category.builder()
+            .name("기본 카테고리")
+            .depth(0)
+            ;
+    }
+
     public static Category devicesCategory() {
         return Category.builder()
             .id(1L)
