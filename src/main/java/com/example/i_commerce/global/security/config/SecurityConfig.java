@@ -30,6 +30,12 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
 
+                //스웨거
+                .requestMatchers(
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**"
+                ).permitAll()
+
                 // 전체 공개 API
                 .requestMatchers(
                     "/api/v1/products/**",
