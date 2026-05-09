@@ -29,7 +29,7 @@ public class AdminService {
     @Transactional(readOnly = true)
     public AdminLoginResponse login(LoginRequest dto) {
         Admin admin = adminRepository.findByEmailHash(emailHashEncoder.encode(dto.email()))
-            .orElseThrow(() -> new AppException(MemberErrorCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(dto.password(), admin.getPassword())) {
             throw new AppException(MemberErrorCode.INVALID_PASSWORD);

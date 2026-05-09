@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public enum OptionType {
+public enum ProductOptionType {
 
     NONE(0, "옵션 없음"),
     SINGLE(1, "옵션 1개"),
@@ -13,5 +13,4 @@ public enum OptionType {
 
     private final int code;
     private final String description;
-
 }

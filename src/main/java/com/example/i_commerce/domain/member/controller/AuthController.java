@@ -16,25 +16,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/v1/auth" )
 public class AuthController {
 
     private final AuthService authService;
     private final MemberService memberService;
 
-    @PostMapping("/signup")
+    @PostMapping("/signup" )
     public ApiResponse<SignUpResponse> signUp(@RequestBody @Valid MemberSignUpRequest dto) {
         SignUpResponse response = authService.signUp(dto);
         return ApiResponse.success(response);
     }
 
-    @PostMapping("/login")
-    public ApiResponse<LoginResponse> signUp(@RequestBody @Valid LoginRequest dto) {
+    @PostMapping("/login" )
+    public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest dto) {
         LoginResponse response = authService.login(dto);
         return ApiResponse.success(response);
     }
 
-    @PostMapping("/logout")
+    @PostMapping("/logout" )
     public ApiResponse<Void> logout() {//나중에 redis를 붙이면 토큰을 blacklist로 전달해야함.
         return ApiResponse.success();
     }

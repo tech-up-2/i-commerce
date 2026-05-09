@@ -22,7 +22,7 @@ import com.example.i_commerce.domain.product.entity.Attribute;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.entity.OptionType;
+import com.example.i_commerce.domain.product.entity.ProductOptionType;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.domain.product.application.validator.ProductAttributeValidator;
@@ -94,7 +94,7 @@ public class ProductServiceTest {
             assertThat(response).isNotNull();
             assertThat(response.productId()).isEqualTo(savedProduct.getId());
 
-            assertThat(savedProduct.getOptionType()).isEqualTo(OptionType.NONE.getCode());
+            assertThat(savedProduct.getOptionType()).isEqualTo(ProductOptionType.NONE);
             assertThat(savedProduct.getOptions()).isEmpty();
 
             assertProductItems(savedProduct, request);
@@ -133,7 +133,7 @@ public class ProductServiceTest {
             assertThat(response.productId()).isEqualTo(savedProduct.getId());
 
             assertThat(savedProduct.getName()).isEqualTo(request.name());
-            assertThat(savedProduct.getOptionType()).isEqualTo(OptionType.SINGLE.getCode());
+            assertThat(savedProduct.getOptionType()).isEqualTo(ProductOptionType.SINGLE);
 
             assertThat(savedProduct.getOptions())
                 .allMatch(option -> option.getOptionOrder() == 1);
@@ -178,7 +178,7 @@ public class ProductServiceTest {
             assertThat(response.productId()).isEqualTo(savedProduct.getId());
 
             assertThat(savedProduct.getName()).isEqualTo(request.name());
-            assertThat(savedProduct.getOptionType()).isEqualTo(OptionType.DOUBLE.getCode());
+            assertThat(savedProduct.getOptionType()).isEqualTo(ProductOptionType.DOUBLE);
 
             assertProductItems(savedProduct, request);
 

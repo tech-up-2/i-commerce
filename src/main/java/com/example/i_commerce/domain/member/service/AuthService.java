@@ -65,7 +65,7 @@ public class AuthService {
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest dto) {
         Member member = memberRepository.findByEmailHash(emailHashEncoder.encode(dto.email()))
-            .orElseThrow(() -> new AppException(MemberErrorCode.MEMBER_NOT_FOUND));
+            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
             throw new AppException(MemberErrorCode.INVALID_PASSWORD);
