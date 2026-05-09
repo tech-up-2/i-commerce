@@ -63,8 +63,6 @@ jobs:
             --comment "Deploy Spring Boot App" \
             --region ap-northeast-2 \
             --parameters commands="[
-               \"aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin $ECR_REGISTRY\",
-               \"sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest\",
-               \"sudo docker stop i_commerce || true\",
-               \"sudo docker images\"
+               \"aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin $ECR_REGISTRY/$ECR_REPOSITORY\",
+               \"sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest\"
             ]"
