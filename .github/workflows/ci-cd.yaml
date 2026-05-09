@@ -53,9 +53,6 @@ jobs:
 
       # 5. EC2 배포 (SSM 방식 - SSH 접속 없음)
       - name: Deploy to EC2 via SSM
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
@@ -63,6 +60,7 @@ jobs:
             --comment "Deploy Spring Boot App" \
             --region ap-northeast-2 \
             --parameters commands="[
+               \"export PATH=\$PATH:/usr/local/bin\",
                \"aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}\",
                \"sudo docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest\"
             ]"
