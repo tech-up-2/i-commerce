@@ -9,7 +9,9 @@ import static org.mockito.BDDMockito.then;
 
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.service.DeliveryAddressService;
 import com.example.i_commerce.domain.member.service.MemberService;
+import com.example.i_commerce.domain.member.service.dto.DeliveryAddressSnapshot;
 import com.example.i_commerce.domain.member.service.dto.MemberOrderInfo;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
@@ -35,9 +37,6 @@ import org.springframework.context.ApplicationEventPublisher;
 class OrderServiceTest {
 
     @Mock
-    MemberRepository memberRepository;
-
-    @Mock
     ProductItemRepository productItemRepository;
 
     @Mock
@@ -49,6 +48,9 @@ class OrderServiceTest {
     @Mock
     MemberService memberService;
 
+    @Mock
+    DeliveryAddressService deliveryAddressService;
+
     @InjectMocks
     OrderService orderService;
 
@@ -56,9 +58,18 @@ class OrderServiceTest {
         MemberOrderInfo info = mock(MemberOrderInfo.class);
 
         given(info.id()).willReturn(OrderFixture.MEMBER_ID);
-//        given(info.email()).willReturn("test1@naver.com");
         given(info.name()).willReturn("홍길동");
         given(info.phoneNumber()).willReturn("010-1234-1234");
+
+        return info;
+    }
+
+    private DeliveryAddressSnapshot createMockDeliveryAddressSnapshot() {
+        DeliveryAddressSnapshot info = mock(DeliveryAddressSnapshot.class);
+
+        given(info.zipCode()).willReturn(OrderFixture.ZIP_CODE);
+        given(info.roadAddress()).willReturn(OrderFixture.ADDRESS);
+        given(info.detailAddress()).willReturn(OrderFixture.DETAIL_ADDRESS);
 
         return info;
     }
@@ -77,15 +88,18 @@ class OrderServiceTest {
     @DisplayName("성공: 다중 상품 주문 시 총액이 정확히 계산되고 저장된다")
     void createOrder_success_multipleItems() {
         MemberOrderInfo memberOrderInfo = createMockMemberOrderInfo();
+        DeliveryAddressSnapshot addressInfo = createMockDeliveryAddressSnapshot();
 
         OrderItemDto item1Dto = OrderFixture.createItemDto(100L, 2);
         OrderItemDto item2Dto = OrderFixture.createItemDto(200L, 3);
-        CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, item1Dto, item2Dto);
+        CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, OrderFixture.ADDRESS_ID, item1Dto, item2Dto);
 
         ProductItem p1 = createMockProductItem(100L, 10000, "상품1");
         ProductItem p2 = createMockProductItem(200L, 5000, "상품2");
 
         given(memberService.getMemberOrderInfo(OrderFixture.MEMBER_ID)).willReturn(memberOrderInfo);
+        given(deliveryAddressService.getAddressSnapshot(OrderFixture.ADDRESS_ID, OrderFixture.MEMBER_ID))
+                .willReturn(addressInfo);
 
         given(productItemRepository.findAllById(anyList()))
                 .willReturn(List.of(p1, p2));
@@ -110,7 +124,7 @@ class OrderServiceTest {
     @Test
     @DisplayName("실패: 상품 중 하나라도 존재하지 않으면 예외가 발생한다")
     void createOrder_fail_itemNotFound() {
-        CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, OrderFixture.createItemDto(999L, 1));
+        CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, OrderFixture.ADDRESS_ID, OrderFixture.createItemDto(999L, 1));
 
         given(memberService.getMemberOrderInfo(OrderFixture.MEMBER_ID)).willReturn(Optional.of(mock(MemberOrderInfo.class)).orElseThrow());
         given(productItemRepository.findAllById(anyList())).willReturn(List.of());
@@ -122,13 +136,14 @@ class OrderServiceTest {
 
     public static class OrderFixture {
         public static final Long MEMBER_ID = 1L;
+        public static final Long ADDRESS_ID = 1L;
         public static final String ZIP_CODE = "12345";
         public static final String ADDRESS = "서울시 강남구";
         public static final String DETAIL_ADDRESS = "101호";
 
         // 주문 요청 DTO 생성 헬퍼
-        public static CreateOrderRequest createOrderDto(Long userId, OrderItemDto... items) {
-            return new CreateOrderRequest(userId, List.of(items));
+        public static CreateOrderRequest createOrderDto(Long userId, Long addressId, OrderItemDto... items) {
+            return new CreateOrderRequest(userId, addressId, List.of(items));
         }
 
         // 개별 아이템 DTO 생성 헬퍼

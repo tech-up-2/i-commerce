@@ -1,6 +1,8 @@
 package com.example.i_commerce.domain.order.service;
 
+import com.example.i_commerce.domain.member.service.DeliveryAddressService;
 import com.example.i_commerce.domain.member.service.MemberService;
+import com.example.i_commerce.domain.member.service.dto.DeliveryAddressSnapshot;
 import com.example.i_commerce.domain.member.service.dto.MemberOrderInfo;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
@@ -22,7 +24,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,13 +35,13 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductItemRepository productItemRepository;
     private final PaymentRepository paymentRepository;
-    private final ApplicationEventPublisher publisher;
+    private final DeliveryAddressService deliveryAddressService;
 
     @Transactional
     public ApiResponse<CreateOrderResponse> createOrder(CreateOrderRequest dto) {
 
-        // 주문 생성
         MemberOrderInfo memberInfo = memberService.getMemberOrderInfo(dto.memberId());
+        DeliveryAddressSnapshot addressInfo = deliveryAddressService.getAddressSnapshot(dto.addressId(), dto.memberId());
 
         List<Long> ids = dto.items().stream().map(OrderItemDto::productId).toList();
         List<ProductItem> productItems = productItemRepository.findAllById(ids);
@@ -78,9 +79,9 @@ public class OrderService {
                 .totalPayAmount(totalPrice) // 실제 결제 금액
                 .receiverName(memberInfo.name())
                 .receiverPhone(cleanedNumber)
-//                .zipCode(memberInfo.zipCode())
-//                .address(memberInfo.address())
-//                .addressDetail(memberInfo.addressDetail())
+                .zipCode(addressInfo.zipCode())
+                .address(addressInfo.roadAddress())
+                .addressDetail(addressInfo.detailAddress())
                 .build();
 
         orderProducts.forEach(orderProduct -> orderProduct.assignOrder(order));
