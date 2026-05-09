@@ -65,6 +65,6 @@ jobs:
                \"sudo docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest\",
                \"docker stop i_commerce || true\",
                \"docker rm i_commerce || true\",
-               \"docker run -d -p 8080:8080 --name i_commerce -e SPRING_PROFILES_ACTIVE=prod -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest\",
+               \"docker run -d -p 8080:8080 --name i_commerce -e SPRING_PROFILES_ACTIVE=prod -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} -e TOSS_SECRET_KEY=${{ secrets.TOSS_SECRET_KEY }} ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest\",
                \"sudo docker image prune -af\"
             ]"
