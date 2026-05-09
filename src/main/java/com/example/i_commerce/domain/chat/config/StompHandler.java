@@ -3,10 +3,7 @@ package com.example.i_commerce.domain.chat.config;
 import com.example.i_commerce.domain.chat.service.ChatService;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
 import com.example.i_commerce.global.security.jwt.TokenPayload;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -22,8 +19,6 @@ import org.springframework.stereotype.Component;
 public class StompHandler implements ChannelInterceptor {
 
     private final JwtTokenUtil jwtTokenUtil;
-    @Value("${jwt.secretKey}")
-    private String secretKey;
     private final ChatService chatService;
 
     @Override
@@ -32,11 +27,11 @@ public class StompHandler implements ChannelInterceptor {
 
 //        시큐리티 완성시 주석해제 후 사용
         if(StompCommand.CONNECT == accessor.getCommand()){
-            System.out.println("connect요청시 토큰 유효성 검증");
+            log.info("connect요청시 토큰 유효성 검증");
             String bearerToken = accessor.getFirstNativeHeader("Authorization");
             String token = bearerToken.substring(7);
             jwtTokenUtil.parseToken(token);
-            System.out.println("토큰 검증 완료");
+            log.info("토큰 검증 완료");
         }
         if(StompCommand.SUBSCRIBE == accessor.getCommand()){
             log.info("subscribe 검증");
