@@ -51,20 +51,20 @@ public class Review extends BaseEntity {
 
     private Long reportCount;
 
-    private Long likeCount = 0L;
+    private Long likeCount;
 
     private Boolean isBest;
 
     private Boolean isUpdated;
 
-    private boolean isExcluded = false;
+    private boolean isExcluded;
 
     @Version
     private Long version;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private ReviewIsBestStatus status = ReviewIsBestStatus.NORMAL;
+    private ReviewIsBestStatus status;
 
     @Builder.Default
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
