@@ -1,12 +1,12 @@
 package com.example.i_commerce.domain.review.service.dto;
 
-import com.example.i_commerce.domain.review.entity.Review;
-import java.time.LocalDateTime;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+@Schema(name = "CreateReviewRequest", description = "리뷰 생성 요청")
 @Getter
 @AllArgsConstructor
 @Builder
