@@ -52,27 +52,15 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       # 5. EC2 배포 (SSM 방식 - SSH 접속 없음)
-#      - name: Deploy to EC2 via SSM
-#        run: |
-#          aws ssm send-command \
-#            --document-name "AWS-RunShellScript" \
-#            --instance-ids ${{ secrets.EC2_INSTANCE_IDS }} \
-#            --comment "Deploy Spring Boot App" \
-#            --region ap-northeast-2 \
-#            --parameters commands="[
-#               \"export PATH=\$PATH:/usr/local/bin\",
-#               \"aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}\",
-#               \"sudo docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest\"
-#            ]"
-
       - name: Deploy to EC2 via SSM
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --instance-ids ${{ secrets.EC2_INSTANCE_IDS }} \
+            --instance-ids ${{ secrets.EC2_INSTANCE_ID }} \
+            --comment "Deploy Spring Boot App" \
             --region ap-northeast-2 \
-            --parameters '{"commands":[
-              "sudo /usr/local/bin/aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}",
-              "sudo docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest",
-              "sudo docker images"
-            ]}'
+            --parameters commands="[
+               \"export PATH=\$PATH:/usr/local/bin\",
+               \"aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}\",
+               \"sudo docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest\"
+            ]"
