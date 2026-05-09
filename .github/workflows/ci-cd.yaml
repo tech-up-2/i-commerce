@@ -64,7 +64,7 @@ jobs:
             --region ap-northeast-2 \
             --parameters commands="[
                \"aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin $ECR_REGISTRY\",
-               \"sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest\",
+               \"sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:latest\"
 #               \"sudo docker stop i_commerce || true\",
 #               \"sudo docker rm i_commerce || true\",
 #               \"sudo docker run -d -p 8080:8080 --name i_commerce -e SPRING_PROFILES_ACTIVE=prod -e SPRING_DATASOURCE_URL='${{ secrets.DB_URL }}' -e SPRING_DATASOURCE_USERNAME='${{ secrets.DB_USERNAME }}' -e SPRING_DATASOURCE_PASSWORD='${{ secrets.DB_PASSWORD }}' $ECR_REGISTRY/$ECR_REPOSITORY:latest\",
