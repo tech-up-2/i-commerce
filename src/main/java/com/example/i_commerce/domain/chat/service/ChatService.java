@@ -23,6 +23,7 @@ import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
 
+import java.lang.classfile.instruction.SwitchCase;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -66,6 +67,7 @@ public class ChatService {
         if(member.getRole().equals(otherMember.getRole())){
             throw new AppException(ChatErrorCode.CANNOT_CHAT_SAME_ROLE);
         }
+
 //       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 에러코드를 return
 //       사용자 입장에서는 에러코드 보다는 참여하고있는 채팅 리다이렉션이 훨씬 편리할 것 같음.
         Optional<ChatRoom> chatRoom = chatParticipantRepository.findExistingPrivateRoom(
@@ -240,7 +242,7 @@ public class ChatService {
             }
         }
         if (!check) {
-            new AppException(ChatErrorCode.NOT_A_ROOM_MEMBER);
+            throw new AppException(ChatErrorCode.NOT_A_ROOM_MEMBER);
         }
         List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(chatRoom);
         List<ChatMessageSendResponse> chatMessageSendResponses = new ArrayList<>();
