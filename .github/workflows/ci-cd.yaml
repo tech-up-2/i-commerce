@@ -62,5 +62,9 @@ jobs:
             --parameters commands="[
                \"export PATH=\$PATH:/usr/local/bin\",
                \"aws ecr get-login-password --region ap-northeast-2 | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}\",
-               \"sudo docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest\"
+               \"sudo docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest\",
+               \"docker stop i_commerce || true\",
+               \"docker rm i_commerce || true\",
+               \"docker run -d -p 8080:8080 --name i_commerce -e SPRING_PROFILES_ACTIVE=prod -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest\",
+               \"sudo docker image prune -af\"
             ]"
