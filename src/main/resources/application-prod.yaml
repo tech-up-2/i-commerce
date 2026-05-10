@@ -28,6 +28,15 @@ spring:
     show-sql: true
     open-in-view: false
 
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      s3:
+        bucket: ${AWS_S3_BUCKET_NAME}
+      stack:
+        auto: false
+
 #임시적인 JWT 설정 추후 필수 삭제
 jwt:
   # chatserversecretaccesstokenchatserversecretaccesstokenchatserversecretaccesstoken
