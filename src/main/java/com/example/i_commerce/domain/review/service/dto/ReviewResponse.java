@@ -2,6 +2,7 @@ package com.example.i_commerce.domain.review.service.dto;
 
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -9,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+@Schema(name = "ReviewResponse", description = "리뷰 조회 응답")
 @Getter
 @AllArgsConstructor
 @Builder
@@ -34,8 +36,8 @@ public class ReviewResponse {
 
         List<String> extractedUrls = review.getImages() != null ?
             review.getImages().stream()
-                .map(ReviewImage::getImageUrl)
-                .toList()
+            .map(ReviewImage::getImageUrl)
+            .toList()
             : Collections.emptyList();
 
         return ReviewResponse.builder()

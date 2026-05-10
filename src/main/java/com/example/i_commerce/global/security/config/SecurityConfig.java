@@ -29,8 +29,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-
                 .requestMatchers("/style.css", "/static/**").permitAll()
+                //스웨거
+                .requestMatchers(
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**"
+                ).permitAll()
 
                 // 전체 공개 API
                 .requestMatchers(

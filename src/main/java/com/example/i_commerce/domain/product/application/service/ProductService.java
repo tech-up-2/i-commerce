@@ -53,7 +53,7 @@ public class ProductService {
             category,
             request.name(),
             request.description(),
-            request.optionType().getCode()
+            request.productOptionType()
         ));
 
         OptionValueMapper optionMapper = createProductOptions(product, request.options());

@@ -2,6 +2,8 @@ package com.example.i_commerce.domain.product.controller.request;
 
 
 import com.example.i_commerce.domain.product.entity.OptionType;
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.example.i_commerce.domain.product.entity.ProductOptionType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -11,6 +13,7 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.Builder;
 
+@Schema(name = "CreateProductRequest", description = "상품 생성 요청")
 @Builder
 public record CreateProductRequest(
     @NotNull
@@ -27,7 +30,7 @@ public record CreateProductRequest(
     Long categoryId,
 
     @NotNull(message = "옵션 타입은 필수입니다.")
-    OptionType optionType,
+    ProductOptionType productOptionType,
 
     @NotNull(message = "대표 이미지 URL은 필수입니다.")
     String mainImageUrl,
@@ -63,7 +66,9 @@ public record CreateProductRequest(
         @NotEmpty(message = "옵션 값은 1개 이상 필요합니다.")
         List<OptionValueRequest> values
 
-    ) {}
+    ) {
+
+    }
 
     @Builder
     public record OptionValueRequest(
@@ -74,7 +79,9 @@ public record CreateProductRequest(
         @Min(0)
         Integer displayOrder
 
-    ) {}
+    ) {
+
+    }
 
     @Builder
     public record ProductItemRequest(
@@ -100,6 +107,7 @@ public record CreateProductRequest(
         Boolean isDefault
 
     ) {
+
         public ProductItemRequest {
             isDefault = isDefault != null && isDefault;
         }
@@ -111,6 +119,8 @@ public record CreateProductRequest(
         String displayName,
         Integer displayOrder
 
-    ) {}
+    ) {
+
+    }
 
 }

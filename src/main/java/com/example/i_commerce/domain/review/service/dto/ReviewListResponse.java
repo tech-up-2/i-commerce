@@ -1,11 +1,12 @@
 package com.example.i_commerce.domain.review.service.dto;
 
 import com.example.i_commerce.domain.review.entity.Review;
-import java.util.List;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+@Schema(name = "ReviewListResponse", description = "리뷰 목록 조회 응답")
 @Getter
 @AllArgsConstructor
 @Builder
