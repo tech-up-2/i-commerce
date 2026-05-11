@@ -56,6 +56,10 @@ public class SecurityConfig {
                 // 리뷰 조회 공개
                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
 
+                // 채팅 관련 추가
+                .requestMatchers("/api/v1/chat/**").permitAll()
+                .requestMatchers("/connect/**").permitAll()
+
                 // 나머지는 기본적으로 인증 필요
                 .anyRequest().authenticated()
             )

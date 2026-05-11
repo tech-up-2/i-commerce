@@ -1,5 +1,9 @@
 package com.example.i_commerce.domain.order.service;
 
+import com.example.i_commerce.domain.member.entity.DeliveryAddress;
+import com.example.i_commerce.domain.member.entity.Member;
+import com.example.i_commerce.domain.member.exception.MemberErrorCode;
+import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.service.DeliveryAddressService;
 import com.example.i_commerce.domain.member.service.MemberService;
 import com.example.i_commerce.domain.member.service.dto.DeliveryAddressSnapshot;
