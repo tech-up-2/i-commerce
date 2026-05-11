@@ -39,7 +39,7 @@ public class CategoryService {
         List<CategoryTreeRow> rows =
             categoryRepository.findCategoryTreeById(id, DEFAULT_TREE_DEPTH);
 
-        if(rows == null || rows.isEmpty()) {
+        if (rows.isEmpty()) {
             throw new AppException(ProductErrorCode.CATEGORY_NOT_FOUND);
         }
 
