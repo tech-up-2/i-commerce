@@ -1,6 +1,10 @@
 package com.example.i_commerce.domain.review.entity;
 
+import com.example.i_commerce.domain.review.entity.enums.ReportProcessStatus;
+import com.example.i_commerce.domain.review.entity.enums.ReportType;
 import com.example.i_commerce.domain.review.entity.enums.ReviewReportStatus;
+import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -37,11 +41,11 @@ public class ReviewReport {
     @Column(nullable = false, length = 50)
     private Long reporterId;
 
-    @Column(nullable = false)
     private Long adminId;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private String reportType;
+    private ReportType reportType;
 
     @Column(columnDefinition = "TEXT")
     private String reportReason;
@@ -49,4 +53,32 @@ public class ReviewReport {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private ReviewReportStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private ReportProcessStatus processStatus = ReportProcessStatus.PENDING;
+
+
+    public void complete() {
+        if (this.processStatus == ReportProcessStatus.COMPLETED) {
+            return;
+        }
+        this.processStatus = ReportProcessStatus.COMPLETED;
+    }
+
+    public void reject() {
+        this.processStatus = ReportProcessStatus.REJECTED;
+    }
+
+    public void assignAdmin(Long adminId) {
+        if (adminId == null) {
+            throw new AppException(ReviewErrorCode.ADMIN_ID_REQUIRED);
+        }
+
+        if (this.adminId != null && !this.adminId.equals(adminId)) {
+            throw new AppException(ReviewErrorCode.ALREADY_ASSIGNED_ADMIN);
+        }
+
+        this.adminId = adminId;
+    }
 }
