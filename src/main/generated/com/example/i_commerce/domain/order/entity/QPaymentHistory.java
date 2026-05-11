@@ -33,7 +33,7 @@ public class QPaymentHistory extends EntityPathBase<PaymentHistory> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
-    public final StringPath currentStatus = createString("currentStatus");
+    public final EnumPath<com.example.i_commerce.domain.order.entity.emuns.PaymentStatus> currentStatus = createEnum("currentStatus", com.example.i_commerce.domain.order.entity.emuns.PaymentStatus.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> deletedAt = _super.deletedAt;
@@ -42,7 +42,11 @@ public class QPaymentHistory extends EntityPathBase<PaymentHistory> {
 
     public final QPayment payment;
 
-    public final StringPath previousStatus = createString("previousStatus");
+    public final StringPath pgTid = createString("pgTid");
+
+    public final EnumPath<com.example.i_commerce.domain.order.entity.emuns.PaymentStatus> previousStatus = createEnum("previousStatus", com.example.i_commerce.domain.order.entity.emuns.PaymentStatus.class);
+
+    public final StringPath rawData = createString("rawData");
 
     public final StringPath reason = createString("reason");
 
