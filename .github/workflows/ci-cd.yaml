@@ -2,7 +2,7 @@ name: CI-CD
 
 on:
   push:
-    branches: [ "feature/43-aws-setting" ]
+    branches: [ "main" ]
 
 jobs:
   deploy:
