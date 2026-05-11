@@ -1,6 +1,8 @@
 package com.example.i_commerce.domain.chat.config;
 
+import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
 import com.example.i_commerce.domain.chat.service.ChatService;
+import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
 import com.example.i_commerce.global.security.jwt.TokenPayload;
 import lombok.RequiredArgsConstructor;
@@ -25,26 +27,31 @@ public class StompHandler implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         final StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-//        시큐리티 완성시 주석해제 후 사용
+
         if(StompCommand.CONNECT == accessor.getCommand()){
             log.info("connect요청시 토큰 유효성 검증");
-            String bearerToken = accessor.getFirstNativeHeader("Authorization");
-            String token = bearerToken.substring(7);
+            String token = getValidToken(accessor);
             jwtTokenUtil.parseToken(token);
             log.info("토큰 검증 완료");
         }
         if(StompCommand.SUBSCRIBE == accessor.getCommand()){
             log.info("subscribe 검증");
-            String bearerToken = accessor.getFirstNativeHeader("Authorization");
-            String token = bearerToken.substring(7);
+            String token = getValidToken(accessor);
             TokenPayload payload = jwtTokenUtil.parseToken(token);
             Long memberId = payload.accountId();
             String roomId = accessor.getDestination().split("/")[2];
             if(!chatService.isRoomParticipant(memberId, Long.parseLong(roomId))){
-                throw new AuthenticationServiceException("해당 room에 권한이 없습니다.");
+                throw new AppException(ChatErrorCode.NOT_A_ROOM_MEMBER);
             }
         }
         return message;
+    }
+    private String getValidToken(StompHeaderAccessor accessor){
+        String bearerToken = accessor.getFirstNativeHeader("Authorization");
+        if(bearerToken == null || !bearerToken.startsWith("Bearer ")){
+            throw new AppException(ChatErrorCode.INVALID_STOMP_TOKEN_HEADER);
+        }
+        return bearerToken.substring(7);
     }
 
 }
