@@ -18,31 +18,31 @@ public class CategoryMapper {
             return Collections.emptyList();
         }
 
-        Map<Long, List<CategoryTreeRow>> childrenByParentId = rows.stream()
-            .filter(row -> row.getParentId() != null)
-            .collect(Collectors.groupingBy(
-                CategoryTreeRow::getParentId,
-                LinkedHashMap::new,
-                Collectors.toList()
-            ));
+        Map<Long, List<CategoryTreeRow>> childrenMap = groupByParentId(rows);
 
         return rows.stream()
             .filter(row -> row.getParentId() == null)
-            .map(root -> buildNode(root, childrenByParentId))
+            .map(root -> buildNode(root, childrenMap))
             .toList();
     }
 
     public CategoryResponse toTree(List<CategoryTreeRow> rows) {
 
-        Map<Long, List<CategoryTreeRow>> childrenByParentId = rows.stream()
+        Map<Long, List<CategoryTreeRow>> childrenMap = groupByParentId(rows);
+
+        return buildNode(rows.getFirst(), childrenMap);
+    }
+
+    private Map<Long, List<CategoryTreeRow>> groupByParentId(
+        List<CategoryTreeRow> rows
+    ) {
+        return rows.stream()
             .filter(row -> row.getParentId() != null)
             .collect(Collectors.groupingBy(
                 CategoryTreeRow::getParentId,
                 LinkedHashMap::new,
                 Collectors.toList()
             ));
-
-        return buildNode(rows.getFirst(), childrenByParentId);
     }
 
     private CategoryResponse buildNode(
