@@ -25,7 +25,6 @@ public class ProductSearchService {
     private final ProductSearchRepositoryCustom productSearchRepository;
     private final CategoryRepository categoryRepository;
 
-    private static final int KEYWORD_MIN_LENGTH = 2;
     private static final int GUEST_MAX_PAGE = 0;
 
     public Slice<ProductItemSearchResponse> search(
@@ -34,13 +33,17 @@ public class ProductSearchService {
         boolean isAuthenticated
     ) {
 
-        String keyword = trimKeyword(request.keyword());
+        if (!isAuthenticated && pageable.getPageNumber() > GUEST_MAX_PAGE) {
+            throw new AppException(ProductErrorCode.GUEST_PAGE_LIMIT_EXCEEDED);
+        }
 
-        validateKeyword(keyword);
+        String keyword = StringUtils.hasText(request.keyword())
+            ? request.keyword().trim()
+            : null;
 
-        validatePageAccess(isAuthenticated, pageable);
-
-        List<Long> categoryIds = findCategoryIds(request.categoryId());
+        List<Long> categoryIds = (request.categoryId() == null)
+            ? List.of()
+            : categoryRepository.findAllDescendantIds(request.categoryId());
 
         ProductSortType sortType = resolveSortType(request.sortType(), keyword);
 
@@ -55,33 +58,6 @@ public class ProductSearchService {
             .build();
 
         return productSearchRepository.search(query, pageable);
-    }
-
-    private String trimKeyword(String keyword) {
-        if (!StringUtils.hasText(keyword)) {
-            return null;
-        }
-        String trimmed = keyword.trim();
-        return trimmed.isEmpty() ? null : trimmed;
-    }
-
-    private void validateKeyword(String keyword) {
-        if (keyword != null && keyword.length() < KEYWORD_MIN_LENGTH) {
-            throw new AppException(ProductErrorCode.SEARCH_KEYWORD_TOO_SHORT);
-        }
-    }
-
-    private void validatePageAccess(boolean isAuthenticated, Pageable pageable) {
-        if (!isAuthenticated && pageable.getPageNumber() > GUEST_MAX_PAGE) {
-            throw new AppException(ProductErrorCode.GUEST_PAGE_LIMIT_EXCEEDED);
-        }
-    }
-
-    private List<Long> findCategoryIds(Long categoryId) {
-        if (categoryId == null) {
-            return List.of();
-        }
-        return categoryRepository.findAllDescendantIds(categoryId);
     }
 
     private ProductSortType resolveSortType(
@@ -100,6 +76,3 @@ public class ProductSearchService {
     }
 
 }
-
-
-
