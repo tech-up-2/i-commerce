@@ -69,7 +69,7 @@ public class DeliveryAddressService {
         boolean isDefault = addressCount == 0 || Boolean.TRUE.equals(dto.isDefault());
 
         if (isDefault) {
-            deliveryAddressRepository.clearDefaultAddresses(memberId);
+            clearDefaultAddresses(memberId);
         }
         //--------
 
@@ -106,7 +106,7 @@ public class DeliveryAddressService {
         boolean isDefault = Boolean.TRUE.equals(dto.isDefault());
 
         if (isDefault && !address.getIsDefault()) {
-            deliveryAddressRepository.clearDefaultAddressesExcept(memberId, addressId);
+            clearDefaultAddresses(memberId);
             address.changeDefault(true);
         }
 
@@ -137,8 +137,7 @@ public class DeliveryAddressService {
                 new AppException(MemberErrorCode.DELIVERY_ADDRESS_NOT_FOUND)
             );
 
-        deliveryAddressRepository.clearDefaultAddressesExcept(memberId, addressId);
-
+        clearDefaultAddresses(memberId);
         address.changeDefault(true);
     }
 
@@ -172,5 +171,18 @@ public class DeliveryAddressService {
             decryptNullable(address.getExtraAddress()),
             decryptNullable(address.getDeliveryMemo())
         );
+    }
+
+    private void clearDefaultAddresses(Long memberId) {
+
+        List<DeliveryAddress> addresses =
+            deliveryAddressRepository
+                .findByMemberIdOrderByIsDefaultDescCreatedAtDesc(memberId);
+
+        for (DeliveryAddress address : addresses) {
+            if (address.getIsDefault()) {
+                address.changeDefault(false);
+            }
+        }
     }
 }
