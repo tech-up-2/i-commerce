@@ -30,7 +30,17 @@ public interface DeliveryAddressRepository extends JpaRepository<DeliveryAddress
         """)
     long countByMemberId(Long memberId);//최대 갯수를 제어하기 위해 필요
 
-    @Modifying(flushAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update DeliveryAddress d
+            set d.isDefault = false
+            where d.memberId = :memberId
+              and d.isDefault = true
+              and d.deletedAt is null
+        """)
+    void clearDefaultAddresses(Long memberId); //기본 배송지를 1개로만 유지하기 위한 코드
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             update DeliveryAddress d
             set d.isDefault = false
@@ -39,7 +49,7 @@ public interface DeliveryAddressRepository extends JpaRepository<DeliveryAddress
               and d.isDefault = true
               and d.deletedAt is null
         """)
-    void clearDefaultAddresses(Long memberId); //기본 배송지를 1개로만 유지하기 위한 코드
+    void clearDefaultAddressesExcept(Long memberId, Long excludeAddressId);
 
     // 활성 배송지 단건 조회
     @Query("""

@@ -106,7 +106,7 @@ public class DeliveryAddressService {
         boolean isDefault = Boolean.TRUE.equals(dto.isDefault());
 
         if (isDefault && !address.getIsDefault()) {
-            deliveryAddressRepository.clearDefaultAddresses(memberId);
+            deliveryAddressRepository.clearDefaultAddressesExcept(memberId, addressId);
             address.changeDefault(true);
         }
 
@@ -137,7 +137,7 @@ public class DeliveryAddressService {
                 new AppException(MemberErrorCode.DELIVERY_ADDRESS_NOT_FOUND)
             );
 
-        deliveryAddressRepository.clearDefaultAddresses(memberId);
+        deliveryAddressRepository.clearDefaultAddressesExcept(memberId, addressId);
 
         address.changeDefault(true);
     }
