@@ -12,6 +12,8 @@ import com.example.i_commerce.domain.chat.repository.ChatStatusRepository;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendRequest;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
 import com.example.i_commerce.domain.chat.service.dto.MyChatListResponse;
+import com.example.i_commerce.domain.chat.util.ChatRoleChecker;
+import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
 import com.example.i_commerce.domain.chat.util.TempChatUtil;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
@@ -46,6 +48,8 @@ public class ChatService {
     private final MemberRepository memberRepository;
     private final ChatStatusRepository chatStatusRepository;
     private final DataEncryptor dataEncryptor;
+    private final ChatRoleChecker chatRoleChecker;
+    private final ChatRoomNameGenerator chatRoomNameGenerator;
 
 
     public void addParticipantToRoom(ChatRoom chatRoom, Long memberId) {
@@ -57,16 +61,14 @@ public class ChatService {
     }
 
     public ApiResponse<Long> getOrCreatePrivateRoom(Long otherMemberId) {
-// 1. 시큐리티 로직 완성 후 주석 해제
+
         Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
             .orElseThrow(() -> new AppException(
                 MemberErrorCode.USER_NOT_FOUND));
         Member otherMember = memberRepository.findById(otherMemberId)
             .orElseThrow(() -> new AppException(
                 MemberErrorCode.USER_NOT_FOUND));
-        if(member.getRole().equals(otherMember.getRole())){
-            throw new AppException(ChatErrorCode.CANNOT_CHAT_SAME_ROLE);
-        }
+        chatRoleChecker.roleCheck(member, otherMember);
 
 //       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 에러코드를 return
 //       사용자 입장에서는 에러코드 보다는 참여하고있는 채팅 리다이렉션이 훨씬 편리할 것 같음.
@@ -76,11 +78,10 @@ public class ChatService {
             throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
         }
 //      만약에 1:1 채팅방이 없을 경우 기존 채팅방 개설
-        String userName = dataEncryptor.decrypt(member.getName());
-        String otherUserName = dataEncryptor.decrypt(otherMember.getName());
+        String PrivateRoomName = chatRoomNameGenerator.getPrivateRoomName(member.getName(), otherMember.getName());
         ChatRoom newRoom = ChatRoom.builder()
             .isGroupChat(false)
-            .name(userName + "님이 요청한" + otherUserName + "님과의 채팅")
+            .name(PrivateRoomName)
             .build();
         chatRoomRepository.save(newRoom);
 //        두 사람을 채팅방에 참여자로 새롭게 추가
@@ -105,8 +106,9 @@ public class ChatService {
         }
 
 //      채팅방 생성
+        String ProductRoomName = chatRoomNameGenerator.getProductRoomName(product.getName());
         ChatRoom chatRoom = ChatRoom.builder()
-            .name(product.getName() + "상품 채팅방")
+            .name(ProductRoomName)
             .isGroupChat(true)
             .product(product)
             .build();
@@ -176,7 +178,6 @@ public class ChatService {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
 
-
         return chatParticipantRepository.findByChatRoomAndMemberId(chatRoom, myId).isPresent();
     }
 
@@ -217,7 +218,8 @@ public class ChatService {
         return ApiResponse.success(myChatListResponses);
     }
 
-    public ApiResponse<Void> saveMessage(Long roomId, ChatMessageSendRequest chatMessageSendRequest) {
+    public ApiResponse<Void> saveMessage(Long roomId,
+        ChatMessageSendRequest chatMessageSendRequest) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
         Member member = memberRepository.findById(chatMessageSendRequest.senderId())
@@ -232,8 +234,10 @@ public class ChatService {
     }
 
     public ApiResponse<List<ChatMessageSendResponse>> getChatHistory(Long roomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId()).orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+            .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
+        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
+            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
         List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
         boolean check = false;
         for (ChatParticipant p : chatParticipants) {
@@ -244,7 +248,8 @@ public class ChatService {
         if (!check) {
             throw new AppException(ChatErrorCode.NOT_A_ROOM_MEMBER);
         }
-        List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(chatRoom);
+        List<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(
+            chatRoom);
         List<ChatMessageSendResponse> chatMessageSendResponses = new ArrayList<>();
         for (ChatMessage messages : chatMessages) {
             ChatMessageSendResponse messagesDto = ChatMessageSendResponse.builder()

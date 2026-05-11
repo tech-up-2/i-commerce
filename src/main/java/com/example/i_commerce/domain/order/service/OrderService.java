@@ -4,6 +4,7 @@ import com.example.i_commerce.domain.member.entity.DeliveryAddress;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.Payment;
@@ -37,6 +38,7 @@ public class OrderService {
     private final MemberRepository memberRepository;
     private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher publisher;
+    private final DataEncryptor dataEncryptor;
 
     public ApiResponse<Void> createOrder(CreateOrderRequest dto) {
 
@@ -82,9 +84,9 @@ public class OrderService {
                 .orderProducts(orderProducts)
                 .totalProductAmount(totalPrice) // 총 금액
                 .totalPayAmount(totalPrice) // 실제 결제 금액
-                .zipCode(deliveryAddress.getZipCode())
-                .address(deliveryAddress.getRoadAddress())
-                .addressDetail(deliveryAddress.getDetailAddress())
+                .zipCode(dataEncryptor.decrypt(deliveryAddress.getZipCode()))
+                .address(dataEncryptor.decrypt(deliveryAddress.getRoadAddress()))
+                .addressDetail(dataEncryptor.decrypt(deliveryAddress.getDetailAddress()))
                 .build());
 
         Payment payment = paymentRepository.save(Payment.builder()

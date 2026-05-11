@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.product.controller.request;
 
 
-import com.example.i_commerce.domain.product.entity.OptionType;
+//import com.example.i_commerce.domain.product.entity.OptionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.example.i_commerce.domain.product.entity.ProductOptionType;
 import jakarta.validation.constraints.Max;
