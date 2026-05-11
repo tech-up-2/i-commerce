@@ -1,10 +1,11 @@
 package com.example.i_commerce.domain.chat.config;
 
+import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
 import com.example.i_commerce.domain.chat.service.ChatService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
+import com.example.i_commerce.global.security.jwt.TokenPayload;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -19,42 +20,38 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class StompHandler implements ChannelInterceptor {
 
-    @Value("${jwt.secretKey}")
-    private String secretKey;
+    private final JwtTokenUtil jwtTokenUtil;
     private final ChatService chatService;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         final StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
-//        시큐리티 완성시 주석해제 후 사용
-//        if(StompCommand.CONNECT == accessor.getCommand()){
-//            System.out.println("connect요청시 토큰 유효성 검증");
-//            String bearerToken = accessor.getFirstNativeHeader("Authorization");
-//            String token = bearerToken.substring(7);
-//            Jwts.parserBuilder()//payload qnqns
-//                .setSigningKey(secretKey)
-//                .build()
-//                .parseClaimsJws(token)
-//                .getBody();
-//            System.out.println("토큰 검증 완료");
-//        }
-//        if(StompCommand.SUBSCRIBE == accessor.getCommand()){
-//            log.info("subscribe 검증");
-//            String bearerToken = accessor.getFirstNativeHeader("Authorization");
-//            String token = bearerToken.substring(7);
-//            Claims claims = Jwts.parserBuilder()//payload qnqns
-//                .setSigningKey(secretKey)
-//                .build()
-//                .parseClaimsJws(token)
-//                .getBody();
-//            String email = claims.getSubject();
-//            String roomId = accessor.getDestination().split("/")[2];
-//            if(!chatService.isRoomParticipant(email, Long.parseLong(roomId))){
-//                throw new AuthenticationServiceException("해당 room에 권한이 없습니다.");
-//            }
-//        }
+
+        if(StompCommand.CONNECT == accessor.getCommand()){
+            log.info("connect요청시 토큰 유효성 검증");
+            String token = getValidToken(accessor);
+            jwtTokenUtil.parseToken(token);
+            log.info("토큰 검증 완료");
+        }
+        if(StompCommand.SUBSCRIBE == accessor.getCommand()){
+            log.info("subscribe 검증");
+            String token = getValidToken(accessor);
+            TokenPayload payload = jwtTokenUtil.parseToken(token);
+            Long memberId = payload.accountId();
+            String roomId = accessor.getDestination().split("/")[2];
+            if(!chatService.isRoomParticipant(memberId, Long.parseLong(roomId))){
+                throw new AppException(ChatErrorCode.NOT_A_ROOM_MEMBER);
+            }
+        }
         return message;
+    }
+    private String getValidToken(StompHeaderAccessor accessor){
+        String bearerToken = accessor.getFirstNativeHeader("Authorization");
+        if(bearerToken == null || !bearerToken.startsWith("Bearer ")){
+            throw new AppException(ChatErrorCode.INVALID_STOMP_TOKEN_HEADER);
+        }
+        return bearerToken.substring(7);
     }
 
 }
