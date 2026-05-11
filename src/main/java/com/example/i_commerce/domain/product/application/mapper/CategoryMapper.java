@@ -32,6 +32,19 @@ public class CategoryMapper {
             .toList();
     }
 
+    public CategoryResponse toTree(List<CategoryTreeRow> rows) {
+
+        Map<Long, List<CategoryTreeRow>> childrenByParentId = rows.stream()
+            .filter(row -> row.getParentId() != null)
+            .collect(Collectors.groupingBy(
+                CategoryTreeRow::getParentId,
+                LinkedHashMap::new,
+                Collectors.toList()
+            ));
+
+        return buildNode(rows.getFirst(), childrenByParentId);
+    }
+
     private CategoryResponse buildNode(
         CategoryTreeRow row,
         Map<Long, List<CategoryTreeRow>> childrenByParentId
