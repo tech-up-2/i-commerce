@@ -99,13 +99,15 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepositoryCusto
 
         BooleanExpression nameMatch = product.name.contains(keyword);
 
-        BooleanExpression attributeMatch = productItem.id.in(
-            JPAExpressions
-                .select(productAttribute.productItem.id)
-                .from(productAttribute)
-                .join(productAttribute.attribute, attribute)
-                .where(attribute.value.contains(keyword))
-        );
+        BooleanExpression attributeMatch = JPAExpressions
+            .selectOne()
+            .from(productAttribute)
+            .join(productAttribute.attribute, attribute)
+            .where(
+                productAttribute.productItem.id.eq(productItem.id),
+                attribute.value.contains(keyword)
+            )
+            .exists();
 
         return nameMatch.or(attributeMatch);
     }
