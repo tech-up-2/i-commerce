@@ -38,8 +38,9 @@ public interface DeliveryAddressRepository extends JpaRepository<DeliveryAddress
               and d.isDefault = true
               and d.deletedAt is null
         """)
-    void clearDefaultAddresses(Long memberId); //기본 배송지를 1개로만 유지하기 위한 코드
+    void clearDefaultAddresses(Long memberId);//계정의 모든 배송지의 기본 배송지여부를 false로 바꿈
 
+    //수정중인 배송지를 제외한 계정의 모든 배송지의 기본 배송지여부를 false로 바꿈
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             update DeliveryAddress d
