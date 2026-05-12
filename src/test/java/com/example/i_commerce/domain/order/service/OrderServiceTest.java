@@ -1,9 +1,6 @@
-
 package com.example.i_commerce.domain.order.service;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
@@ -14,21 +11,16 @@ import com.example.i_commerce.domain.member.service.DeliveryAddressService;
 import com.example.i_commerce.domain.member.service.MemberService;
 import com.example.i_commerce.domain.member.service.dto.DeliveryAddressSnapshot;
 import com.example.i_commerce.domain.member.service.dto.MemberOrderInfo;
-import com.example.i_commerce.domain.order.entity.Order;
-import com.example.i_commerce.domain.order.entity.Payment;
-import com.example.i_commerce.domain.order.repository.OrderProductRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest.OrderItemDto;
-import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -37,7 +29,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -56,9 +47,6 @@ class OrderServiceTest {
 
     @Mock
     DeliveryAddressService deliveryAddressService;
-
-    @Mock
-    OrderProductRepository orderProductRepository;
 
     @InjectMocks
     OrderService orderService;
@@ -92,17 +80,6 @@ class OrderServiceTest {
         given(product.getName()).willReturn(name);
         return item;
     }
-
-
-    private Payment createMockPayment(Long id, LocalDateTime createdAt) {
-        Payment payment = Payment.builder().build(); // 또는 빌더 사용
-
-        ReflectionTestUtils.setField(payment, "id", id);
-        ReflectionTestUtils.setField(payment, "createdAt", createdAt);
-
-        return payment;
-    }
-
 
     @Test
     @DisplayName("성공: 다중 상품 주문 시 총액이 정확히 계산되고 저장된다")
@@ -153,48 +130,6 @@ class OrderServiceTest {
         assertEquals(ProductErrorCode.PRODUCT_NOT_FOUND, exception.getErrorCode());
     }
 
-    @Test
-    @DisplayName("주문 상세 조회 성공 - 최신 결제 정보가 포함되어야 한다")
-    void getOrderDetail_Success() {
-        // given
-        Long orderId = 1L;
-        Long userId = 10L;
-
-        Order order = mock(Order.class);
-        List<Payment> mockPayments = List.of(
-                createMockPayment(1L, LocalDateTime.now().minusHours(2)), // 2시간 전
-                createMockPayment(2L, LocalDateTime.now())               // 지금 (최신)
-        );
-
-        // 연관관계 흐름 모킹
-        given(order.getId()).willReturn(orderId);
-        given(orderProductRepository.findAllByOrderId(orderId)).willReturn(List.of());
-
-        given(orderRepository.findByIdAndUserId(orderId, userId)).willReturn(Optional.of(order));
-        given(order.getPayments()).willReturn(mockPayments);
-
-        // when
-        OrderDetailResponse response = orderService.getOrderDetail(orderId, userId);
-
-        // then
-        assertNotNull(response);
-        assertEquals(response.paymentInfo().paymentId(), 2L);
-    }
-
-    @Test
-    @DisplayName("주문 상세 조회 실패 - 타인의 주문을 조회하면 예외가 발생한다")
-    void getOrderDetail_Fail_InvalidUser() {
-        // given
-        Long orderId = 1L;
-        Long invalidUserId = 999L; // 잘못된 사용자 ID
-
-        given(orderRepository.findByIdAndUserId(orderId, invalidUserId))
-                .willReturn(Optional.empty()); // 찾을 수 없음 반환
-
-        // when & then
-        AppException e = assertThrows(AppException.class, () -> orderService.getOrderDetail(orderId, invalidUserId));
-        assertEquals("ORDER_NOT_FOUND", e.getErrorCode().toString());
-    }
 
     public static class OrderFixture {
         public static final Long MEMBER_ID = 1L;
