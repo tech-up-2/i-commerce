@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.member.service;
+package com.example.i_commerce.domain.member.service.auth;
 
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.Seller;
@@ -6,10 +6,10 @@ import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.repository.SellerRepository;
-import com.example.i_commerce.domain.member.service.dto.LoginRequest;
-import com.example.i_commerce.domain.member.service.dto.LoginResponse;
-import com.example.i_commerce.domain.member.service.dto.MemberSignUpRequest;
-import com.example.i_commerce.domain.member.service.dto.SignUpResponse;
+import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.LoginResponse;
+import com.example.i_commerce.domain.member.service.auth.dto.SignUpResponse;
+import com.example.i_commerce.domain.member.service.member.dto.MemberSignUpRequest;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
 import com.example.i_commerce.global.exception.AppException;

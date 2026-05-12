@@ -1,8 +1,9 @@
 package com.example.i_commerce.domain.member.controller;
 
-import com.example.i_commerce.domain.member.service.DeliveryAddressService;
-import com.example.i_commerce.domain.member.service.dto.DeliveryAddressRequest;
-import com.example.i_commerce.domain.member.service.dto.DeliveryAddressResponse;
+import com.example.i_commerce.domain.member.service.delivery.DeliveryAddressService;
+import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressRequest;
+import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressResponse;
+import com.example.i_commerce.domain.member.service.delivery.dto.UpdateDeliveryAddressRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,7 +61,7 @@ public class DeliveryAddressController {
     @PreAuthorize("@authChecker.canUpdateMemberInfo()")
     public ApiResponse<DeliveryAddressResponse> updateAddress(
         @PathVariable Long addressId,
-        @RequestBody @Valid DeliveryAddressRequest dto,
+        @RequestBody UpdateDeliveryAddressRequest dto,
         @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
         DeliveryAddressResponse response =

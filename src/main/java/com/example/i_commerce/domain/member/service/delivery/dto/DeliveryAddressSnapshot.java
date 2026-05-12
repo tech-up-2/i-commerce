@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.member.service.dto;
+package com.example.i_commerce.domain.member.service.delivery.dto;
 
 //주문쪽으로 보낼 정보들
 public record DeliveryAddressSnapshot(

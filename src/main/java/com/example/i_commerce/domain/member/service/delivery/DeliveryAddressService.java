@@ -1,11 +1,12 @@
-package com.example.i_commerce.domain.member.service;
+package com.example.i_commerce.domain.member.service.delivery;
 
 import com.example.i_commerce.domain.member.entity.DeliveryAddress;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.DeliveryAddressRepository;
-import com.example.i_commerce.domain.member.service.dto.DeliveryAddressRequest;
-import com.example.i_commerce.domain.member.service.dto.DeliveryAddressResponse;
-import com.example.i_commerce.domain.member.service.dto.DeliveryAddressSnapshot;
+import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressRequest;
+import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressResponse;
+import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressSnapshot;
+import com.example.i_commerce.domain.member.service.delivery.dto.UpdateDeliveryAddressRequest;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
@@ -96,7 +97,7 @@ public class DeliveryAddressService {
     @Transactional
     public DeliveryAddressResponse updateAddress(
         Long addressId,
-        DeliveryAddressRequest dto,
+        UpdateDeliveryAddressRequest dto,
         Long memberId
     ) {
         DeliveryAddress address = deliveryAddressRepository

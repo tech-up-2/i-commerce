@@ -1,15 +1,16 @@
 package com.example.i_commerce.domain.member.controller;
 
 
-import com.example.i_commerce.domain.member.service.AdminService;
-import com.example.i_commerce.domain.member.service.dto.AdminLoginResponse;
-import com.example.i_commerce.domain.member.service.dto.LoginRequest;
+import com.example.i_commerce.domain.member.service.admin.AdminLoginResponse;
+import com.example.i_commerce.domain.member.service.admin.AdminService;
+import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +31,7 @@ public class AdminAuthController {
         return ApiResponse.success(adminLoginResponse);
     }
 
+    @PreAuthorize("isAuthenticated()")//
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "관리자 로그아웃", description = "로그아웃한다.")
     @PostMapping("/logout")
