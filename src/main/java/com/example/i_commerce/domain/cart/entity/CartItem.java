@@ -33,7 +33,15 @@ public class CartItem extends BaseEntity {
     private Cart cart;
 
     @Column(nullable = false)
-    private Long productItem;
+    private Long productItemId;
+
+    @Column(nullable = false)
+    private String productName;
+
+    @Column(nullable = false)
+    private Integer price;
+
+    private String displayOptionName;
 
     @Column(nullable = false)
     private Integer quantity;
