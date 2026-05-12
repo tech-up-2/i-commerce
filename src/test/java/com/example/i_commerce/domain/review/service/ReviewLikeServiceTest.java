@@ -41,7 +41,7 @@ public class ReviewLikeServiceTest {
             .content("정말 좋아유")
             .starRate(5)
             .likeCount(0L)
-            .status(ReviewIsBestStatus.NORMAL)
+            .bestStatus(ReviewIsBestStatus.NORMAL)
             .isExcluded(false)
             .build();
     }
@@ -56,7 +56,7 @@ public class ReviewLikeServiceTest {
         reviewLikeService.approveBestReview(reviewId);
 
         //then
-        assertThat(review.getStatus()).isEqualTo(ReviewIsBestStatus.BEST);
+        assertThat(review.getBestStatus()).isEqualTo(ReviewIsBestStatus.BEST);
         assertThat(review.getIsBest()).isTrue();
     }
 
@@ -74,7 +74,7 @@ public class ReviewLikeServiceTest {
         //then
         assertThat(review.getLikeCount()).isEqualTo(1L);
         assertThat(review.isExcluded()).isTrue();
-        assertThat(review.getStatus()).isEqualTo(ReviewIsBestStatus.NORMAL);
+        assertThat(review.getBestStatus()).isEqualTo(ReviewIsBestStatus.NORMAL);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class ReviewLikeServiceTest {
         reviewLikeService.cancelBestReview(reviewId);
 
         //then
-        assertThat(review.getStatus()).isEqualTo(ReviewIsBestStatus.CANDIDATE);
+        assertThat(review.getBestStatus()).isEqualTo(ReviewIsBestStatus.CANDIDATE);
         assertThat(review.getIsBest()).isFalse();
     }
 
@@ -104,6 +104,6 @@ public class ReviewLikeServiceTest {
 
         // then
         assertThat(review.isExcluded()).isTrue();
-        assertThat(review.getStatus()).isEqualTo(ReviewIsBestStatus.NORMAL);
+        assertThat(review.getBestStatus()).isEqualTo(ReviewIsBestStatus.NORMAL);
     }
 }

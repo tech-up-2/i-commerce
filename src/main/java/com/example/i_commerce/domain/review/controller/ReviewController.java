@@ -48,7 +48,7 @@ public class ReviewController {
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
-    @Operation(summary = "리뷰 보기", description = "리뷰를 본다.")
+    @Operation(summary = "리뷰 상세 보기", description = "상세 리뷰를 본다.")
     @GetMapping("/{productOrderId}/{reviewId}")
     public ResponseEntity<ApiResponse<ReviewResponse>> viewDetailReview(
         @PathVariable Long reviewId) {

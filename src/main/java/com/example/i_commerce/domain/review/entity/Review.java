@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.review.entity;
 
 import com.example.i_commerce.domain.review.entity.enums.ReviewIsBestStatus;
+import com.example.i_commerce.domain.review.entity.enums.ReviewReportStatus;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
@@ -49,25 +50,35 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private Integer starRate;
 
-    private Long reportCount;
+    @Builder.Default
+    private Long reportCount = 0L;
 
     @Builder.Default
     private Long likeCount = 0L;
 
-    private Boolean isBest;
+    @Builder.Default
+    private Boolean isBest = false;
 
-    private Boolean isUpdated;
+    @Builder.Default
+    private Boolean isUpdated = false;
 
     @Builder.Default
     private boolean isExcluded = false;
 
     @Version
-    private Long version;
+    @Column(nullable = false)
+    @Builder.Default
+    private Long version = 0L;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private ReviewIsBestStatus status = ReviewIsBestStatus.NORMAL;
+    @Column(name = "best_status")
+    private ReviewIsBestStatus bestStatus = ReviewIsBestStatus.NORMAL;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "report_status")
+    private ReviewReportStatus reportStatus = ReviewReportStatus.NORMAL;
 
     @Builder.Default
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -144,35 +155,35 @@ public class Review extends BaseEntity {
     }
 
     public void checkBestEligibility(double threshold) {
-        if (this.isExcluded || this.status == ReviewIsBestStatus.BEST) {
+        if (this.isExcluded || this.bestStatus == ReviewIsBestStatus.BEST) {
             return;
         }
 
         double currentScore = this.calculateRecommendationScore();
 
-        this.status = (currentScore >= threshold) ? ReviewIsBestStatus.CANDIDATE : ReviewIsBestStatus.NORMAL;
+        this.bestStatus = (currentScore >= threshold) ? ReviewIsBestStatus.CANDIDATE : ReviewIsBestStatus.NORMAL;
     }
 
     public void excludeFromBest() {
         this.isExcluded = true;
-        this.status = ReviewIsBestStatus.NORMAL;
+        this.bestStatus = ReviewIsBestStatus.NORMAL;
         this.isBest = false;
     }
 
     public void updateBestStatus(boolean isBest) {
         this.isBest = isBest;
-        this.status = isBest ? ReviewIsBestStatus.BEST : ReviewIsBestStatus.CANDIDATE;
+        this.bestStatus = isBest ? ReviewIsBestStatus.BEST : ReviewIsBestStatus.CANDIDATE;
     }
 
     public void approveAsBest() {
         this.isBest = true;
-        this.status = ReviewIsBestStatus.BEST;
+        this.bestStatus = ReviewIsBestStatus.BEST;
         this.isExcluded = false;
     }
 
     public void cancelBestStatus() {
         this.isBest = false;
-        this.status = ReviewIsBestStatus.CANDIDATE;
+        this.bestStatus = ReviewIsBestStatus.CANDIDATE;
     }
 
     public void increaseLikeCount() {
@@ -185,6 +196,28 @@ public class Review extends BaseEntity {
             this.likeCount --;
             this.calculateRecommendationScore();
         }
+    }
+
+    public boolean incrementReportCount() {
+        if (this.reportCount == null) {
+            this.reportCount = 0L;
+        }
+
+        this.reportCount++;
+
+        if (this.reportCount >= 10 && this.reportStatus != ReviewReportStatus.HIDDEN_PENDING) {
+            this.reportStatus = ReviewReportStatus.HIDDEN_PENDING;
+            return true;
+        }
+        return false;
+    }
+
+    public void resetReportCount() {
+        this.reportCount = 0L;
+    }
+
+    public void updateStatus(ReviewReportStatus reviewReportStatus) {
+        this.reportStatus = reviewReportStatus;
     }
 
     public static Review from(CreateReviewRequest dto) {
