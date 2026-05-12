@@ -31,7 +31,7 @@ public class DeliveryService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createDelivery(PaymentCompletedEvent event) {
 
-        Order order = orderRepository.findById(event.payment().getOrder().getId()).orElseThrow(() -> new AppException(OrderErrorCode.ORDER_TEMP_ERROR));
+        Order order = orderRepository.findById(event.payment().getOrder().getId()).orElseThrow(() -> new AppException(OrderErrorCode.ORDER_NOT_FOUND));
 
         List<Long> productIds = order.getOrderProducts().stream()
                 .map(OrderProduct::getProductSkuId).toList();

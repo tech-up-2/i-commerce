@@ -114,6 +114,6 @@ class DeliveryServiceTest {
 
         // when & then
         AppException e = assertThrows(AppException.class, () -> deliveryService.createDelivery(event));
-        assertEquals("ORDER_TEMP_ERROR", e.getErrorCode().toString());
+        assertEquals("ORDER_NOT_FOUND", e.getErrorCode().toString());
     }
 }
