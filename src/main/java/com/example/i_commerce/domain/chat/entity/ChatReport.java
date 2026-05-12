@@ -46,9 +46,8 @@ public class ChatReport extends BaseEntity {
 //    @Column(nullable = false)
 //    private Long chatRoomId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)// 부모는 FK로 member_id를 가져감
-    private Member member;
+    @Column(nullable = false)
+    private Long memberId;
 
     @Column(columnDefinition = "TEXT")
     private String reportText;

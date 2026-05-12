@@ -51,17 +51,20 @@ public class Review extends BaseEntity {
 
     private Long reportCount;
 
+    @Builder.Default
     private Long likeCount = 0L;
 
     private Boolean isBest;
 
     private Boolean isUpdated;
 
+    @Builder.Default
     private boolean isExcluded = false;
 
     @Version
     private Long version;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ReviewIsBestStatus status = ReviewIsBestStatus.NORMAL;

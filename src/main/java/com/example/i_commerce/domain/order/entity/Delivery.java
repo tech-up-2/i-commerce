@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.order.entity;
 
 import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
+import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -46,4 +47,7 @@ public class Delivery extends BaseEntity {
     @Column(length = 50)
     private String trackingNo;
 
+    public void changeDeliveryStatus(DeliveryStatus deliveryStatus) {
+        this.deliveryStatus = deliveryStatus;
+    }
 }

@@ -5,6 +5,10 @@ public record MemberOrderInfo(
     String email,
     String name,
     String phoneNumber
+
+//    String zipCode,
+//    String address,
+//    String addressDetail
 ) {
 
 }
