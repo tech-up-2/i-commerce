@@ -50,6 +50,7 @@ public class CartService {
                     productItemInfo.displayOptionName(),
                     request.quantity()
                 );
+                cart.addItem(newItem);
                 return cartItemRepository.save(newItem);
             });
 

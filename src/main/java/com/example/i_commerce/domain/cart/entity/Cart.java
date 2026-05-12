@@ -54,4 +54,8 @@ public class Cart extends BaseEntity {
             .findFirst();
     }
 
+    public void addItem(CartItem item) {
+        this.cartItems.add(item);
+    }
+
 }
