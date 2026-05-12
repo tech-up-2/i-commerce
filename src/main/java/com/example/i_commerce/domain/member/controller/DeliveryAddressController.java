@@ -61,7 +61,7 @@ public class DeliveryAddressController {
     @PreAuthorize("@authChecker.canUpdateMemberInfo()")
     public ApiResponse<DeliveryAddressResponse> updateAddress(
         @PathVariable Long addressId,
-        @RequestBody UpdateDeliveryAddressRequest dto,
+        @RequestBody @Valid UpdateDeliveryAddressRequest dto,
         @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
         DeliveryAddressResponse response =

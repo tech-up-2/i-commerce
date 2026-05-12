@@ -31,7 +31,7 @@ public class AdminAuthController {
         return ApiResponse.success(adminLoginResponse);
     }
 
-    @PreAuthorize("isAuthenticated()")//
+    @PreAuthorize("isAuthenticated()")//로그인 되어 있는지 확인
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "관리자 로그아웃", description = "로그아웃한다.")
     @PostMapping("/logout")

@@ -53,7 +53,7 @@ public class SellerController {
     @PreAuthorize("@authChecker.canUpdateSellerInfo()")
     public ApiResponse<SellerResponse> updateSeller(
         @AuthenticationPrincipal CustomUserPrincipal principal,
-        @RequestBody SellerRequest dto
+        @RequestBody @Valid SellerRequest dto
     ) {
         return ApiResponse.success(sellerService.updateSeller(principal.getId(), dto));
     }

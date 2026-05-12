@@ -10,7 +10,6 @@ import com.example.i_commerce.domain.member.service.seller.dto.SellerInfoRespons
 import com.example.i_commerce.domain.member.service.seller.dto.SellerRequest;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerResponse;
 import com.example.i_commerce.global.exception.AppException;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,7 +58,7 @@ public class SellerService {
 
         return new SellerResponse(
             savedSeller.getId(),
-            LocalDateTime.now()
+            savedSeller.getCreatedAt()
         );
     }
 
@@ -96,6 +95,6 @@ public class SellerService {
 
         Seller savedSeller = sellerRepository.save(seller);
 
-        return new SellerResponse(savedSeller.getId(), LocalDateTime.now());
+        return new SellerResponse(savedSeller.getId(), savedSeller.getUpdatedAt());
     }
 }
