@@ -7,8 +7,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.then;
 
-import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.service.DeliveryAddressService;
 import com.example.i_commerce.domain.member.service.MemberService;
 import com.example.i_commerce.domain.member.service.dto.DeliveryAddressSnapshot;
@@ -16,9 +14,10 @@ import com.example.i_commerce.domain.member.service.dto.MemberOrderInfo;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
-import com.example.i_commerce.domain.order.service.dto.OrderItemDto;
+import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest.OrderItemDto;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
@@ -27,11 +26,9 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -92,7 +89,7 @@ class OrderServiceTest {
 
         OrderItemDto item1Dto = OrderFixture.createItemDto(100L, 2);
         OrderItemDto item2Dto = OrderFixture.createItemDto(200L, 3);
-        CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, OrderFixture.ADDRESS_ID, item1Dto, item2Dto);
+        CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.ADDRESS_ID, item1Dto, item2Dto);
 
         ProductItem p1 = createMockProductItem(100L, 10000, "상품1");
         ProductItem p2 = createMockProductItem(200L, 5000, "상품2");
@@ -109,7 +106,7 @@ class OrderServiceTest {
         given(paymentRepository.save(any()))
                 .willAnswer(invocation -> invocation.getArgument(0));
 
-        ApiResponse<?> response = orderService.createOrder(dto);
+        ApiResponse<?> response = orderService.createOrder(OrderFixture.MEMBER_ID, dto);
 
         assertEquals("SUCCESS", response.code());
 
@@ -124,13 +121,13 @@ class OrderServiceTest {
     @Test
     @DisplayName("실패: 상품 중 하나라도 존재하지 않으면 예외가 발생한다")
     void createOrder_fail_itemNotFound() {
-        CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.MEMBER_ID, OrderFixture.ADDRESS_ID, OrderFixture.createItemDto(999L, 1));
+        CreateOrderRequest dto = OrderFixture.createOrderDto(OrderFixture.ADDRESS_ID, OrderFixture.createItemDto(999L, 1));
 
         given(memberService.getMemberOrderInfo(OrderFixture.MEMBER_ID)).willReturn(Optional.of(mock(MemberOrderInfo.class)).orElseThrow());
         given(productItemRepository.findAllById(anyList())).willReturn(List.of());
 
-        AppException exception = assertThrows(AppException.class, () -> orderService.createOrder(dto));
-        //assertEquals(ErrorCodeImpl.PRODUCT_NOT_FOUND, exception.getErrorCode());
+        AppException exception = assertThrows(AppException.class, () -> orderService.createOrder(OrderFixture.MEMBER_ID, dto));
+        assertEquals(ProductErrorCode.PRODUCT_NOT_FOUND, exception.getErrorCode());
     }
 
 
@@ -142,8 +139,8 @@ class OrderServiceTest {
         public static final String DETAIL_ADDRESS = "101호";
 
         // 주문 요청 DTO 생성 헬퍼
-        public static CreateOrderRequest createOrderDto(Long userId, Long addressId, OrderItemDto... items) {
-            return new CreateOrderRequest(userId, addressId, List.of(items));
+        public static CreateOrderRequest createOrderDto(Long addressId, OrderItemDto... items) {
+            return new CreateOrderRequest(addressId, List.of(items));
         }
 
         // 개별 아이템 DTO 생성 헬퍼
