@@ -18,13 +18,13 @@ public record OrderDetailResponse(
         List<OrderProductDetail> items,
 
         @Schema(description = "결제 상세 정보")
-        PaymentInfo payment
+        PaymentInfo paymentInfo
 ) {
         public static OrderDetailResponse of(Order order, List<OrderProductDetail> orderProductDetails, PaymentInfo paymentInfo) {
                 return OrderDetailResponse.builder()
                         .orderStatus(order.getOrderStatus())
                         .items(orderProductDetails)
-                        .payment(paymentInfo)
+                        .paymentInfo(paymentInfo)
                         .build();
         }
 
