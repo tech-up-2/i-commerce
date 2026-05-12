@@ -198,23 +198,7 @@ public class ChatService {
     public ApiResponse<List<MyChatListResponse>> getMyChatList() {
         Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
-        List<ChatParticipant> participants = chatParticipantRepository.findAllByMemberId(
-            member.getId());
-        List<MyChatListResponse> myChatListResponses = new ArrayList<>();
-        log.info("participants size: {}", participants.size());
-        for (ChatParticipant p : participants) {
-//            find와 같이 JPA에는 count라는 네이밍 규칙이 존재 Long 형태로 반환해줌
-            Long count = chatStatusRepository.countByChatRoomAndMemberIdAndIsReadFalse(
-                p.getChatRoom(), member.getId());
-            MyChatListResponse responseDto = MyChatListResponse.builder()
-                .roomId(p.getChatRoom().getId())
-                .roomName(p.getChatRoom().getName())
-                .isGroupChat(p.getChatRoom().getIsGroupChat())
-                .unReadCount(count)
-                .build();
-            myChatListResponses.add(responseDto);
-            log.info(myChatListResponses.toString());
-        }
+        List<MyChatListResponse> myChatListResponses = chatStatusRepository.findMyChatList(member.getId());
         return ApiResponse.success(myChatListResponses);
     }
 
