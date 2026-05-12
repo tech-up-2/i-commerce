@@ -51,6 +51,25 @@ public class CartItem extends BaseEntity {
     @Builder.Default
     private Boolean isChecked = true;
 
+
+    public static CartItem of(
+        Cart cart,
+        Long productItemId,
+        String productName,
+        Integer price,
+        String displayOptionName,
+        Integer quantity
+    ) {
+        return CartItem.builder()
+            .cart(cart)
+            .productItemId(productItemId)
+            .productName(productName)
+            .price(price)
+            .displayOptionName(displayOptionName)
+            .quantity(quantity)
+            .build();
+    }
+
     public void increaseQuantity(int amount, int stockQuantity) {
         int newQuantity = this.quantity + amount;
         if (newQuantity > stockQuantity) {
