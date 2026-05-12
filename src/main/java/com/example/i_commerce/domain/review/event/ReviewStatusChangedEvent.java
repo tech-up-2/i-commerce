@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class ReportApprovedEvent {
+public class ReviewStatusChangedEvent {
 
     private final Long reporterId;
     private final String message;

@@ -51,34 +51,43 @@ public class ReviewReport {
     private String reportReason;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private ReviewReportStatus status;
+    @Column(length = 20, nullable = false)
+    @Builder.Default
+    private ReviewReportStatus status = ReviewReportStatus.NORMAL;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private ReportProcessStatus processStatus = ReportProcessStatus.PENDING;
 
+    public void approve(Long adminId) {
+        validateAdmin(adminId);
+        validatePendingStatus();
 
-    public void complete() {
-        if (this.processStatus == ReportProcessStatus.COMPLETED) {
-            return;
-        }
-        this.processStatus = ReportProcessStatus.COMPLETED;
+        this.adminId = adminId;
+        this.processStatus = ReportProcessStatus.APPROVED;
     }
 
-    public void reject() {
+    public void reject(Long adminId) {
+        validateAdmin(adminId);
+        validatePendingStatus();
+
+        this.adminId = adminId;
         this.processStatus = ReportProcessStatus.REJECTED;
     }
 
-    public void assignAdmin(Long adminId) {
+    private void validateAdmin(Long adminId) {
         if (adminId == null) {
             throw new AppException(ReviewErrorCode.ADMIN_ID_REQUIRED);
         }
-
         if (this.adminId != null && !this.adminId.equals(adminId)) {
             throw new AppException(ReviewErrorCode.ALREADY_ASSIGNED_ADMIN);
         }
-
-        this.adminId = adminId;
     }
+
+    private void validatePendingStatus() {
+        if (this.processStatus != ReportProcessStatus.PENDING) {
+            throw new AppException(ReviewErrorCode.ALREADY_PROCESSED);
+        }
+    }
+
 }

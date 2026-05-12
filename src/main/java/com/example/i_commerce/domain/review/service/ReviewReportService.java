@@ -3,7 +3,8 @@ package com.example.i_commerce.domain.review.service;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewReport;
 import com.example.i_commerce.domain.review.entity.enums.ReportProcessStatus;
-import com.example.i_commerce.domain.review.event.ReportApprovedEvent;
+import com.example.i_commerce.domain.review.entity.enums.ReviewReportStatus;
+import com.example.i_commerce.domain.review.event.ReviewStatusChangedEvent;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repo.ReviewReportRepository;
 import com.example.i_commerce.domain.review.repo.ReviewRepository;
@@ -43,12 +44,16 @@ public class ReviewReportService {
             .review(review)
             .reportType(dto.getReportType())
             .reportReason(dto.getReason())
+            .status(ReviewReportStatus.NORMAL)
             .build();
 
         reviewReportRepo.save(report);
 
-        review.incrementReportCount();
+        boolean isThresholdReached = review.incrementReportCount();
 
+        if (isThresholdReached) {
+            review.updateStatus(ReviewReportStatus.HIDDEN_PENDING);
+        }
     }
 
     @Transactional
@@ -56,14 +61,15 @@ public class ReviewReportService {
         ReviewReport report = reviewReportRepo.findById(reportId)
             .orElseThrow(() -> new AppException(ReviewErrorCode.REPORT_NOT_FOUND));
 
-        report.assignAdmin(adminId);
+        report.approve(adminId);
 
-        report.complete();
+        report.getReview().updateStatus(ReviewReportStatus.HIDDEN);
 
-        eventPublisher.publishEvent(new ReportApprovedEvent(
+        eventPublisher.publishEvent(new ReviewStatusChangedEvent(
             report.getReporterId(),
             "신고하신 리뷰가 처리되었습니다."
         ));
+
     }
 
     @Transactional
@@ -71,7 +77,10 @@ public class ReviewReportService {
         ReviewReport report = reviewReportRepo.findById(reportId)
             .orElseThrow(() -> new AppException(ReviewErrorCode.REPORT_NOT_FOUND));
 
-        report.assignAdmin(adminId);
-        report.reject();
+        report.reject(adminId);
+
+        Review review = report.getReview();
+        review.updateStatus(ReviewReportStatus.NORMAL);
+        review.resetReportCount();
     }
 }

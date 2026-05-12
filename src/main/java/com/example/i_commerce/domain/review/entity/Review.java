@@ -56,14 +56,19 @@ public class Review extends BaseEntity {
     @Builder.Default
     private Long likeCount = 0L;
 
-    private Boolean isBest;
+    @Builder.Default
+    private Boolean isBest = false;
 
-    private Boolean isUpdated;
+    @Builder.Default
+    private Boolean isUpdated = false;
 
+    @Builder.Default
     private boolean isExcluded = false;
 
     @Version
-    private Long version;
+    @Column(nullable = false)
+    @Builder.Default
+    private Long version = 0L;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
@@ -193,16 +198,26 @@ public class Review extends BaseEntity {
         }
     }
 
-    public void incrementReportCount() {
+    public boolean incrementReportCount() {
         if (this.reportCount == null) {
             this.reportCount = 0L;
         }
 
-        reportCount++;
+        this.reportCount++;
 
-        if (this.reportCount >= 10) {
-            this.reportStatus = ReviewReportStatus.HIDDEN;
+        if (this.reportCount >= 10 && this.reportStatus != ReviewReportStatus.HIDDEN_PENDING) {
+            this.reportStatus = ReviewReportStatus.HIDDEN_PENDING;
+            return true;
         }
+        return false;
+    }
+
+    public void resetReportCount() {
+        this.reportCount = 0L;
+    }
+
+    public void updateStatus(ReviewReportStatus reviewReportStatus) {
+        this.reportStatus = reviewReportStatus;
     }
 
     public static Review from(CreateReviewRequest dto) {

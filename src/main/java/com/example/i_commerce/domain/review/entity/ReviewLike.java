@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
     uniqueConstraints = {
         @UniqueConstraint(
             name = "uk_member_review", // 제약 조건 이름
-            columnNames = {"member_id", "review_id"} // 중복을 허용하지 않을 컬럼 조합
+            columnNames = {"liker_id", "review_id"} // 중복을 허용하지 않을 컬럼 조합
         )
     }
 )

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class ReportEventListener {
 
     @EventListener
-    public void handleReportApprovedEvent(ReportApprovedEvent event) {
+    public void handleReportApprovedEvent(ReviewStatusChangedEvent event) {
         log.info("[이벤트 수신] 사용자 {}에게 알림 발송 시작: {}", event.getReporterId(), event.getMessage());
     }
 
