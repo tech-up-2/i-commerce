@@ -7,6 +7,7 @@ public record AddCartItemRequest(
     @NotNull
     Long productItemId,
 
+    @NotNull
     @Min(1)
     Integer quantity
 
