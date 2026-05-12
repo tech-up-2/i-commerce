@@ -38,7 +38,7 @@ public class QMessageReadStatus extends EntityPathBase<MessageReadStatus> {
 
     public final BooleanPath isRead = createBoolean("isRead");
 
-    public final com.example.i_commerce.domain.member.entity.QMember member;
+    public final NumberPath<Long> memberId = createNumber("memberId", Long.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
@@ -63,7 +63,6 @@ public class QMessageReadStatus extends EntityPathBase<MessageReadStatus> {
         super(type, metadata, inits);
         this.chatMessage = inits.isInitialized("chatMessage") ? new QChatMessage(forProperty("chatMessage"), inits.get("chatMessage")) : null;
         this.chatRoom = inits.isInitialized("chatRoom") ? new QChatRoom(forProperty("chatRoom"), inits.get("chatRoom")) : null;
-        this.member = inits.isInitialized("member") ? new com.example.i_commerce.domain.member.entity.QMember(forProperty("member"), inits.get("member")) : null;
     }
 
 }

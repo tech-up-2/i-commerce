@@ -36,7 +36,7 @@ public class QChatMessage extends EntityPathBase<ChatMessage> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final com.example.i_commerce.domain.member.entity.QMember member;
+    public final NumberPath<Long> memberId = createNumber("memberId", Long.class);
 
     public final ListPath<MessageReadStatus, QMessageReadStatus> readStatuses = this.<MessageReadStatus, QMessageReadStatus>createList("readStatuses", MessageReadStatus.class, QMessageReadStatus.class, PathInits.DIRECT2);
 
@@ -64,7 +64,6 @@ public class QChatMessage extends EntityPathBase<ChatMessage> {
     public QChatMessage(Class<? extends ChatMessage> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.chatRoom = inits.isInitialized("chatRoom") ? new QChatRoom(forProperty("chatRoom"), inits.get("chatRoom")) : null;
-        this.member = inits.isInitialized("member") ? new com.example.i_commerce.domain.member.entity.QMember(forProperty("member"), inits.get("member")) : null;
     }
 
 }

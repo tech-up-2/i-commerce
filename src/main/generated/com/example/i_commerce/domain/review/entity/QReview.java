@@ -22,8 +22,6 @@ public class QReview extends EntityPathBase<Review> {
 
     public final com.example.i_commerce.global.common.entity.QBaseEntity _super = new com.example.i_commerce.global.common.entity.QBaseEntity(this);
 
-    public final EnumPath<com.example.i_commerce.domain.review.entity.enums.ReviewIsBestStatus> bestStatus = createEnum("bestStatus", com.example.i_commerce.domain.review.entity.enums.ReviewIsBestStatus.class);
-
     public final ListPath<ReviewComment, QReviewComment> comments = this.<ReviewComment, QReviewComment>createList("comments", ReviewComment.class, QReviewComment.class, PathInits.DIRECT2);
 
     public final StringPath content = createString("content");
@@ -54,9 +52,9 @@ public class QReview extends EntityPathBase<Review> {
 
     public final ListPath<ReviewReport, QReviewReport> reports = this.<ReviewReport, QReviewReport>createList("reports", ReviewReport.class, QReviewReport.class, PathInits.DIRECT2);
 
-    public final EnumPath<com.example.i_commerce.domain.review.entity.enums.ReviewReportStatus> reportStatus = createEnum("reportStatus", com.example.i_commerce.domain.review.entity.enums.ReviewReportStatus.class);
-
     public final NumberPath<Integer> starRate = createNumber("starRate", Integer.class);
+
+    public final EnumPath<com.example.i_commerce.domain.review.entity.enums.ReviewIsBestStatus> status = createEnum("status", com.example.i_commerce.domain.review.entity.enums.ReviewIsBestStatus.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;

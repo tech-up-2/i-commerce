@@ -36,7 +36,7 @@ public class QChatParticipant extends EntityPathBase<ChatParticipant> {
 
     public final BooleanPath isBan = createBoolean("isBan");
 
-    public final com.example.i_commerce.domain.member.entity.QMember member;
+    public final NumberPath<Long> memberId = createNumber("memberId", Long.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
@@ -60,7 +60,6 @@ public class QChatParticipant extends EntityPathBase<ChatParticipant> {
     public QChatParticipant(Class<? extends ChatParticipant> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.chatRoom = inits.isInitialized("chatRoom") ? new QChatRoom(forProperty("chatRoom"), inits.get("chatRoom")) : null;
-        this.member = inits.isInitialized("member") ? new com.example.i_commerce.domain.member.entity.QMember(forProperty("member"), inits.get("member")) : null;
     }
 
 }

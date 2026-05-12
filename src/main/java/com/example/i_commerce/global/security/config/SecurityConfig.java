@@ -29,7 +29,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-
+                .requestMatchers("/style.css", "/static/**").permitAll()
                 //스웨거
                 .requestMatchers(
                     "/swagger-ui/**",
@@ -47,8 +47,18 @@ public class SecurityConfig {
                     "/api/v1/auth/**"
                 ).permitAll()
 
+                //임시 추후 삭제
+                .requestMatchers(
+                        "/api/v1/payments/**",
+                        "/payment/**"
+                ).permitAll()
+
                 // 리뷰 조회 공개
                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
+
+                // 채팅 관련 추가
+                .requestMatchers("/api/v1/chat/**").permitAll()
+                .requestMatchers("/connect/**").permitAll()
 
                 // 나머지는 기본적으로 인증 필요
                 .anyRequest().authenticated()

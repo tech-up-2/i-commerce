@@ -22,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "payments")
@@ -39,8 +40,8 @@ public class Payment extends BaseEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-  /*  @Enumerated(EnumType.STRING)
-    private  method;*/
+//    @Enumerated(EnumType.STRING)
+//    private  method;
 
     private Integer amount;
 
@@ -56,6 +57,14 @@ public class Payment extends BaseEntity {
 
     public void changePayStatus(PaymentStatus status) {
         this.payStatus = status;
+    }
+
+    public void completePayment(String pgTid) {
+        if (this.pgTid != null) {
+            throw new IllegalStateException("이미 결제 완료된 건입니다.");
+        }
+        this.pgTid = pgTid;
+        this.payStatus = PaymentStatus.PAID; // 상태 변경도 한 번에 처리 가능
     }
 
 }

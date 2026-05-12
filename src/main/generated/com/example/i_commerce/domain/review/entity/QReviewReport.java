@@ -26,13 +26,11 @@ public class QReviewReport extends EntityPathBase<ReviewReport> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final EnumPath<com.example.i_commerce.domain.review.entity.enums.ReportProcessStatus> processStatus = createEnum("processStatus", com.example.i_commerce.domain.review.entity.enums.ReportProcessStatus.class);
-
     public final NumberPath<Long> reporterId = createNumber("reporterId", Long.class);
 
     public final StringPath reportReason = createString("reportReason");
 
-    public final EnumPath<com.example.i_commerce.domain.review.entity.enums.ReportType> reportType = createEnum("reportType", com.example.i_commerce.domain.review.entity.enums.ReportType.class);
+    public final StringPath reportType = createString("reportType");
 
     public final QReview review;
 
