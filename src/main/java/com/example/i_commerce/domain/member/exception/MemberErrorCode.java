@@ -36,7 +36,7 @@ public enum MemberErrorCode implements ErrorCode {
 
     // --- 409
     DUPLICATED_EMAIL(HttpStatus.CONFLICT, "USR-40901", "이미 가입된 이메일입니다."),
-    ALREADY_APPLIED_SELLER(HttpStatus.CONFLICT, "USR-40901", "이미 판매자 등록이 되어 있습니다.");
+    ALREADY_APPLIED_SELLER(HttpStatus.CONFLICT, "USR-40902", "이미 판매자 등록이 되어 있습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;
