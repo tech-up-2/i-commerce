@@ -51,10 +51,10 @@ public class OrderController {
     @PreAuthorize("hasRole('MEMBER')")
     @Operation(summary = "주문 상세 조회", description = "결제 취소에 필요한 상세 주문 정보를 조회한다.")
     @GetMapping("/{orderId}")
-    public ApiResponse<List<OrderDetailResponse>> getOrderDetail(
+    public ApiResponse<OrderDetailResponse> getOrderDetail(
             @AuthenticationPrincipal CustomUserPrincipal member,
             @PathVariable Long orderId
     ) {
-            return ApiResponse.success(List.of(orderService.getOrderDetail(orderId, member.getId())));
+            return ApiResponse.success(orderService.getOrderDetail(orderId, member.getId()));
     }
 }
