@@ -33,10 +33,8 @@ public class ChatParticipant extends BaseEntity {
     @JoinColumn(name = "chat_room_id", nullable = false)
     private ChatRoom chatRoom;
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)// 부모는 FK로 member_id를 가져감
-    private Member member;
+    @Column(nullable = false)
+    private Long memberId;
 
     private Boolean isBan;
 }

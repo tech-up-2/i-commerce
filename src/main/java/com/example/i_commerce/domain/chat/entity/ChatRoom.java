@@ -39,7 +39,6 @@ public class ChatRoom extends BaseEntity {
     @Builder.Default
     private Boolean isGroupChat = false;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
