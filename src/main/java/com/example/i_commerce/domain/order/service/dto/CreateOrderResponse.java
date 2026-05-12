@@ -6,14 +6,14 @@ import lombok.Builder;
 
 @Builder
 public record CreateOrderResponse(
-        Long orderId,
+//        Long orderId,
         Long paymentId,
         Integer amount,
         String orderName
 ) {
     public static CreateOrderResponse of(Order order, Payment payment, String firstProductName) {
         return CreateOrderResponse.builder()
-                .orderId(order.getId())
+//                .orderId(order.getId())
                 .paymentId(payment.getId())
                 .amount(order.getTotalPayAmount())
                 .orderName(firstProductName + "항목 외 " + (order.getOrderProducts().size() - 1) + "건")
