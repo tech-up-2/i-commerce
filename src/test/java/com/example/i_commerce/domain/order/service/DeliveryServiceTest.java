@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.order.service;
 
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -13,9 +14,12 @@ import com.example.i_commerce.domain.order.entity.Delivery;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.Payment;
+import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.event.dto.PaymentCompletedEvent;
+import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.DeliveryRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
+import com.example.i_commerce.domain.order.service.dto.DeliveryCancelRequestEvent;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
@@ -39,6 +43,13 @@ class DeliveryServiceTest {
 
     @InjectMocks
     private DeliveryService deliveryService;
+
+    private Delivery createDelivery(Long deliveryId, DeliveryStatus deliveryStatus) {
+        return Delivery.builder()
+                .id(deliveryId)
+                .deliveryStatus(deliveryStatus)
+                .build();
+    }
 
     @Test
     @DisplayName("주문 상품들을 판매자별로 그룹화하여 배송 정보를 생성한다")
@@ -115,5 +126,65 @@ class DeliveryServiceTest {
         // when & then
         AppException e = assertThrows(AppException.class, () -> deliveryService.createDelivery(event));
         assertEquals("ORDER_NOT_FOUND", e.getErrorCode().toString());
+    }
+
+    @Test
+    @DisplayName("배송 취소 성공: 배송 전 상태의 주문은 모두 취소 상태로 변경된다.")
+    void cancelDelivery_success() {
+        // given
+        Long orderId = 1L;
+        DeliveryCancelRequestEvent event = new DeliveryCancelRequestEvent(orderId);
+
+        // 가상의 배송 전(READY) 객체 생성 (실제 엔티티 구현체에 맞게 빌더나 생성자 사용)
+        Delivery delivery1 = createDelivery(orderId, DeliveryStatus.PREPARING);
+        Delivery delivery2 = createDelivery(orderId, DeliveryStatus.PREPARING);
+        List<Delivery> mockDeliveries = List.of(delivery1, delivery2);
+
+        given(deliveryRepository.findAllByOrderId(orderId)).willReturn(mockDeliveries);
+
+        // when
+        deliveryService.cancelDelivery(event);
+
+        // then
+        assertEquals(DeliveryStatus.CANCELLED, delivery1.getDeliveryStatus());
+        assertEquals(DeliveryStatus.CANCELLED, delivery2.getDeliveryStatus());
+    }
+
+    @Test
+    @DisplayName("배송 취소 실패: 이미 배송중(SHIPPING)인 배송 건이 포함되어 있으면 예외가 발생한다.")
+    void cancelDelivery_fail_already_shipping() {
+        // given
+        Long orderId = 1L;
+        DeliveryCancelRequestEvent event = new DeliveryCancelRequestEvent(orderId);
+
+        Delivery delivery1 = createDelivery(orderId, DeliveryStatus.PREPARING);
+        Delivery delivery2 = createDelivery(orderId, DeliveryStatus.SHIPPING);
+
+        List<Delivery> mockDeliveries = List.of(delivery1, delivery2);
+
+        given(deliveryRepository.findAllByOrderId(orderId)).willReturn(mockDeliveries);
+
+        // when & then
+        assertThatThrownBy(() -> deliveryService.cancelDelivery(event))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(PaymentErrorCode.PAYMENT_CANCEL_IMPOSSIBLE_ALREADY_SHIPPED.getMessage());
+    }
+
+    @Test
+    @DisplayName("배송 취소 실패: 이미 배송완료(ARRIVED)인 배송 건이 포함되어 있으면 예외가 발생한다.")
+    void cancelDelivery_fail_already_arrived() {
+        // given
+        Long orderId = 1L;
+        DeliveryCancelRequestEvent event = new DeliveryCancelRequestEvent(orderId);
+
+        Delivery delivery = createDelivery(orderId, DeliveryStatus.ARRIVED); // 배송완료 상태
+        List<Delivery> mockDeliveries = List.of(delivery);
+
+        given(deliveryRepository.findAllByOrderId(orderId)).willReturn(mockDeliveries);
+
+        // when & then
+        assertThatThrownBy(() -> deliveryService.cancelDelivery(event))
+                .isInstanceOf(AppException.class)
+                .hasMessageContaining(PaymentErrorCode.PAYMENT_CANCEL_IMPOSSIBLE_ALREADY_SHIPPED.getMessage());
     }
 }
