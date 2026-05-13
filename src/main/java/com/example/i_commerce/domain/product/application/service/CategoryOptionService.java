@@ -25,11 +25,13 @@ public class CategoryOptionService {
 
     @Transactional(readOnly = true)
     public List<CategoryOptionGroupResponse> getOptionsByCategory(Long categoryId) {
-        Category category = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new AppException(ProductErrorCode.CATEGORY_NOT_FOUND));
+
+        if(!categoryRepository.existsById(categoryId)) {
+            throw new AppException(ProductErrorCode.CATEGORY_NOT_FOUND);
+        }
 
         List<CategoryOptionProjection> projections = categoryOptionRepository
-            .findOptionsByCategoryId(category.getId());
+            .findOptionsByCategoryId(categoryId);
 
         return categoryOptionMapper.toGroupedResponseList(projections);
     }
