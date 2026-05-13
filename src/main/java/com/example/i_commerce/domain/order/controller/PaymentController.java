@@ -19,7 +19,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-//    @PreAuthorize("hasRole('MEMBER')")
+    @PreAuthorize("hasRole('MEMBER')")
     @Operation(summary = "결제 완료", description = "토스 페이먼츠에서 카드 인증 후 진짜 결제를 위해 호출되는 API")
     @PostMapping("/confirm")
     public ApiResponse<Void> paymentConfirm(
