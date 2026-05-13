@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,33 +29,34 @@ public class ReviewReportController {
     @PostMapping("/reviews/{reviewId}/reports")
     @Operation(summary = "리뷰 신고", description = "사용자가 특정 리뷰를 신고할 때 사용합니다.")
     @PreAuthorize("@authChecker.canReportReview()")
-    public ResponseEntity<ApiResponse<Void>> createReport(
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<Void> createReport(
         @PathVariable Long reviewId,
         @RequestParam Long reporterId,
         @RequestBody CreateReportRequest dto
     ) {
         reviewReportService.createReviewReport(reviewId, reporterId, dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success());
+        return ApiResponse.success();
     }
 
     @PatchMapping("/admin/reports/{reportId}/approve")
     @Operation(summary = "신고 승인", description = "관리자는 특정 리뷰 신고를 승인할 수 있다.")
     @PreAuthorize("@authChecker.canManageReviewAsAdmin()")
-    public ResponseEntity<ApiResponse<Void>> approveReport(
+    public ApiResponse<Void> approveReport(
         @PathVariable Long reportId,
         @RequestParam Long adminId
     ) {
         reviewReportService.approveReport(reportId, adminId);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ApiResponse.success();
     }
 
     @PatchMapping("/admin/reports/{reportId}/reject")
     @Operation(summary = "신고 반려", description = "관리자는 특정 리뷰 신고에 대한 반려를 할 수 있다.")
     @PreAuthorize("@authChecker.canManageReviewAsAdmin()")
-    public ResponseEntity<ApiResponse<Void>> rejectReport(
+    public ApiResponse<Void> rejectReport(
         @PathVariable Long reportId,
         @RequestParam Long adminId) {
         reviewReportService.rejectReport(reportId, adminId);
-        return ResponseEntity.ok(ApiResponse.success());
+        return ApiResponse.success();
     }
 }

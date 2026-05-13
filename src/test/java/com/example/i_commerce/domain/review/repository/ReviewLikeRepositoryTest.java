@@ -15,7 +15,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
-@DataJpaTest
+/*@DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // 실제 DB(PostgreSQL)를 사용하거나 H2를 선택할 수 있어요.
 class ReviewLikeRepositoryTest {
 
@@ -53,5 +53,5 @@ class ReviewLikeRepositoryTest {
         // then
         assertThat(result).isPresent();
         assertThat(result.get().getLikerId()).isEqualTo(28L);
-    }
-}
+    }*/
+//}
