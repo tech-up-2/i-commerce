@@ -1,11 +1,12 @@
-package com.example.i_commerce.domain.member.service;
+package com.example.i_commerce.domain.member.service.delivery;
 
 import com.example.i_commerce.domain.member.entity.DeliveryAddress;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.DeliveryAddressRepository;
-import com.example.i_commerce.domain.member.service.dto.DeliveryAddressRequest;
-import com.example.i_commerce.domain.member.service.dto.DeliveryAddressResponse;
-import com.example.i_commerce.domain.member.service.dto.DeliveryAddressSnapshot;
+import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressRequest;
+import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressResponse;
+import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressSnapshot;
+import com.example.i_commerce.domain.member.service.delivery.dto.UpdateDeliveryAddressRequest;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
@@ -69,7 +70,7 @@ public class DeliveryAddressService {
         boolean isDefault = addressCount == 0 || Boolean.TRUE.equals(dto.isDefault());
 
         if (isDefault) {
-            deliveryAddressRepository.clearDefaultAddresses(memberId);
+            clearDefaultAddresses(memberId);
         }
         //--------
 
@@ -96,7 +97,7 @@ public class DeliveryAddressService {
     @Transactional
     public DeliveryAddressResponse updateAddress(
         Long addressId,
-        DeliveryAddressRequest dto,
+        UpdateDeliveryAddressRequest dto,
         Long memberId
     ) {
         DeliveryAddress address = deliveryAddressRepository
@@ -106,7 +107,7 @@ public class DeliveryAddressService {
         boolean isDefault = Boolean.TRUE.equals(dto.isDefault());
 
         if (isDefault && !address.getIsDefault()) {
-            deliveryAddressRepository.clearDefaultAddresses(memberId);
+            clearDefaultAddresses(memberId);
             address.changeDefault(true);
         }
 
@@ -137,8 +138,7 @@ public class DeliveryAddressService {
                 new AppException(MemberErrorCode.DELIVERY_ADDRESS_NOT_FOUND)
             );
 
-        deliveryAddressRepository.clearDefaultAddresses(memberId);
-
+        clearDefaultAddresses(memberId);
         address.changeDefault(true);
     }
 
@@ -172,5 +172,18 @@ public class DeliveryAddressService {
             decryptNullable(address.getExtraAddress()),
             decryptNullable(address.getDeliveryMemo())
         );
+    }
+
+    private void clearDefaultAddresses(Long memberId) {
+
+        List<DeliveryAddress> addresses =
+            deliveryAddressRepository
+                .findByMemberIdOrderByIsDefaultDescCreatedAtDesc(memberId);
+
+        for (DeliveryAddress address : addresses) {
+            if (address.getIsDefault()) {
+                address.changeDefault(false);
+            }
+        }
     }
 }

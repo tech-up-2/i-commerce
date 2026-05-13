@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.member.service.dto;
+package com.example.i_commerce.domain.member.service.member.dto;
 
 public record MemberNotificationInfo(
     Long memberId,

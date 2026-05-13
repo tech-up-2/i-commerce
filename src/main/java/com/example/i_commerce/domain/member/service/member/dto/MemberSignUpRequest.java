@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.member.service.dto;
+package com.example.i_commerce.domain.member.service.member.dto;
 
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;

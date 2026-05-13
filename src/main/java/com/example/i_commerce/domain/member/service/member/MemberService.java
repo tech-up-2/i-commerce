@@ -1,11 +1,11 @@
-package com.example.i_commerce.domain.member.service;
+package com.example.i_commerce.domain.member.service.member;
 
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
-import com.example.i_commerce.domain.member.service.dto.MemberChatInfo;
-import com.example.i_commerce.domain.member.service.dto.MemberNotificationInfo;
-import com.example.i_commerce.domain.member.service.dto.MemberOrderInfo;
+import com.example.i_commerce.domain.member.service.member.dto.MemberChatInfo;
+import com.example.i_commerce.domain.member.service.member.dto.MemberNotificationInfo;
+import com.example.i_commerce.domain.member.service.member.dto.MemberOrderInfo;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.global.exception.AppException;
 import lombok.RequiredArgsConstructor;

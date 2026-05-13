@@ -67,6 +67,14 @@ public class AuthChecker {
             SecurityAuthority.SELLER_BLOCKED);
     }
 
+    // 판매자 정보 수정
+    public boolean canUpdateSellerInfo() {
+        return isSeller()
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && hasAny(SecurityAuthority.SELLER_PENDING,
+            SecurityAuthority.SELLER_APPROVED);
+    }
+
     // 상점 조회
     public boolean canViewStore() {
         return isSeller()

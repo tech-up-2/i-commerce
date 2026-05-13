@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.member.service.dto;
+package com.example.i_commerce.domain.member.service.auth.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
