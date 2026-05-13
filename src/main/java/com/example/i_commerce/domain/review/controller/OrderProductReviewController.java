@@ -22,11 +22,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Review API", description = "리뷰 관련 API")
+@Tag(name = "orderProduct Review API", description = "상품 리뷰 관련 API")
 @SecurityRequirement(name = "BearerAuth")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/product-orders")
+@RequestMapping("/api/v1/order-products")
 public class OrderProductReviewController {
 
     private final ReviewService reviewService;
@@ -44,13 +44,5 @@ public class OrderProductReviewController {
         return ApiResponse.success(createdReviewId);
     }
 
-    @Operation(summary = "리뷰 목록 보기", description = "특정 상품에 대한 전체 리뷰를 본다.")
-    @GetMapping("/{orderProductId}/reviews")
-    public ApiResponse<List<ReviewListResponse>> viewReviewList(
-        @PathVariable Long orderProductId
-    ) {
-        List<ReviewListResponse> responses = reviewService.viewReviewList(orderProductId);
-        return ApiResponse.success(responses);
-    }
 
 }

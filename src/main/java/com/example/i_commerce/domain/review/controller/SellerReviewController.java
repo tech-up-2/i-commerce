@@ -1,0 +1,72 @@
+package com.example.i_commerce.domain.review.controller;
+
+import com.example.i_commerce.domain.review.facade.ReviewLikeFacade;
+import com.example.i_commerce.domain.review.service.ReviewService;
+import com.example.i_commerce.domain.review.service.dto.CreateReportRequest;
+import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
+import com.example.i_commerce.global.common.response.ApiResponse;
+import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+@Tag(name = "Seller Review API", description = "판매자 리뷰 관리 API")
+@SecurityRequirement(name = "BearerAuth")
+@PreAuthorize("@authChecker.canManageSellerReview()")
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/seller/reviews")
+public class SellerReviewController {
+
+    private final ReviewService reviewService;
+    private final ReviewLikeFacade reviewLikeFacade;
+
+    @Operation(summary = "베스트 리뷰 후보 조회", description = "판매자는 베스트 리뷰 후보를 확인한다.")
+    @GetMapping("/best-candidates")
+    public ApiResponse<List<ReviewListResponse>> getBestReviewCandidates(
+        @RequestParam Long productOrderId
+    ) {
+        List<ReviewListResponse> responses = reviewService.getBestReviewCandidates(productOrderId);
+
+        return ApiResponse.success(responses);
+    }
+
+    @Operation(summary = "베스트 리뷰 후보 제외", description = "판매자는 추천된 베스트 리뷰 후보에서 특정 리뷰를 제외한다.")
+    @PostMapping("/best-candidates/{reviewId}/exclude")
+    public ApiResponse<Void> excludeFromBest(
+        @PathVariable Long reviewId) {
+        reviewLikeFacade.excludeFromBest(reviewId);
+        return ApiResponse.success();
+    }
+
+    @Operation(summary = "베스트 리뷰 선정", description = "판매자는 베스트 리뷰를 선정한다.")
+    @PostMapping("/{reviewId}/best")
+    public ApiResponse<Void> approveBestReview(
+        @PathVariable Long reviewId) {
+        reviewLikeFacade.approveBestReview(reviewId);
+        return ApiResponse.success();
+    }
+
+    @Operation(summary = "베스트 리뷰 선정 취소", description = "판매자는 베스트 리뷰 선정을 취소한다.")
+    @DeleteMapping("/{reviewId}/best")
+    public ApiResponse<Void> cancelBestReview(
+        @PathVariable Long reviewId) {
+        reviewLikeFacade.cancelBestReview(reviewId);
+        return ApiResponse.success();
+    }
+
+}

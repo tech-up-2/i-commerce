@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.review.service;
 
+import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repo.ReviewRepository;
@@ -38,9 +39,9 @@ public class ReviewService {
         return savedReview.getId();
     }
 
-    @Transactional
-    public List<ReviewListResponse> viewReviewList(Long orderProductId) {
-        List<Review> reviews = reviewRepo.findAllByOrderProductIdAndDeletedAtIsNull(orderProductId);
+    @Transactional(readOnly = true)
+    public List<ReviewListResponse> viewReviewList(Long productId) {
+        List<Review> reviews = reviewRepo.findAllByProductId(productId);
 
         List<ReviewListResponse> responseDtoLists = new ArrayList<>();
 
