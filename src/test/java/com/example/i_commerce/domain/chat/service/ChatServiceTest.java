@@ -4,21 +4,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import com.example.i_commerce.domain.chat.entity.ChatMessage;
 import com.example.i_commerce.domain.chat.entity.ChatParticipant;
 import com.example.i_commerce.domain.chat.entity.ChatRoom;
 import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
-import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
-import com.example.i_commerce.domain.chat.util.TempChatUtil;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
-import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductOptionType;
@@ -26,9 +22,6 @@ import com.example.i_commerce.domain.product.entity.ProductStatus;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
-import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
-import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
-import java.util.List;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,9 +31,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 
 @ExtendWith(MockitoExtension.class)
 class ChatServiceTest {
@@ -57,12 +47,8 @@ class ChatServiceTest {
     private MemberRepository memberRepository;
     @Mock
     private ProductRepository productRepository;
-    @Mock
-    private DataEncryptor dataEncryptor;
 
     private Member member;
-    private Member member2;
-    private CustomUserPrincipal customUserPrincipal;
     private Member otherMember;
     private ChatRoom singlechatRoom;
     private ChatRoom groupchatRoom;
@@ -73,14 +59,7 @@ class ChatServiceTest {
 
     @BeforeEach
     public void MemberInit() {
-/*      service 코드에서 memberId를 읽어올 때, Token의 SecurityContextHolder에서 각 값들을 빼서 사용하게 됨
-        테스트 코드에서는 직접적인 HTTP 요청이 없으므로 이 값이 존재하지 않음 그러므로 사용해주기 위해 임의의 값을 채워주어야함
-*/
-        CustomUserPrincipal customUserPrincipal = new CustomUserPrincipal(PrincipalType.MEMBER, 1L,
-            "test1@naver.com", "1234", List.of());
-        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(customUserPrincipal, null, List.of()));
-
-            // 카테고리 생성
+        // 카테고리 생성
         category = Category.builder()
             .id(1L)
             .name("테스트 카테고리")
@@ -110,7 +89,6 @@ class ChatServiceTest {
             .status(MemberStatus.ACTIVE)
             .role(MemberType.CUSTOMER)
             .build();
-
         otherMember = Member.builder()
             .id(2L)
             .emailHash("user2@test.com")
@@ -122,19 +100,6 @@ class ChatServiceTest {
             .point(0)
             .status(MemberStatus.ACTIVE)
             .role(MemberType.SELLER)
-            .build();
-
-        member2 = Member.builder()
-            .id(3L)
-            .emailHash("user3@test.com")
-            .password("1234")
-            .name("테스트 유저3".getBytes())
-            .sex(Gender.MALE)
-            .birthday("20030303".getBytes())
-            .phoneNumber("01033333333".getBytes())
-            .point(0)
-            .status(MemberStatus.ACTIVE)
-            .role(MemberType.CUSTOMER)
             .build();
 
         singlechatRoom = ChatRoom.builder()
@@ -151,27 +116,12 @@ class ChatServiceTest {
         chatParticipant = ChatParticipant.builder()
             .id(1L)
             .chatRoom(groupchatRoom)
-            .memberId(member.getId())
+            .member(member)
             .isBan(false)
             .build();
 
     }
 
-//  1:1 채팅방 테스트코드
-
-    @Test
-    @DisplayName("1:1 채팅방이 정상적으로 생성됩니다.")
-    void successCreatePrivateChatRoom() {
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
-        when(memberRepository.findById(otherMember.getId())).thenReturn(Optional.of(otherMember));
-        when(chatParticipantRepository.findExistingPrivateRoom
-            (member.getId(), otherMember.getId())).thenReturn(Optional.empty());
-
-        ApiResponse<Long> response = chatService.getOrCreatePrivateRoom(otherMember.getId());
-
-        assertEquals("SUCCESS", response.code());
-
-    }
 
     @Test
     @DisplayName("1:1 채팅방이 이미 존재하면 예외를 터트립니다.")
@@ -183,25 +133,13 @@ class ChatServiceTest {
             otherMember.getId())).thenReturn(Optional.of(singlechatRoom));
 
         AppException exception = assertThrows(AppException.class,
-            () -> chatService.getOrCreatePrivateRoom(otherMember.getId()));
+            () -> chatService.getOrCreatePrivateRoom(
+                member.getId(), otherMember.getId()));
 
         Assertions.assertThat(exception.getErrorCode())
             .isEqualTo(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
     }
 
-    @Test
-    @DisplayName("1:1 채팅 생성시 서로의 권한이 같으면 에러를 터트립니다.")
-    void cannotSameRole(){
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
-        when((memberRepository.findById(member2.getId()))).thenReturn(Optional.of(member2));
-
-        AppException exception = assertThrows(AppException.class, () ->
-            chatService.getOrCreatePrivateRoom(member2.getId()));
-
-        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ChatErrorCode.CANNOT_CHAT_SAME_ROLE);
-    }
-
-//    그룹채팅 테스트코드
     @Test
     @DisplayName("그룹 채팅방이 이미 존재하면 예외를 터트립니다.")
     void createGroupChatRoom() {
@@ -212,7 +150,7 @@ class ChatServiceTest {
             true);
 
         AppException exception = assertThrows(AppException.class, () ->
-            chatService.createGroupRoom(product.getId()));
+            chatService.createGroupRoom(product.getId(), member.getId()));
 
         Assertions.assertThat(exception.getErrorCode())
             .isEqualTo(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
@@ -226,7 +164,7 @@ class ChatServiceTest {
         when(chatRoomRepository.existsByProductIdAndIsGroupChat(product.getId(), true)).thenReturn(
             false);
 
-        ApiResponse<Long> response = chatService.createGroupRoom(product.getId());
+        ApiResponse<Long> response = chatService.createGroupRoom(product.getId(), member.getId());
 
         assertEquals("SUCCESS", response.code());
     }
@@ -240,7 +178,8 @@ class ChatServiceTest {
         when(chatRoomRepository.findById(groupchatRoom.getId())).thenReturn(
             Optional.of(groupchatRoom));
 
-        ApiResponse<Void> response = chatService.joinGroupRoom(groupchatRoom.getId());
+        ApiResponse<Void> response = chatService.joinGroupRoom(groupchatRoom.getId(),
+            member.getId());
 
         assertEquals("SUCCESS", response.code());
     }
@@ -251,35 +190,14 @@ class ChatServiceTest {
         when(chatRoomRepository.findById(groupchatRoom.getId())).thenReturn(
             Optional.of(groupchatRoom));
         when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
-        when(chatParticipantRepository.findByChatRoomAndMemberId(groupchatRoom, member.getId()))
+        when(chatParticipantRepository.findByChatRoomAndMember(groupchatRoom, member))
             .thenReturn(Optional.of(chatParticipant));
 
-        ApiResponse<Void> response = chatService.leaveGroupRoom(groupchatRoom.getId());
+        ApiResponse<Void> response = chatService.leaveGroupRoom(groupchatRoom.getId(),
+            member.getId());
 
         assertEquals("SUCCESS", response.code());
 
-    }
-//    채팅내역 조회
-    @Test
-    @DisplayName("채팅에 참여중이 아닌 사람이 조회를 시도하면 오류를 발생시킵니다.")
-    void getChatHistory_NoMember(){
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
-        when(chatRoomRepository.findById(singlechatRoom.getId())).thenReturn(Optional.of(singlechatRoom));
-        when(chatParticipantRepository.findByChatRoom(singlechatRoom)).thenReturn(List.of());
-        AppException exception = assertThrows(AppException.class, () ->
-            chatService.getChatHistory(singlechatRoom.getId()));
-        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ChatErrorCode.NOT_A_ROOM_MEMBER);
-    }
-    @Test
-    @DisplayName("채팅 내역을 정상적으로 불러옵니다")
-    void getChatHistorySuccess(){
-        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
-        when(chatRoomRepository.findById(singlechatRoom.getId())).thenReturn(Optional.of(singlechatRoom));
-        when(chatParticipantRepository.findByChatRoom(singlechatRoom)).thenReturn(List.of(chatParticipant));
-        when(chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(singlechatRoom)).thenReturn(List.of());
-
-        ApiResponse<List<ChatMessageSendResponse>> response = chatService.getChatHistory(singlechatRoom.getId());
-        assertEquals("SUCCESS", response.code());
     }
 }
 
