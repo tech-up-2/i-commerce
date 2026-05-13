@@ -24,14 +24,14 @@ public class ReviewService {
     private final ReviewRepository reviewRepo;
 
     @Transactional
-    public Long createReview(CreateReviewRequest dto) {
+    public Long createReview(Long orderProductId, CreateReviewRequest dto) {
         validateStarRating(dto.getStarRate());
 
-        if (reviewRepo.existsByOrderProductIdAndUserId(dto.getOrderProductId(), dto.getUserId())) {
+        if (reviewRepo.existsByOrderProductIdAndUserId(orderProductId, dto.getUserId())) {
             throw new AppException(ReviewErrorCode.ALREADY_REVIEWED);
         }
 
-        Review review = Review.from(dto);
+        Review review = Review.from(orderProductId, dto);
 
         Review savedReview = reviewRepo.save(review);
 

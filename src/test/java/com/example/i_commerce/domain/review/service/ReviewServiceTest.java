@@ -40,9 +40,8 @@ public class ReviewServiceTest {
         Long orderProductId = 10L;
         Long reviewId = 100L;
 
-        CreateReviewRequest dto = new CreateReviewRequest(
+        CreateReviewRequest request = new CreateReviewRequest(
             userId,
-            orderProductId,
             "굳굳",
             5,
             List.of("image.jpg")
@@ -55,7 +54,7 @@ public class ReviewServiceTest {
         given(reviewRepo.save(any(Review.class))).willReturn(mockReview);
 
         //when
-        Long resultId = reviewService.createReview(dto);
+        Long resultId = reviewService.createReview(orderProductId, request);
 
         //then
         assertThat(resultId).isEqualTo(100L);
@@ -69,9 +68,8 @@ public class ReviewServiceTest {
         Long userId = 1L;
         Long orderProductId= 10L;
 
-        CreateReviewRequest dto = new CreateReviewRequest(
+        CreateReviewRequest request = new CreateReviewRequest(
             userId,
-            orderProductId,
             "리뷰 또 쓰고 싶다",
             5,
             null
@@ -80,7 +78,7 @@ public class ReviewServiceTest {
         given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(true);
 
         //when&then
-        assertThatThrownBy(() -> reviewService.createReview(dto))
+        assertThatThrownBy(() -> reviewService.createReview(orderProductId, request))
             .isInstanceOf(AppException.class)
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.ALREADY_REVIEWED);
 
@@ -92,16 +90,18 @@ public class ReviewServiceTest {
     @DisplayName("실패: 별점이 1점 미만 혹은 5점 초과면 예외가 발생한다")
     void createReview_Fail_InvalidStarRating(){
         //given
-        CreateReviewRequest overStarRateDto = new CreateReviewRequest(
+
+        Long orderProductId = 10L;
+
+        CreateReviewRequest request = new CreateReviewRequest(
             1L,
-            10L,
             "6점 주고 싶다",
             6,
             null
         );
 
         //when&then
-        assertThatThrownBy(() -> reviewService.createReview(overStarRateDto))
+        assertThatThrownBy(() -> reviewService.createReview(orderProductId, request))
             .isInstanceOf(AppException.class)
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.INVALID_STAR_RATING);
 

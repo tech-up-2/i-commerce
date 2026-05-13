@@ -14,8 +14,6 @@ public class CreateReviewRequest {
 
     private Long userId;
 
-    private Long orderProductId;
-
     private String content;
 
     private Integer starRate;

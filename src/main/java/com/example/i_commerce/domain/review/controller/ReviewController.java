@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -33,29 +34,12 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    @Operation(summary = "리뷰 생성", description = "리뷰를 생성한다.")
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Long> createReview(
-        @RequestBody CreateReviewRequest dto) {
-        Long createdReviewId = reviewService.createReview(dto);
-        return ApiResponse.success(createdReviewId);
-    }
-
-    @Operation(summary = "리뷰 목록 불러오기", description = "리뷰 목록을 불러온다.")
-    @GetMapping("/{productOrderId}")
-    public ApiResponse<List<ReviewListResponse>> viewReviewList(
-        @PathVariable Long productOrderId) {
-        List<ReviewListResponse> responses = reviewService.viewReviewList(productOrderId);
-        return ApiResponse.success(responses);
-    }
-
     @Operation(summary = "리뷰 상세 보기", description = "상세 리뷰를 본다.")
-    @GetMapping("/{productOrderId}/{reviewId}")
+    @GetMapping("/{reviewId}")
     public ApiResponse<ReviewResponse> viewDetailReview(
         @PathVariable Long reviewId) {
-        ReviewResponse responseDto = reviewService.viewDetailReview(reviewId);
-        return ApiResponse.success(responseDto);
+        ReviewResponse response = reviewService.viewDetailReview(reviewId);
+        return ApiResponse.success(response);
     }
 
     @Operation(summary = "리뷰 수정", description = "리뷰를 수정한다.")
