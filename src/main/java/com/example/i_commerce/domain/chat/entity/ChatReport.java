@@ -57,4 +57,8 @@ public class ChatReport extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ChatReportStatus status;
+
+    public void updateStatus(ChatReportStatus status) {
+        this.status = status;
+    }
 }

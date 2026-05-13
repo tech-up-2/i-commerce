@@ -36,9 +36,13 @@ public class QChatReport extends EntityPathBase<ChatReport> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final NumberPath<Long> memberId = createNumber("memberId", Long.class);
+    public final StringPath originalMessage = createString("originalMessage");
 
-    public final StringPath reportText = createString("reportText");
+    public final EnumPath<com.example.i_commerce.domain.chat.entity.enums.ChatReportReason> reason = createEnum("reason", com.example.i_commerce.domain.chat.entity.enums.ChatReportReason.class);
+
+    public final NumberPath<Long> reportedId = createNumber("reportedId", Long.class);
+
+    public final NumberPath<Long> reporterId = createNumber("reporterId", Long.class);
 
     public final EnumPath<com.example.i_commerce.domain.chat.entity.enums.ChatReportStatus> status = createEnum("status", com.example.i_commerce.domain.chat.entity.enums.ChatReportStatus.class);
 
