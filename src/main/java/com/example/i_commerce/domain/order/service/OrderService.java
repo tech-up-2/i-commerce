@@ -10,6 +10,7 @@ import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.exception.OrderErrorCode;
+import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.OrderProductRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
@@ -134,5 +135,22 @@ public class OrderService {
                 .orElse(null);
 
         return OrderDetailResponse.of(order, orderProducts, paymentInfo);
+    }
+
+    @Transactional
+    public void validateOrderOwner(String tossOrderId, Long userId) {
+
+        if (tossOrderId == null || !tossOrderId.contains("_")) {
+            throw new AppException(PaymentErrorCode.INVALID_PAYMENT_REQUEST); // 400 Bad Request
+        }
+
+        Long paymentId = Long.valueOf(tossOrderId.split("_")[1]);
+        Payment payment = paymentRepository.findById(paymentId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+
+        Order order = payment.getOrder();
+
+        if (!order.getUserId().equals(userId)) {
+            throw new AppException(OrderErrorCode.ORDER_NOT_OWNED);
+        }
     }
 }

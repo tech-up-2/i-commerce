@@ -50,14 +50,20 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public PaymentDetailResponse getPaymentDetails(Long paymentId) {
+    public PaymentDetailResponse getPaymentDetails(Long userId, Long paymentId) {
         Payment payment = paymentRepository.findById(paymentId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+
+        Order order = payment.getOrder();
+
+        if(!(userId).equals(order.getUserId())) {
+            throw new AppException(PaymentErrorCode.ACCESS_DENIED);
+        }
 
         if(payment.getPayStatus() != PaymentStatus.READY) {
             throw new AppException(PaymentErrorCode.INVALID_PAYMENT_STATUS);
         }
 
-        Order order = payment.getOrder();
+
         String firstProductName = order.getOrderProducts().getFirst().getProductName();
 
         return PaymentDetailResponse.of(payment, order, firstProductName);
@@ -65,6 +71,9 @@ public class PaymentService {
 
     @Transactional
     public void confirmPayment(PaymentConfirmRequest dto) {
+        if (dto.tossOrderId() == null || !dto.tossOrderId().contains("_")) {
+            throw new AppException(PaymentErrorCode.INVALID_PAYMENT_REQUEST); // 400 Bad Request
+        }
         Long paymentId = Long.valueOf(dto.tossOrderId().split("_")[1]);
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));

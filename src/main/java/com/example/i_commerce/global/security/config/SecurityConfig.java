@@ -47,11 +47,6 @@ public class SecurityConfig {
                     "/api/v1/auth/**"
                 ).permitAll()
 
-                //임시 추후 삭제
-                .requestMatchers(
-                        "/api/v1/payments/**",
-                        "/payment/**"
-                ).permitAll()
 
                 // 리뷰 조회 공개
                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
