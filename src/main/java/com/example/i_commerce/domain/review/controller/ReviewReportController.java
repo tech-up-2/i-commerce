@@ -5,6 +5,7 @@ import com.example.i_commerce.domain.review.service.dto.CreateReportRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,16 +19,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
-@RequestMapping("/api/v1")
-@RequiredArgsConstructor
+@Tag(name = "Review API", description = "리뷰 관련 API")
 @SecurityRequirement(name = "BearerAuth")
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1")
 public class ReviewReportController {
 
-    private final ReviewReportService reviewReportService;
-
+    @Operation(summary = "리뷰 신고", description = "사용자가 특정 리뷰를 신고할 때 사용한다.")
     @PostMapping("/reviews/{reviewId}/reports")
-    @Operation(summary = "리뷰 신고", description = "사용자가 특정 리뷰를 신고할 때 사용합니다.")
     @PreAuthorize("@authChecker.canReportReview()")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<Void> createReport(
@@ -38,6 +38,8 @@ public class ReviewReportController {
         reviewReportService.createReviewReport(reviewId, reporterId, dto);
         return ApiResponse.success();
     }
+
+    private final ReviewReportService reviewReportService;
 
     @PatchMapping("/admin/reports/{reportId}/approve")
     @Operation(summary = "신고 승인", description = "관리자는 특정 리뷰 신고를 승인할 수 있다.")

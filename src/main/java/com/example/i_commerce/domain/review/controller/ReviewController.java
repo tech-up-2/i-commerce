@@ -27,8 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Review API", description = "리뷰 관련 API")
 @SecurityRequirement(name = "BearerAuth")
 @RestController
-@RequestMapping("/api/v1/reviews")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/reviews")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -86,3 +86,5 @@ public class ReviewController {
         return ApiResponse.success(responses);
     }
 }
+
+
