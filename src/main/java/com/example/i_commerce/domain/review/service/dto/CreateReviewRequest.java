@@ -12,8 +12,6 @@ import lombok.Getter;
 @Builder
 public class CreateReviewRequest {
 
-    private Long userId;
-
     private String content;
 
     private Integer starRate;

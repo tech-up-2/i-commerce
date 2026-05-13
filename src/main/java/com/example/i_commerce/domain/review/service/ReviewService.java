@@ -24,14 +24,14 @@ public class ReviewService {
     private final ReviewRepository reviewRepo;
 
     @Transactional
-    public Long createReview(Long orderProductId, CreateReviewRequest dto) {
+    public Long createReview(Long orderProductId, Long userId, CreateReviewRequest dto) {
         validateStarRating(dto.getStarRate());
 
-        if (reviewRepo.existsByOrderProductIdAndUserId(orderProductId, dto.getUserId())) {
+        if (reviewRepo.existsByOrderProductIdAndUserId(orderProductId, userId)) {
             throw new AppException(ReviewErrorCode.ALREADY_REVIEWED);
         }
 
-        Review review = Review.from(orderProductId, dto);
+        Review review = Review.from(orderProductId, userId, dto);
 
         Review savedReview = reviewRepo.save(review);
 
@@ -62,10 +62,10 @@ public class ReviewService {
     }
 
     @Transactional
-    public Long editReview(Long reviewId, UpdateReviewRequest dto) {
+    public Long editReview(Long reviewId, Long userId, UpdateReviewRequest dto) {
         Review review = getReviewOrThrow(reviewId);
 
-        validateAuthor(review, dto.getUserId());
+        validateAuthor(review, userId);
 
         review.update(dto.getContent(), dto.getStarRate(), dto.getImageUrls());
 
@@ -119,6 +119,10 @@ public class ReviewService {
     }
 
     private void validateAuthor(Review review, Long userId) {
+        if (userId == null) {
+            throw new AppException(CommonErrorCode.UNAUTHORIZED);
+        }
+
         if (!review.getUserId().equals(userId)) {
             throw(new AppException(CommonErrorCode.INVALID_PERMISSION));
         }

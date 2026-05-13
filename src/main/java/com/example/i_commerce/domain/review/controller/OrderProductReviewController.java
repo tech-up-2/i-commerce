@@ -4,12 +4,16 @@ import com.example.i_commerce.domain.review.service.ReviewService;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
 import com.example.i_commerce.global.common.response.ApiResponse;
+import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,13 +32,15 @@ public class OrderProductReviewController {
     private final ReviewService reviewService;
 
     @Operation(summary = "리뷰 생성", description = "특정 상품에 대한 리뷰를 생성한다.")
+    @PreAuthorize("@authChecker.canWriteReviewAsMember()")
     @PostMapping("/{orderProductId}/reviews")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<Long> createReview(
         @PathVariable Long orderProductId,
-        @RequestBody CreateReviewRequest request
+        @AuthenticationPrincipal CustomUserPrincipal principal,
+        @RequestBody @Valid CreateReviewRequest request
     ) {
-        Long createdReviewId = reviewService.createReview(orderProductId, request);
+        Long createdReviewId = reviewService.createReview(orderProductId, principal.getId(), request);
         return ApiResponse.success(createdReviewId);
     }
 

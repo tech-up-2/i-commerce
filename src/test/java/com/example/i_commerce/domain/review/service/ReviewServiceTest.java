@@ -41,7 +41,6 @@ public class ReviewServiceTest {
         Long reviewId = 100L;
 
         CreateReviewRequest request = new CreateReviewRequest(
-            userId,
             "굳굳",
             5,
             List.of("image.jpg")
@@ -54,7 +53,7 @@ public class ReviewServiceTest {
         given(reviewRepo.save(any(Review.class))).willReturn(mockReview);
 
         //when
-        Long resultId = reviewService.createReview(orderProductId, request);
+        Long resultId = reviewService.createReview(orderProductId, userId, request);
 
         //then
         assertThat(resultId).isEqualTo(100L);
@@ -69,7 +68,6 @@ public class ReviewServiceTest {
         Long orderProductId= 10L;
 
         CreateReviewRequest request = new CreateReviewRequest(
-            userId,
             "리뷰 또 쓰고 싶다",
             5,
             null
@@ -78,7 +76,7 @@ public class ReviewServiceTest {
         given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(true);
 
         //when&then
-        assertThatThrownBy(() -> reviewService.createReview(orderProductId, request))
+        assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request))
             .isInstanceOf(AppException.class)
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.ALREADY_REVIEWED);
 
@@ -91,17 +89,17 @@ public class ReviewServiceTest {
     void createReview_Fail_InvalidStarRating(){
         //given
 
+        Long userId = 1L;
         Long orderProductId = 10L;
 
         CreateReviewRequest request = new CreateReviewRequest(
-            1L,
             "6점 주고 싶다",
             6,
             null
         );
 
         //when&then
-        assertThatThrownBy(() -> reviewService.createReview(orderProductId, request))
+        assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request))
             .isInstanceOf(AppException.class)
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.INVALID_STAR_RATING);
 

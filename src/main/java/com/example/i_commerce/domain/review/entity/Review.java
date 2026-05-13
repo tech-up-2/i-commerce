@@ -220,10 +220,10 @@ public class Review extends BaseEntity {
         this.reportStatus = reviewReportStatus;
     }
 
-    public static Review from(Long orderProductId, CreateReviewRequest dto) {
+    public static Review from(Long orderProductId, Long userId, CreateReviewRequest dto) {
         Review review = Review.builder()
             .orderProductId(orderProductId)
-            .userId(dto.getUserId())
+            .userId(userId)
             .content(dto.getContent())
             .starRate(dto.getStarRate())
             .likeCount(0L)
