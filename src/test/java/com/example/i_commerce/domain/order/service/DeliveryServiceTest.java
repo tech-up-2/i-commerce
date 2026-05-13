@@ -15,11 +15,11 @@ import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
-import com.example.i_commerce.domain.order.event.dto.PaymentCompletedEvent;
+import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.DeliveryRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
-import com.example.i_commerce.domain.order.service.dto.DeliveryCancelRequestEvent;
+import com.example.i_commerce.domain.order.event.dto.DeliveryCancelRequestEvent;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
@@ -72,7 +72,7 @@ class DeliveryServiceTest {
         given(order.getOrderProducts()).willReturn(List.of(item1, item2));
 
         // Event 모킹
-        PaymentCompletedEvent event = mock(PaymentCompletedEvent.class);
+        PaymentApprovedEvent event = mock(PaymentApprovedEvent.class);
         Payment payment = mock(Payment.class);
         given(event.payment()).willReturn(payment);
         given(payment.getOrder()).willReturn(order);
@@ -114,7 +114,7 @@ class DeliveryServiceTest {
     @DisplayName("주문 정보가 없으면 AppException이 발생한다")
     void createDelivery_OrderNotFound() {
         // given
-        PaymentCompletedEvent event = mock(PaymentCompletedEvent.class);
+        PaymentApprovedEvent event = mock(PaymentApprovedEvent.class);
         Payment payment = mock(Payment.class);
         Order order = mock(Order.class);
 

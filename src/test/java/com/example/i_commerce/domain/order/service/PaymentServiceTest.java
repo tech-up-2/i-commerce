@@ -13,7 +13,7 @@ import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
-import com.example.i_commerce.domain.order.event.dto.PaymentCompletedEvent;
+import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
@@ -100,7 +100,7 @@ public class PaymentServiceTest {
         assertThat(payment.getPayStatus()).isEqualTo(PaymentStatus.PAID);
         assertThat(payment.getCancelableAmount()).isEqualTo(dto.amount());
         verify(order).changeOrderStatus(OrderStatus.CONFIRMED);
-        verify(publisher).publishEvent(any(PaymentCompletedEvent.class));
+        verify(publisher).publishEvent(any(PaymentApprovedEvent.class));
     }
 
     @Test
@@ -151,7 +151,7 @@ public class PaymentServiceTest {
         assertThat(payment.getPayStatus()).isEqualTo(PaymentStatus.CANCELLED);
         assertThat(payment.getCancelableAmount()).isEqualTo(0);
         verify(order).changeOrderStatus(OrderStatus.CANCELLED);
-        verify(publisher).publishEvent(any(PaymentCompletedEvent.class));
+        verify(publisher).publishEvent(any(PaymentApprovedEvent.class));
     }
 
     @Test

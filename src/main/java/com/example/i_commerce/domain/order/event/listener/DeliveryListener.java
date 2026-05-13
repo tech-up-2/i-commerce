@@ -1,12 +1,8 @@
 package com.example.i_commerce.domain.order.event.listener;
 
-import com.example.i_commerce.domain.order.entity.Delivery;
-import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
-import com.example.i_commerce.domain.order.event.dto.PaymentCompletedEvent;
+import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
 import com.example.i_commerce.domain.order.service.DeliveryService;
-import com.example.i_commerce.domain.order.service.dto.DeliveryCancelRequestEvent;
-import com.example.i_commerce.global.exception.AppException;
-import java.util.List;
+import com.example.i_commerce.domain.order.event.dto.DeliveryCancelRequestEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -22,7 +18,7 @@ public class DeliveryListener {
     private final DeliveryService deliveryService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void handlePaymentCompleted(PaymentCompletedEvent event) {
+    public void handlePaymentCompleted(PaymentApprovedEvent event) {
         deliveryService.createDelivery(event);
     }
 
