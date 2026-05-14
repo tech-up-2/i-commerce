@@ -1,4 +1,4 @@
-package com.example.i_commerce.global.config;
+package com.example.i_commerce.global.s3.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
