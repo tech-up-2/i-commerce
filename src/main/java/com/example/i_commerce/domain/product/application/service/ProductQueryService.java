@@ -39,6 +39,20 @@ public class ProductQueryService implements ProductQueryFacade {
     private final ProductAttributeRepository productAttributeRepository;
 
     @Override
+    public List<ProductItemInfoResponse> getProductItemInfos(Set<Long> productItemIds) {
+        if (productItemIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<ProductItemInfoProjection> infoProjections = productItemRepository
+            .findAllItemInfoByIdIn(productItemIds);
+
+        return infoProjections.stream()
+            .map(ProductItemInfoResponse::from)
+            .toList();
+    }
+
+    @Override
     public ProductItemInfoResponse getProductItemInfo(Long itemId) {
 
         ProductItemInfoProjection itemInfoProjection = productItemRepository.findItemInfoById(itemId)
