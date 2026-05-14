@@ -44,4 +44,11 @@ public class Attribute extends BaseEntity {
     @OneToMany(mappedBy = "attribute", cascade = CascadeType.ALL)
     private List<CategoryAttribute> categoryAttributes = new ArrayList<>();
 
+    public static Attribute of(String key, String value) {
+        return Attribute.builder()
+            .key(key)
+            .value(value)
+            .build();
+    }
+
 }
