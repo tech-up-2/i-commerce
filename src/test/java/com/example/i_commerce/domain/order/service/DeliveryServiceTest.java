@@ -66,7 +66,6 @@ class DeliveryServiceTest {
         OrderProduct item1 = mock(OrderProduct.class);
         OrderProduct item2 = mock(OrderProduct.class);
 
-        given(order.getId()).willReturn(orderId);
         given(item1.getProductSkuId()).willReturn(skuId1);
         given(item2.getProductSkuId()).willReturn(skuId2);
         given(order.getOrderProducts()).willReturn(List.of(item1, item2));
@@ -74,8 +73,7 @@ class DeliveryServiceTest {
         // Event 모킹
         PaymentApprovedEvent event = mock(PaymentApprovedEvent.class);
         Payment payment = mock(Payment.class);
-        given(event.payment()).willReturn(payment);
-        given(payment.getOrder()).willReturn(order);
+        given(event.orderId()).willReturn(orderId);
 
         // Repository 동작 정의
         given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
@@ -118,9 +116,7 @@ class DeliveryServiceTest {
         Payment payment = mock(Payment.class);
         Order order = mock(Order.class);
 
-        given(event.payment()).willReturn(payment);
-        given(payment.getOrder()).willReturn(order);
-        given(order.getId()).willReturn(1L);
+        given(event.orderId()).willReturn(1L);
         given(orderRepository.findById(1L)).willReturn(Optional.empty());
 
         // when & then
@@ -135,12 +131,14 @@ class DeliveryServiceTest {
         Long orderId = 1L;
         DeliveryCancelRequestEvent event = new DeliveryCancelRequestEvent(orderId);
 
+        Order order = mock(Order.class);
         // 가상의 배송 전(READY) 객체 생성 (실제 엔티티 구현체에 맞게 빌더나 생성자 사용)
         Delivery delivery1 = createDelivery(orderId, DeliveryStatus.PREPARING);
         Delivery delivery2 = createDelivery(orderId, DeliveryStatus.PREPARING);
         List<Delivery> mockDeliveries = List.of(delivery1, delivery2);
 
-        given(deliveryRepository.findAllByOrderId(orderId)).willReturn(mockDeliveries);
+        given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+        given(order.getDeliveries()).willReturn(mockDeliveries);
 
         // when
         deliveryService.cancelDelivery(event);
@@ -157,12 +155,15 @@ class DeliveryServiceTest {
         Long orderId = 1L;
         DeliveryCancelRequestEvent event = new DeliveryCancelRequestEvent(orderId);
 
+        Order order = mock(Order.class);
+
         Delivery delivery1 = createDelivery(orderId, DeliveryStatus.PREPARING);
         Delivery delivery2 = createDelivery(orderId, DeliveryStatus.SHIPPING);
 
         List<Delivery> mockDeliveries = List.of(delivery1, delivery2);
 
-        given(deliveryRepository.findAllByOrderId(orderId)).willReturn(mockDeliveries);
+        given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+        given(order.getDeliveries()).willReturn(mockDeliveries);
 
         // when & then
         assertThatThrownBy(() -> deliveryService.cancelDelivery(event))
@@ -177,10 +178,13 @@ class DeliveryServiceTest {
         Long orderId = 1L;
         DeliveryCancelRequestEvent event = new DeliveryCancelRequestEvent(orderId);
 
+        Order order = mock(Order.class);
+
         Delivery delivery = createDelivery(orderId, DeliveryStatus.ARRIVED); // 배송완료 상태
         List<Delivery> mockDeliveries = List.of(delivery);
 
-        given(deliveryRepository.findAllByOrderId(orderId)).willReturn(mockDeliveries);
+        given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+        given(order.getDeliveries()).willReturn(mockDeliveries);
 
         // when & then
         assertThatThrownBy(() -> deliveryService.cancelDelivery(event))
