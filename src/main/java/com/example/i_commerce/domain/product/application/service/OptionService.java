@@ -39,7 +39,7 @@ public class OptionService {
 
     @Transactional(readOnly = true)
     public List<OptionGroupResponse> getAllOptionsGroupedByType() {
-        List<Option> options = optionRepository.findAll();
+        List<Option> options = optionRepository.findAllOrderedByTypeAndValue();
 
         Map<String, List<Option>> groupedOptions = options.stream()
             .collect(Collectors.groupingBy(
