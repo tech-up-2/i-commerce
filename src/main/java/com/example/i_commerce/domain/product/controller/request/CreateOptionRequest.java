@@ -16,7 +16,7 @@ public record CreateOptionRequest(
 
     @NotEmpty(message = "옵션 값이 필요합니다.")
     @NoDuplicates(message = "옵션 값은 중복될 수 없습니다.")
-    List<String> values
+    List<@NotBlank(message = "옵션 값은 공백일 수 없습니다.") String> values
 ) {
 
 }
