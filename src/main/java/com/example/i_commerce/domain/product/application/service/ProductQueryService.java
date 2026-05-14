@@ -16,7 +16,7 @@ import com.example.i_commerce.domain.product.facade.ProductQueryFacade;
 import com.example.i_commerce.domain.product.facade.dto.ProductItemInfoResponse;
 import com.example.i_commerce.domain.product.repository.ProductAttributeRepository;
 import com.example.i_commerce.domain.product.repository.ProductImageRepository;
-import com.example.i_commerce.domain.product.repository.ProductItemInfoProjection;
+import com.example.i_commerce.domain.product.repository.projection.ProductItemInfoProjection;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.domain.product.repository.ProductQueryRepository;
 import com.example.i_commerce.global.exception.AppException;

@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.product.repository;
 
 import com.example.i_commerce.domain.product.entity.ProductItem;
+import com.example.i_commerce.domain.product.repository.projection.ProductItemInfoProjection;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
