@@ -36,6 +36,7 @@ public class ChatRoom extends BaseEntity {
 
     private String name;
 
+    @Builder.Default
     private Boolean isGroupChat = false;
 
     @ManyToOne(fetch = FetchType.LAZY)

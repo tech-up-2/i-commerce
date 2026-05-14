@@ -35,7 +35,7 @@ class ReviewLikeRepositoryTest {
             .content("정말 좋아유")
             .starRate(5)
             .likeCount(0L)
-            .status(ReviewIsBestStatus.NORMAL)
+            .bestStatus(ReviewIsBestStatus.NORMAL)
             .isExcluded(false)
             .build();
         entityManager.persist(review);
