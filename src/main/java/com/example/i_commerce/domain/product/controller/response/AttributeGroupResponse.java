@@ -9,11 +9,11 @@ public record AttributeGroupResponse(
     String key,
     List<AttributeValueResponse> values
 ) {
-    public static AttributeGroupResponse of(String key, List<Attribute> attribute) {
+    public static AttributeGroupResponse of(String key, List<Attribute> attributes) {
         return AttributeGroupResponse.builder()
             .key(key)
-            .values(attribute.stream().
-                map(AttributeValueResponse::from)
+            .values(attributes.stream()
+                .map(AttributeValueResponse::from)
                 .toList())
             .build();
     }

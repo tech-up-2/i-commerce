@@ -24,7 +24,7 @@ public class AttributeService {
     @Transactional
     public void createAttribute(CreateAttributeRequest request) {
 
-        if(attributeRepository.existsByKey(request.key())) {
+        if (attributeRepository.existsByKey(request.key())) {
             throw new AppException(ProductErrorCode.DUPLICATE_ATTRIBUTE_KEY);
         }
 
