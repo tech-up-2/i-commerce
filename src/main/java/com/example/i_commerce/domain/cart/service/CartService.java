@@ -27,8 +27,8 @@ public class CartService {
     public AddCartItemResponse addCartItem(Long userId, AddCartItemRequest request) {
 
         ProductItemInfo productItemInfo =
-            productClient.getProductItem(request.productItemId());
-        if(!productItemInfo.isAvailable()) {
+            productClient.getProductItemInfo(request.productItemId());
+        if(!productItemInfo.isOnSale()) {
             throw new AppException(CartErrorCode.PRODUCT_NOT_AVAILABLE);
         }
 
@@ -44,6 +44,7 @@ public class CartService {
             }).orElseGet(() -> {
                 CartItem newItem = CartItem.of(
                     cart,
+                    productItemInfo.storeId(),
                     productItemInfo.productItemId(),
                     productItemInfo.productName(),
                     productItemInfo.price(),
