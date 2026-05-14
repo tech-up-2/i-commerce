@@ -3,9 +3,8 @@ package com.example.i_commerce.domain.order.service;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.PaymentHistory;
-import com.example.i_commerce.domain.order.event.dto.PaymentCompletedEvent;
+import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.repository.PaymentHistoryRepository;
-import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -18,7 +17,7 @@ public class PaymentHistoryService {
     private final PaymentHistoryRepository paymentHistoryRepository;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void createPaymentHistory(PaymentCompletedEvent event) {
+    public void createPaymentHistory(PaymentStatusChangedEvent event) {
         Payment payment = event.payment();
         Order order = payment.getOrder();
         paymentHistoryRepository.save(

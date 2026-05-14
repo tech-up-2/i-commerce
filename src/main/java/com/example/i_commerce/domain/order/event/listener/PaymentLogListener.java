@@ -1,6 +1,6 @@
 package com.example.i_commerce.domain.order.event.listener;
 
-import com.example.i_commerce.domain.order.event.dto.PaymentCompletedEvent;
+import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.service.PaymentHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ public class PaymentLogListener {
     private final PaymentHistoryService paymentHistoryService;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void createPaymentHistoryRequest(PaymentCompletedEvent event) {
+    public void createPaymentHistoryRequest(PaymentStatusChangedEvent event) {
         paymentHistoryService.createPaymentHistory(event);
     }
 }
