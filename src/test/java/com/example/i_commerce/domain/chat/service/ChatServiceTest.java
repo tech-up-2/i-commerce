@@ -12,6 +12,8 @@ import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
+import com.example.i_commerce.domain.chat.util.ChatRoleChecker;
+import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
 import com.example.i_commerce.domain.chat.util.TempChatUtil;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
@@ -37,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -57,7 +60,9 @@ class ChatServiceTest {
     @Mock
     private ProductRepository productRepository;
     @Mock
-    private DataEncryptor dataEncryptor;
+    private ChatRoomNameGenerator chatRoomNameGenerator;
+    @Spy
+    private ChatRoleChecker chatRoleChecker = new ChatRoleChecker();
 
     private Member member;
     private Member member2;
@@ -139,12 +144,13 @@ class ChatServiceTest {
         singlechatRoom = ChatRoom.builder()
             .id(5L)
             .isGroupChat(false)
-            .name("테스트 1:1채팅")
+            .name("테스트 1번")
             .build();
         groupchatRoom = ChatRoom.builder()
+
             .id(6L)
             .isGroupChat(true)
-            .name("테스트 그룹채팅")
+            .name("테스트 그룹 채팅")
             .build();
 
         chatParticipant = ChatParticipant.builder()
@@ -195,7 +201,7 @@ class ChatServiceTest {
         when((memberRepository.findById(member2.getId()))).thenReturn(Optional.of(member2));
 
         AppException exception = assertThrows(AppException.class, () ->
-            chatService.getOrCreatePrivateRoom(member2.getId()));
+            chatService.getOrCreatePrivateRoom(member2.getId())); //
 
         Assertions.assertThat(exception.getErrorCode()).isEqualTo(ChatErrorCode.CANNOT_CHAT_SAME_ROLE);
     }

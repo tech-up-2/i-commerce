@@ -68,6 +68,7 @@ public class ChatService {
         Member otherMember = memberRepository.findById(otherMemberId)
             .orElseThrow(() -> new AppException(
                 MemberErrorCode.USER_NOT_FOUND));
+
         chatRoleChecker.roleCheck(member, otherMember);
 
 //       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 에러코드를 return
@@ -250,7 +251,7 @@ public class ChatService {
         List<ChatMessageSendResponse> chatMessageSendResponses = new ArrayList<>();
         for (ChatMessage messages : chatMessages) {
             ChatMessageSendResponse messagesDto = ChatMessageSendResponse.builder()
-                .message(messages.getContent())
+                .message(messages.isBlind() ? "관리자에 의해 가려진 메시지입니다" : messages.getContent())
                 .messageId(messages.getId())
                 .senderId(messages.getMemberId())
                 .build();

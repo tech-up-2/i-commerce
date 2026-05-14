@@ -12,6 +12,7 @@ import com.example.i_commerce.domain.chat.util.TempChatUtil;
 import com.example.i_commerce.domain.member.entity.Admin;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
+import com.example.i_commerce.domain.member.repository.AdminRepository;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
@@ -30,12 +31,13 @@ public class ChatReportService {
     private final ChatReportRepository chatReportRepository;
     private final MemberRepository memberRepository;
     private final ChatMessageRepository chatMessageRepository;
+    private final AdminRepository adminRepository;
 
     public ApiResponse<Void> createChatReport(ChatReportRequest chatReportRequest) {
         Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
             .orElseThrow(() -> new AppException(
                 MemberErrorCode.USER_NOT_FOUND));
-        ChatMessage message = chatMessageRepository.findById(chatReportRequest.MessageId())
+        ChatMessage message = chatMessageRepository.findById(chatReportRequest.messageId())
             .orElseThrow(() -> new AppException(
                 ChatErrorCode.MESSAGE_NOT_FOUND));
 
@@ -56,13 +58,16 @@ public class ChatReportService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> controlReport(Long reportId, ChatReportStatus status) {
-//        Admin admin = adminRepository.findById(TempChatUtil.getCurrentUserId()).orElseThrow(() -> new AppException(
-//            ChatErrorCode.ADMIN_NOT_FOUND));
-//        ChatReport chatReport = chatReportRepository.findById(reportId).orElseThrow(() -> new AppException(
-//         ChatErrorCode.REPORT_NOT_FONUD));
-//        chatReport.updateStatus(status);
-//        chatReportRepository.save(chatReport);
-//
+        Admin admin = adminRepository.findById(TempChatUtil.getCurrentUserId()).orElseThrow(() -> new AppException(
+            MemberErrorCode.ADMIN_NOT_FOUND));
+        ChatReport chatReport = chatReportRepository.findById(reportId).orElseThrow(() -> new AppException(
+         ChatErrorCode.REPORT_NOT_FOUND));
+        chatReport.updateStatus(status);
+        if(chatReport.getStatus() == ChatReportStatus.RESOLVED) {
+            ChatMessage message = chatReport.getChatMessage();
+            message.Blind();
+        }
+        chatReportRepository.save(chatReport);
         return ApiResponse.success();
     }
 

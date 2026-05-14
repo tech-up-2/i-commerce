@@ -33,6 +33,7 @@ public enum MemberErrorCode implements ErrorCode {
     SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40403", "존재하지 않는 판매자입니다."),
     DELIVERY_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND,
         "USR-40404", "배송지가 존재하지 않습니다."),
+    ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40405", "존재하지 않는 관리자입니다."),
 
     // --- 409
     DUPLICATED_EMAIL(HttpStatus.CONFLICT, "USR-40901", "이미 가입된 이메일입니다.");
