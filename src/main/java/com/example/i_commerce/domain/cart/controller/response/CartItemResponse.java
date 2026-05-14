@@ -9,6 +9,7 @@ public record CartItemResponse(
     Long cartItemId,
     Long productItemId,
     String productName,
+    String displayOptionName,
     int snapshotPrice,
     int currentPrice,
     int quantity,
@@ -26,6 +27,7 @@ public record CartItemResponse(
             .cartItemId(cartItem.getId())
             .productItemId(cartItem.getProductItemId())
             .productName(productInfo.productName())
+            .displayOptionName(productInfo.displayOptionName())
             .snapshotPrice(cartItem.getSnapshotPrice())
             .currentPrice(productInfo.price())
             .quantity(cartItem.getQuantity())
