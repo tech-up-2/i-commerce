@@ -18,7 +18,7 @@ public record AddCartItemResponse(
             .cartItemId(cartItem.getId())
             .productItemId(cartItem.getProductItemId())
             .productName(cartItem.getProductName())
-            .price(cartItem.getPrice())
+            .price(cartItem.getSnapshotPrice())
             .displayOptionName(cartItem.getDisplayOptionName())
             .quantity(cartItem.getQuantity())
             .isChecked(cartItem.getIsChecked())

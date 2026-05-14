@@ -44,7 +44,7 @@ public class CartItem extends BaseEntity {
     private String productName;
 
     @Column(nullable = false)
-    private Integer price;
+    private Integer snapshotPrice;
 
     private String displayOptionName;
 
@@ -69,7 +69,7 @@ public class CartItem extends BaseEntity {
             .storeId(storeId)
             .productItemId(productItemId)
             .productName(productName)
-            .price(price)
+            .snapshotPrice(price)
             .displayOptionName(displayOptionName)
             .quantity(quantity)
             .build();
