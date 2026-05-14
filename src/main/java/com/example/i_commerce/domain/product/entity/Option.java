@@ -21,7 +21,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "options")
+@Table(
+    name = "options",
+    uniqueConstraints = @UniqueConstraint(
+        columnNames = {"type", "value"}
+    )
+)
 @Getter
 @Builder
 @AllArgsConstructor
@@ -45,5 +50,13 @@ public class Option extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "option", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CategoryOption> categoryOptions = new ArrayList<>();
+
+    public static Option of(String type, String value, OptionInputType inputType) {
+        return Option.builder()
+            .type(type)
+            .value(value)
+            .inputType(inputType)
+            .build();
+    }
 
 }
