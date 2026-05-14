@@ -9,10 +9,11 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.mock;
 import static org.mockito.BDDMockito.then;
 
-import com.example.i_commerce.domain.member.service.DeliveryAddressService;
-import com.example.i_commerce.domain.member.service.MemberService;
-import com.example.i_commerce.domain.member.service.dto.DeliveryAddressSnapshot;
-import com.example.i_commerce.domain.member.service.dto.MemberOrderInfo;
+
+import com.example.i_commerce.domain.member.service.delivery.DeliveryAddressService;
+import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressSnapshot;
+import com.example.i_commerce.domain.member.service.member.MemberService;
+import com.example.i_commerce.domain.member.service.member.dto.MemberOrderInfo;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.repository.OrderProductRepository;

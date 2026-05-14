@@ -47,4 +47,4 @@ jwt:
   expiration: 3000 # 3000?
 
 toss:
-  secretKey: 1234
+  secretKey: ${TOSS_SECRET_KEY}
