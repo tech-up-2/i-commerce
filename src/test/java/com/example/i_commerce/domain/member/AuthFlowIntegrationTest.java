@@ -6,8 +6,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.i_commerce.domain.member.entity.enums.Gender;
-import com.example.i_commerce.domain.member.service.dto.LoginRequest;
-import com.example.i_commerce.domain.member.service.dto.MemberSignUpRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
+import com.example.i_commerce.domain.member.service.member.dto.MemberSignUpRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

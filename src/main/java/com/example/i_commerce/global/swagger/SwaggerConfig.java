@@ -61,7 +61,8 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
             .group("Order")
             .pathsToMatch(
-                "/api/v1/orders"
+                "/api/v1/orders/**",
+                "/api/v1/payments/**"
             )
             .addOpenApiCustomizer(securityCustomizer())
             .build();

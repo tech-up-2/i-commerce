@@ -45,6 +45,8 @@ public class Payment extends BaseEntity {
 
     private Integer amount;
 
+    private Integer cancelableAmount;
+
     @Enumerated(EnumType.STRING)
     private PaymentStatus payStatus;
 
@@ -64,7 +66,13 @@ public class Payment extends BaseEntity {
             throw new IllegalStateException("이미 결제 완료된 건입니다.");
         }
         this.pgTid = pgTid;
+        this.cancelableAmount = this.amount;
         this.payStatus = PaymentStatus.PAID; // 상태 변경도 한 번에 처리 가능
+    }
+
+    public void cancelPayment(Integer cancelAmount) {
+        this.cancelableAmount -= cancelAmount;
+        this.payStatus = PaymentStatus.CANCELLED;
     }
 
 }

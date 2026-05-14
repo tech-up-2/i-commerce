@@ -6,8 +6,10 @@ import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.event.dto.PaymentCompletedEvent;
 import com.example.i_commerce.domain.order.exception.OrderErrorCode;
+import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.DeliveryRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
+import com.example.i_commerce.domain.order.service.dto.DeliveryCancelRequestEvent;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.global.exception.AppException;
@@ -31,7 +33,7 @@ public class DeliveryService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createDelivery(PaymentCompletedEvent event) {
 
-        Order order = orderRepository.findById(event.payment().getOrder().getId()).orElseThrow(() -> new AppException(OrderErrorCode.ORDER_TEMP_ERROR));
+        Order order = orderRepository.findById(event.payment().getOrder().getId()).orElseThrow(() -> new AppException(OrderErrorCode.ORDER_NOT_FOUND));
 
         List<Long> productIds = order.getOrderProducts().stream()
                 .map(OrderProduct::getProductSkuId).toList();
@@ -57,5 +59,18 @@ public class DeliveryService {
             });
         });
 
+    }
+
+    public void cancelDelivery(DeliveryCancelRequestEvent event) {
+        List<Delivery> deliveries = deliveryRepository.findAllByOrderId(event.orderId());
+
+        for (Delivery delivery : deliveries) {
+            if (delivery.getDeliveryStatus() == DeliveryStatus.SHIPPING ||
+                    delivery.getDeliveryStatus() == DeliveryStatus.ARRIVED) {
+                throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_IMPOSSIBLE_ALREADY_SHIPPED);
+            }
+
+            delivery.changeDeliveryStatus(DeliveryStatus.CANCELLED);
+        }
     }
 }
