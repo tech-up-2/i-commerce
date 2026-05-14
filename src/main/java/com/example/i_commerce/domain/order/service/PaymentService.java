@@ -154,32 +154,12 @@ public class PaymentService {
         }
 
         publisher.publishEvent(new DeliveryCancelRequestEvent(payment.getOrder().getId()));
+
         Order order = payment.getOrder();
-//        List<Delivery> deliveries = order.getDeliveries();
-//        log.info("--- 반복문 시작 전 ---");
-//        for (Delivery d : deliveries) {
-//            // d.hashCode()는 equals/hashCode가 없으므로 객체의 메모리 주소 기반 값을 리턴합니다.
-//            log.info("Delivery ID: {}, 객체 주소값: {}, 상태: {}", d.getId(), System.identityHashCode(d), d.getDeliveryStatus());
-//        }
-//
-//        for (Delivery delivery : deliveries) {
-//            if (delivery.getDeliveryStatus() == DeliveryStatus.SHIPPING ||
-//                    delivery.getDeliveryStatus() == DeliveryStatus.ARRIVED) {
-//                throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_IMPOSSIBLE_ALREADY_SHIPPED);
-//            }
-//
-//            delivery.changeDeliveryStatus(DeliveryStatus.CANCELLED);
-//        }
-//
-//        log.info("--- 반복문 종료 후 ---");
-//        for (Delivery d : payment.getOrder().getDeliveries()) {
-//            log.info("Delivery ID: {}, 객체 주소값: {}, 상태: {}", d.getId(), System.identityHashCode(d), d.getDeliveryStatus());
-//        }
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Basic " + encodedKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
-
 
         Map<String, Object> params = new HashMap<>();
         params.put("cancelReason", dto.cancelReason());

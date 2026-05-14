@@ -119,7 +119,6 @@ public class OrderService {
                 .payStatus(PaymentStatus.READY)
                 .build());
 
-       //TODO : 재고 차감
         String firstProductName = order.getOrderProducts().getFirst().getProductName();
 
         return ApiResponse.success(CreateOrderResponse.of(order, payment, firstProductName));
