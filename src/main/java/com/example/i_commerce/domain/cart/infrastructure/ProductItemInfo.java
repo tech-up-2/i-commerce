@@ -26,4 +26,11 @@ public record ProductItemInfo(
             .isOnSale(response.isOnSale())
             .build();
     }
+
+    public static ProductItemInfo unavailable(Long productItemId) {
+        return ProductItemInfo.builder()
+            .productItemId(productItemId)
+            .isOnSale(false)
+            .build();
+    }
 }
