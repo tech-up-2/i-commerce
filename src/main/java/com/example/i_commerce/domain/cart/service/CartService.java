@@ -44,6 +44,7 @@ public class CartService {
             }).orElseGet(() -> {
                 CartItem newItem = CartItem.of(
                     cart,
+                    productItemInfo.storeId(),
                     productItemInfo.productItemId(),
                     productItemInfo.productName(),
                     productItemInfo.price(),

@@ -35,6 +35,9 @@ public class CartItem extends BaseEntity {
     private Cart cart;
 
     @Column(nullable = false)
+    private Long storeId;
+
+    @Column(nullable = false)
     private Long productItemId;
 
     @Column(nullable = false)
@@ -54,6 +57,7 @@ public class CartItem extends BaseEntity {
 
     public static CartItem of(
         Cart cart,
+        Long storeId,
         Long productItemId,
         String productName,
         Integer price,
@@ -62,6 +66,7 @@ public class CartItem extends BaseEntity {
     ) {
         return CartItem.builder()
             .cart(cart)
+            .storeId(storeId)
             .productItemId(productItemId)
             .productName(productName)
             .price(price)

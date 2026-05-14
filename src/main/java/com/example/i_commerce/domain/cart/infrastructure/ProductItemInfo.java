@@ -7,6 +7,7 @@ import lombok.Builder;
 public record ProductItemInfo(
     Long productItemId,
     String productName,
+    Long storeId,
     Integer price,
     String displayOptionName,
     Integer stockQuantity,
