@@ -12,17 +12,11 @@ public class ProductClient {
 
     private final ProductQueryFacade productQueryFacade;
 
-    public ProductItemInfo getProductItem(Long productItemId) {
+    public ProductItemInfo getProductItemInfo(Long productItemId) {
         ProductItemInfoResponse res = productQueryFacade.getProductItemInfo(productItemId);
 
-        return ProductItemInfo.builder()
-            .productItemId(res.productItemId())
-            .productName(res.productName())
-            .price(res.price())
-            .displayOptionName(res.displayOptionName())
-            .stockQuantity(res.stockQuantity())
-            .isAvailable(res.onSale())
-            .build();
+        return ProductItemInfo.from(res);
+    }
     }
 
 }

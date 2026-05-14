@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.cart.infrastructure;
 
 
+import com.example.i_commerce.domain.product.facade.dto.ProductItemInfoResponse;
 import lombok.Builder;
 
 @Builder
@@ -11,7 +12,18 @@ public record ProductItemInfo(
     Integer price,
     String displayOptionName,
     Integer stockQuantity,
-    boolean isAvailable
+    boolean isOnSale
 ) {
 
+    public static ProductItemInfo from(ProductItemInfoResponse response) {
+        return ProductItemInfo.builder()
+            .productItemId(response.productItemId())
+            .productName(response.productName())
+            .storeId(response.storeId())
+            .price(response.price())
+            .displayOptionName(response.displayOptionName())
+            .stockQuantity(response.stockQuantity())
+            .isOnSale(response.isOnSale())
+            .build();
+    }
 }
