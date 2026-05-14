@@ -56,13 +56,14 @@ public class CartQueryService {
         for(CartItem item : cartItems) {
             ProductItemInfo info = productItemInfoMap.getOrDefault(
                 item.getProductItemId(),
-                ProductItemInfo.unavailable(item.getProductItemId())
+                ProductItemInfo.unavailable(item)
             );
             CartItemResponse response = CartItemResponse.of(item, info);
             storeMap
                 .computeIfAbsent(item.getStoreId(), _ -> new StoreAccumulator())
                 .add(response);
         }
+
         List<CartStoreGroupResponse> storeGroups = storeMap.entrySet().stream()
             .map(entry -> CartStoreGroupResponse.of(
                 entry.getKey(),
