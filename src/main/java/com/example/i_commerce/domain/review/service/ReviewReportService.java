@@ -43,11 +43,8 @@ public class ReviewReportService {
 
         reviewReportRepo.save(report);
 
-        boolean isThresholdReached = review.incrementReportCount();
+        review.incrementReportCount();
 
-        if (isThresholdReached) {
-            review.updateStatus(ReviewReportStatus.HIDDEN_PENDING);
-        }
     }
 
     @Transactional

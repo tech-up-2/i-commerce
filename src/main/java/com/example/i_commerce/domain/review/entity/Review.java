@@ -34,6 +34,8 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
 
+    private static final int REPORT_THRESHOLD = 10;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -198,18 +200,16 @@ public class Review extends BaseEntity {
         }
     }
 
-    public boolean incrementReportCount() {
+    public void incrementReportCount() {
         if (this.reportCount == null) {
             this.reportCount = 0L;
         }
 
         this.reportCount++;
 
-        if (this.reportCount >= 10 && this.reportStatus != ReviewReportStatus.HIDDEN_PENDING) {
+        if (this.reportCount >= REPORT_THRESHOLD && this.reportStatus != ReviewReportStatus.HIDDEN_PENDING) {
             this.reportStatus = ReviewReportStatus.HIDDEN_PENDING;
-            return true;
         }
-        return false;
     }
 
     public void resetReportCount() {

@@ -1,5 +1,10 @@
 package com.example.i_commerce.domain.review.entity.enums;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
 public enum ReportType {
     SPAM("스팸/광고"),
     INFO_EXPOSURE("개인정보 노출"),
@@ -9,11 +14,4 @@ public enum ReportType {
 
     private final String description;
 
-    ReportType(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return description;
-    }
 }
