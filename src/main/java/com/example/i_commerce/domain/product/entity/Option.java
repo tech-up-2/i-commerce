@@ -29,13 +29,13 @@ public class Option extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 100)
+    @Column(length = 100, nullable = false)
     private String type;
 
-    @Column(length = 100)
+    @Column(length = 100, nullable = false)
     private String value;
 
-    @Column(length = 100)
+    @Column(length = 100, nullable = false)
     private String displayName;
 
     @Column(length = 100)

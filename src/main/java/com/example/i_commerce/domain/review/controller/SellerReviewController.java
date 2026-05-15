@@ -1,14 +1,18 @@
 package com.example.i_commerce.domain.review.controller;
 
 import com.example.i_commerce.domain.review.facade.ReviewLikeFacade;
+import com.example.i_commerce.domain.review.service.ReviewCommentService;
 import com.example.i_commerce.domain.review.service.ReviewService;
-import com.example.i_commerce.domain.review.service.dto.CreateReportRequest;
+import com.example.i_commerce.domain.review.service.dto.CreateCommentRequest;
+import com.example.i_commerce.domain.review.service.dto.ReviewCommentManagementResponse;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
+import com.example.i_commerce.domain.review.service.dto.UpdateCommentRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +39,7 @@ public class SellerReviewController {
 
     private final ReviewService reviewService;
     private final ReviewLikeFacade reviewLikeFacade;
+    private final ReviewCommentService reviewCommentService;
 
     @Operation(summary = "베스트 리뷰 후보 조회", description = "판매자는 베스트 리뷰 후보를 확인한다.")
     @GetMapping("/best-candidates")
@@ -67,6 +73,37 @@ public class SellerReviewController {
         @PathVariable Long reviewId) {
         reviewLikeFacade.cancelBestReview(reviewId);
         return ApiResponse.success();
+    }
+
+    @Operation(summary = "리뷰 답글 생성", description = "판매자는 특정 리뷰에 답글을 한 번 달 수 있다.")
+    @PostMapping("/{reviewId}/comment")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<Void> createComment(
+        @PathVariable Long reviewId,
+        @AuthenticationPrincipal CustomUserPrincipal principal,
+        @RequestBody @Valid CreateCommentRequest request) {
+        reviewCommentService.createComment(reviewId, principal.getId(), request);
+        return ApiResponse.success();
+    }
+
+    @Operation(summary = "리뷰 답글 수정", description = "판매자는 자신이 단 답글을 수정할 수 있다.")
+    @PatchMapping("/{commentId}")
+    public ApiResponse<Long> editComment(
+        @PathVariable Long commentId,
+        @AuthenticationPrincipal CustomUserPrincipal principal,
+        @RequestBody @Valid UpdateCommentRequest request
+    ) {
+        Long editedCommentId = reviewCommentService.editComment(commentId, principal.getId(), request);
+        return ApiResponse.success(editedCommentId);
+    }
+
+    @Operation(summary = "내가 단 답글 목록 조회", description = "판매자 본인이 작성한 모든 답글을 조회한다.")
+    @GetMapping("/comments")
+    public ApiResponse<List<ReviewCommentManagementResponse>> getMyComments(
+        @AuthenticationPrincipal CustomUserPrincipal principal
+    ) {
+        List<ReviewCommentManagementResponse> responses = reviewCommentService. getReviewsByProduct(principal.getId());
+        return ApiResponse.success(responses);
     }
 
 }

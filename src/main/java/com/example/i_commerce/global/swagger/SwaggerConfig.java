@@ -94,4 +94,15 @@ public class SwaggerConfig {
             .addOpenApiCustomizer(securityCustomizer())
             .build();
     }
+
+    @Bean
+    public GroupedOpenApi s3ImageApi() {
+        return GroupedOpenApi.builder()
+                .group("s3Image-test")
+                .pathsToMatch(
+                        "/api/v1/images/**"
+                )
+                .addOpenApiCustomizer(securityCustomizer())
+                .build();
+    }
 }

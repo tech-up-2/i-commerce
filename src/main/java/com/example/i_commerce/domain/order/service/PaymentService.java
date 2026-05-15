@@ -1,21 +1,25 @@
 package com.example.i_commerce.domain.order.service;
 
+import com.example.i_commerce.domain.order.entity.Delivery;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
-import com.example.i_commerce.domain.order.event.dto.PaymentCompletedEvent;
+import com.example.i_commerce.domain.order.event.dto.DeliveryCancelRequestEvent;
+import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
+import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
-import com.example.i_commerce.domain.order.service.dto.DeliveryCancelRequestEvent;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentDetailResponse;
+import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.global.exception.AppException;
 import jakarta.annotation.PostConstruct;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +43,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher publisher;
     private final RestTemplate restTemplate;
+    private final StockFacade stockFacade;
 
     @Value("${toss.secretKey}")
     private String SECRET_KEY;
@@ -72,7 +77,7 @@ public class PaymentService {
     @Transactional
     public void confirmPayment(PaymentConfirmRequest dto) {
         if (dto.tossOrderId() == null || !dto.tossOrderId().contains("_")) {
-            throw new AppException(PaymentErrorCode.INVALID_PAYMENT_REQUEST); // 400 Bad Request
+            throw new AppException(PaymentErrorCode.INVALID_PAYMENT_REQUEST);
         }
         Long paymentId = Long.valueOf(dto.tossOrderId().split("_")[1]);
         Payment payment = paymentRepository.findById(paymentId)
@@ -112,7 +117,9 @@ public class PaymentService {
                 payment.completePayment(pgTid);
                 payment.getOrder().changeOrderStatus(OrderStatus.CONFIRMED);
 
-                publisher.publishEvent(new PaymentCompletedEvent(
+                publisher.publishEvent(new PaymentApprovedEvent(payment.getOrder().getId()));
+
+                publisher.publishEvent(new PaymentStatusChangedEvent(
                         payment,
                         previousStatus,
                         "결제 완료",
@@ -134,8 +141,6 @@ public class PaymentService {
         Payment payment = paymentRepository.findById(dto.paymentId())
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
-
-
         if(!Objects.equals(dto.paymentKey(), payment.getPgTid())) {
             throw new AppException(PaymentErrorCode.INVALID_PAYMENT_KEY);
         }
@@ -150,10 +155,11 @@ public class PaymentService {
 
         publisher.publishEvent(new DeliveryCancelRequestEvent(payment.getOrder().getId()));
 
+        Order order = payment.getOrder();
+
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Basic " + encodedKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
-
 
         Map<String, Object> params = new HashMap<>();
         params.put("cancelReason", dto.cancelReason());
@@ -173,10 +179,11 @@ public class PaymentService {
                 String pgTid = (String) response.getBody().get("paymentKey");
 
                 payment.cancelPayment(dto.cancelAmount());
-                payment.getOrder().changeOrderStatus(OrderStatus.CANCELLED);
-                //TODO: 재고 rollback
+                order.changeOrderStatus(OrderStatus.CANCELLED);
 
-                publisher.publishEvent(new PaymentCompletedEvent(
+                stockFacade.rollbackStocks(order.getId());
+
+                publisher.publishEvent(new PaymentStatusChangedEvent(
                         payment,
                         previousStatus,
                         dto.cancelReason(),

@@ -59,7 +59,7 @@ public class QReviewComment extends EntityPathBase<ReviewComment> {
 
     public QReviewComment(Class<? extends ReviewComment> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.review = inits.isInitialized("review") ? new QReview(forProperty("review")) : null;
+        this.review = inits.isInitialized("review") ? new QReview(forProperty("review"), inits.get("review")) : null;
     }
 
 }

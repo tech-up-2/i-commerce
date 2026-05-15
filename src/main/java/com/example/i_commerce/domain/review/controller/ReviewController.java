@@ -64,8 +64,8 @@ public class ReviewController {
         @PathVariable Long reviewId,
         @AuthenticationPrincipal CustomUserPrincipal principal,
         @RequestBody @Valid UpdateReviewRequest dto) {
-        reviewService.editReview(reviewId, principal.getId(), dto);
-        return ApiResponse.success(reviewId);
+        Long editedReviewId = reviewService.editReview(reviewId, principal.getId(), dto);
+        return ApiResponse.success(editedReviewId);
     }
 
     @Operation(summary = "리뷰 삭제", description = "리뷰를 삭제한다.")
