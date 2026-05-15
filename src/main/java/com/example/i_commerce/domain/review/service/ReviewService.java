@@ -125,7 +125,7 @@ public class ReviewService {
         }
 
         if (!review.getUserId().equals(userId)) {
-            throw(new AppException(CommonErrorCode.INVALID_PERMISSION));
+            throw new AppException(CommonErrorCode.INVALID_PERMISSION);
         }
     }
 }

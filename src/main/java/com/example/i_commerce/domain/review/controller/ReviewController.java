@@ -96,7 +96,7 @@ public class ReviewController {
     public ApiResponse<Void> createReport(
         @PathVariable Long reviewId,
         @AuthenticationPrincipal CustomUserPrincipal principal,
-        @RequestBody CreateReportRequest dto
+        @RequestBody @Valid CreateReportRequest dto
     ) {
         reviewReportService.createReviewReport(reviewId, principal.getId(), dto);
         return ApiResponse.success();

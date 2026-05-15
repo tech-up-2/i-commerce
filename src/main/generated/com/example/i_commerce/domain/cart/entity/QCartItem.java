@@ -38,13 +38,15 @@ public class QCartItem extends EntityPathBase<CartItem> {
 
     public final BooleanPath isChecked = createBoolean("isChecked");
 
-    public final NumberPath<Integer> price = createNumber("price", Integer.class);
-
     public final NumberPath<Long> productItemId = createNumber("productItemId", Long.class);
 
     public final StringPath productName = createString("productName");
 
     public final NumberPath<Integer> quantity = createNumber("quantity", Integer.class);
+
+    public final NumberPath<Integer> snapshotPrice = createNumber("snapshotPrice", Integer.class);
+
+    public final NumberPath<Long> storeId = createNumber("storeId", Long.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
