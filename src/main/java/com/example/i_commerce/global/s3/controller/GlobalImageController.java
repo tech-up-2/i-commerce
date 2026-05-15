@@ -26,7 +26,7 @@ public class GlobalImageController {
     @PreAuthorize("hasRole('MEMBER')")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<String> uploadImage(@RequestParam("file") MultipartFile file) {
-        String fileUrl = s3ImageService.uploadImage(file);
+        String fileUrl = s3ImageService.uploadImage(file, "review");
         return ApiResponse.success(fileUrl); // 성공 시 S3 URL 문자열 반환
     }
 

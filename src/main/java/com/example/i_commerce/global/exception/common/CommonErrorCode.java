@@ -15,8 +15,8 @@ public enum CommonErrorCode implements ErrorCode {
 
     FORBIDDEN(HttpStatus.FORBIDDEN, "COM-40301", "접근 권한이 없습니다."),
 
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COM-50001", "서버 내부 에러가 발생했습니다.");
-
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COM-50001", "서버 내부 에러가 발생했습니다."),
+    S3_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "COM-50002", "AWS S3 파일 업로드 중 오류가 발생했습니다.")
 
     ;
 

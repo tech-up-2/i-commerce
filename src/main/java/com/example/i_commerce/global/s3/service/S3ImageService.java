@@ -4,11 +4,15 @@ import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -23,13 +27,13 @@ public class S3ImageService {
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucket;
 
-    public String uploadImage(MultipartFile file) {
+    public String uploadImage(MultipartFile file, String folder) {
         if(file.isEmpty()) {
             throw new AppException(CommonErrorCode.INVALID_MULTIPART_FILE);
         }
 
         String originalFilename = file.getOriginalFilename();
-        String s3FileName = generateS3FileName(originalFilename);
+        String s3FileName = folder + "/" + generateS3FileName(originalFilename);
 
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -43,8 +47,8 @@ public class S3ImageService {
 
             return s3Client.utilities().getUrl(builder -> builder.bucket(bucket).key(s3FileName)).toExternalForm();
 
-        } catch (IOException e) {
-            throw new RuntimeException("S3 파일 업로드 중 오류가 발생했습니다.", e);
+        } catch (IOException | SdkException e) {
+            throw new AppException(CommonErrorCode.S3_UPLOAD_FAILED);
         }
     }
 
@@ -64,12 +68,28 @@ public class S3ImageService {
     }
 
     private String generateS3FileName(String originalFilename) {
-        String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
-        return UUID.randomUUID().toString() + ext;
+        int dotIndex = (originalFilename != null) ? originalFilename.lastIndexOf(".") : -1;
+        String ext = (dotIndex != -1) ? originalFilename.substring(dotIndex) : "";
+        return UUID.randomUUID() + ext;
     }
 
     private String extractFileNameFromUrl(String fileUrl) {
-        return fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+
+        try {
+            URI uri = new URI(fileUrl);
+            String path = uri.getPath();
+
+            String decodedUri = URLDecoder.decode(path, StandardCharsets.UTF_8);
+
+            if(decodedUri.startsWith("/")) {
+                decodedUri = decodedUri.substring(1);
+            }
+
+            return decodedUri;
+
+        } catch (Exception e) {
+            throw new AppException(CommonErrorCode.INVALID_INPUT_VALUE);
+        }
     }
 
 }
