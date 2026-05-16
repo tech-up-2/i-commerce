@@ -13,11 +13,13 @@ import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
-import com.example.i_commerce.domain.order.event.dto.PaymentCompletedEvent;
+import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
+import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
+import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,7 +49,10 @@ public class PaymentServiceTest {
     RestTemplate restTemplate;
 
     @Mock
-    private ApplicationEventPublisher publisher;
+    ApplicationEventPublisher publisher;
+
+    @Mock
+    StockFacade stockFacade;
 
     @InjectMocks
     PaymentService paymentService;
@@ -70,10 +75,14 @@ public class PaymentServiceTest {
     @Test
     @DisplayName("결제 상태가 READY가 아니면 예외가 발생한다.")
     void getPaymentDetails_fail_invalidPaymentStatus() {
-        Payment payment = Payment.builder().payStatus(PaymentStatus.PAID).build();
+        Long userId = 1L;
+
+        ReflectionTestUtils.setField(payment, "payStatus", PaymentStatus.PAID);
+
+        given(order.getUserId()).willReturn(userId);
         given(paymentRepository.findById(anyLong())).willReturn(Optional.of(payment));
 
-        AppException e = assertThrows(AppException.class, () -> paymentService.getPaymentDetails(1L, 1L));
+        AppException e = assertThrows(AppException.class, () -> paymentService.getPaymentDetails(userId, 1L));
         Assertions.assertEquals("INVALID_PAYMENT_STATUS", e.getErrorCode().toString());
     }
 
@@ -100,7 +109,7 @@ public class PaymentServiceTest {
         assertThat(payment.getPayStatus()).isEqualTo(PaymentStatus.PAID);
         assertThat(payment.getCancelableAmount()).isEqualTo(dto.amount());
         verify(order).changeOrderStatus(OrderStatus.CONFIRMED);
-        verify(publisher).publishEvent(any(PaymentCompletedEvent.class));
+        verify(publisher).publishEvent(any(PaymentApprovedEvent.class));
     }
 
     @Test
@@ -151,7 +160,7 @@ public class PaymentServiceTest {
         assertThat(payment.getPayStatus()).isEqualTo(PaymentStatus.CANCELLED);
         assertThat(payment.getCancelableAmount()).isEqualTo(0);
         verify(order).changeOrderStatus(OrderStatus.CANCELLED);
-        verify(publisher).publishEvent(any(PaymentCompletedEvent.class));
+        verify(publisher).publishEvent(any(PaymentStatusChangedEvent.class));
     }
 
     @Test

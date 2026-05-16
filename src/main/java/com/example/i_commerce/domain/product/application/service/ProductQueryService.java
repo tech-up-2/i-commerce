@@ -10,17 +10,17 @@ import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductAttribute;
 import com.example.i_commerce.domain.product.entity.ProductImage;
 import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.entity.ProductItemStatus;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.facade.ProductQueryFacade;
 import com.example.i_commerce.domain.product.facade.dto.ProductItemInfoResponse;
 import com.example.i_commerce.domain.product.repository.ProductAttributeRepository;
 import com.example.i_commerce.domain.product.repository.ProductImageRepository;
-import com.example.i_commerce.domain.product.repository.ProductItemInfoProjection;
+import com.example.i_commerce.domain.product.repository.projection.ProductItemInfoProjection;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.domain.product.repository.ProductQueryRepository;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,19 +39,26 @@ public class ProductQueryService implements ProductQueryFacade {
     private final ProductAttributeRepository productAttributeRepository;
 
     @Override
+    public List<ProductItemInfoResponse> getProductItemInfos(Set<Long> productItemIds) {
+        if (productItemIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<ProductItemInfoProjection> infoProjections = productItemRepository
+            .findAllItemInfoByIdIn(productItemIds);
+
+        return infoProjections.stream()
+            .map(ProductItemInfoResponse::from)
+            .toList();
+    }
+
+    @Override
     public ProductItemInfoResponse getProductItemInfo(Long itemId) {
 
         ProductItemInfoProjection itemInfoProjection = productItemRepository.findItemInfoById(itemId)
             .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_ITEM_NOT_FOUND));
 
-        return ProductItemInfoResponse.builder()
-            .productItemId(itemInfoProjection.getProductItemId())
-            .productName(itemInfoProjection.getProductName())
-            .price(itemInfoProjection.getPrice())
-            .displayOptionName(itemInfoProjection.getDisplayOptionName())
-            .stockQuantity(itemInfoProjection.getStockQuantity())
-            .onSale(itemInfoProjection.getStatus() == ProductItemStatus.ON_SALE)
-            .build();
+        return ProductItemInfoResponse.from(itemInfoProjection);
     }
 
 

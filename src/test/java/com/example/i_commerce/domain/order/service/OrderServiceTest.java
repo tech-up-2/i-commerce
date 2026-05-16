@@ -21,10 +21,12 @@ import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest.OrderItemDto;
+import com.example.i_commerce.domain.order.service.dto.CreateOrderResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
+import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
@@ -59,6 +61,9 @@ class OrderServiceTest {
 
     @Mock
     OrderProductRepository orderProductRepository;
+
+    @Mock
+    StockFacade stockFacade;
 
     @InjectMocks
     OrderService orderService;
@@ -129,7 +134,7 @@ class OrderServiceTest {
         given(paymentRepository.save(any()))
                 .willAnswer(invocation -> invocation.getArgument(0));
 
-        ApiResponse<?> response = orderService.createOrder(OrderFixture.MEMBER_ID, dto);
+        ApiResponse<CreateOrderResponse> response = orderService.createOrder(OrderFixture.MEMBER_ID, dto);
 
         assertEquals("SUCCESS", response.code());
 
@@ -178,7 +183,7 @@ class OrderServiceTest {
 
         // then
         assertNotNull(response);
-        assertEquals(response.paymentInfo().paymentId(), 2L);
+        assertEquals(2L, response.paymentInfo().paymentId());
     }
 
     @Test
