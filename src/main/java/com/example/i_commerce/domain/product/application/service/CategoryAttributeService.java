@@ -64,18 +64,18 @@ public class CategoryAttributeService {
             throw new AppException(ProductErrorCode.ATTRIBUTE_NOT_FOUND);
         }
 
-        List<Long> tagetCategoryIds = (request.propagateToChildren())
+        List<Long> targetCategoryIds = (request.propagateToChildren())
             ? categoryRepository.findAllDescendantIds(categoryId)
             : List.of(categoryId);
 
         Set<CategoryAttributeKey> existingKeys = new HashSet<>(
-            categoryAttributeRepository.findExistingKeys(tagetCategoryIds, request.attributeIds())
+            categoryAttributeRepository.findExistingKeys(targetCategoryIds, request.attributeIds())
         );
 
         List<CategoryAttribute> categoryAttributes = new ArrayList<>();
         List<AlreadyExistsAttribute> existsAttributes = new ArrayList<>();
 
-        for(Long targetCategoryId : tagetCategoryIds) {
+        for(Long targetCategoryId : targetCategoryIds) {
             Category categoryRef = categoryRepository.getReferenceById(targetCategoryId);
             for(Attribute attribute : attributes) {
                 if(existingKeys.contains(new CategoryAttributeKey(targetCategoryId, attribute.getId()))) {
