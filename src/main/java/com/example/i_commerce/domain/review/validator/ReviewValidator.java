@@ -1,8 +1,8 @@
 package com.example.i_commerce.domain.review.validator;
 
 import com.example.i_commerce.domain.review.repo.ReviewForbiddenWordRepository;
-import com.example.i_commerce.global.exception.AppException; // 여진님의 AppException 위치
-import com.example.i_commerce.domain.review.exception.ReviewErrorCode; // 에러코드 위치
+import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

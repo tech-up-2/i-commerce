@@ -16,10 +16,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findAllByOrderProductIdAndDeletedAtIsNull(Long orderProductId);
 
     @Query("SELECT r FROM Review r " +
-        "JOIN OrderProduct op ON r.orderProductId = op.id " +    // 1단계: 주문상품 연결
-        "JOIN ProductItem pi ON op.productSkuId = pi.id " +     // 2단계: ProductItem으로 연결!
-        "LEFT JOIN FETCH r.comment " +                          // 답글 미리 가져오기
-        "WHERE pi.product.id = :productId " +                   // 💡 필드명이 아니라 객체 그래프(pi.product.id)로 접근!
+        "JOIN OrderProduct op ON r.orderProductId = op.id " +
+        "JOIN ProductItem pi ON op.productSkuId = pi.id " +
+        "LEFT JOIN FETCH r.comment " +
+        "WHERE pi.product.id = :productId " +
         "AND r.deletedAt IS NULL")
     List<Review> findAllByProductId(@Param("productId") Long productId);
 }

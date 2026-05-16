@@ -42,7 +42,6 @@ public class CategoryOptionMapper {
                     .categoryOptionId(p.getCategoryOptionId())
                     .optionId(p.getOptionId())
                     .value(p.getOptionValue())
-                    .displayName(p.getDisplayName())
                     .inputType(p.getInputType())
                     .required(p.getRequired())
                     .build()

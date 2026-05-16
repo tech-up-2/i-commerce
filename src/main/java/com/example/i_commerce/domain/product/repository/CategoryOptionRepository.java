@@ -22,7 +22,6 @@ public interface CategoryOptionRepository extends JpaRepository<CategoryOption, 
         o.id AS optionId,
         o.type AS optionType,
         o.value AS optionValue,
-        o.displayName AS displayName,
         o.inputType AS inputType
     FROM CategoryOption co
     JOIN co.option o
