@@ -9,5 +9,4 @@ public record MyChatListResponse(
     Boolean isGroupChat,
     Long unReadCount
 ) {
-
 }

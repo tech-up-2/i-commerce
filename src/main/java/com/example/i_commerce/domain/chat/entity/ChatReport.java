@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.chat.entity;
 
+import com.example.i_commerce.domain.chat.entity.enums.ChatReportReason;
 import com.example.i_commerce.domain.chat.entity.enums.ChatReportStatus;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.global.common.entity.BaseEntity;
@@ -40,18 +41,24 @@ public class ChatReport extends BaseEntity {
     @JoinColumn(name = "chat_id", nullable = false)
     private ChatMessage chatMessage;
 
-//    @Column(nullable = false)
-//    private Long chatId;
-
-//    @Column(nullable = false)
-//    private Long chatRoomId;
+    @Column(nullable = false)
+    private Long reporterId;
 
     @Column(nullable = false)
-    private Long memberId;
+    private Long reportedId;
 
-    @Column(columnDefinition = "TEXT")
-    private String reportText;
+    @Column(nullable = false)
+    private String originalMessage;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChatReportReason reason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ChatReportStatus status;
+
+    public void updateStatus(ChatReportStatus status) {
+        this.status = status;
+    }
 }

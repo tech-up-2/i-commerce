@@ -36,6 +36,8 @@ public class QChatMessage extends EntityPathBase<ChatMessage> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final BooleanPath isBlind = createBoolean("isBlind");
+
     public final NumberPath<Long> memberId = createNumber("memberId", Long.class);
 
     public final ListPath<MessageReadStatus, QMessageReadStatus> readStatuses = this.<MessageReadStatus, QMessageReadStatus>createList("readStatuses", MessageReadStatus.class, QMessageReadStatus.class, PathInits.DIRECT2);

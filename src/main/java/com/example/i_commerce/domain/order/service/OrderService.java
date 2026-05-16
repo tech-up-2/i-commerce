@@ -1,9 +1,10 @@
 package com.example.i_commerce.domain.order.service;
 
-import com.example.i_commerce.domain.member.service.DeliveryAddressService;
-import com.example.i_commerce.domain.member.service.MemberService;
-import com.example.i_commerce.domain.member.service.dto.DeliveryAddressSnapshot;
-import com.example.i_commerce.domain.member.service.dto.MemberOrderInfo;
+
+import com.example.i_commerce.domain.member.service.delivery.DeliveryAddressService;
+import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressSnapshot;
+import com.example.i_commerce.domain.member.service.member.MemberService;
+import com.example.i_commerce.domain.member.service.member.dto.MemberOrderInfo;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.Payment;
