@@ -8,6 +8,7 @@ import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
 import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
+import com.example.i_commerce.domain.review.validator.ReviewValidator;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReviewService {
 
     private final ReviewRepository reviewRepo;
+    private final ReviewValidator reviewValidator;
 
     @Transactional
     public Long createReview(Long orderProductId, Long userId, CreateReviewRequest dto) {
@@ -31,6 +33,8 @@ public class ReviewService {
         if (reviewRepo.existsByOrderProductIdAndUserId(orderProductId, userId)) {
             throw new AppException(ReviewErrorCode.ALREADY_REVIEWED);
         }
+
+        reviewValidator.validateContent(dto.getContent());
 
         Review review = Review.from(orderProductId, userId, dto);
 
@@ -67,6 +71,7 @@ public class ReviewService {
         Review review = getReviewOrThrow(reviewId);
 
         validateAuthor(review, userId);
+        reviewValidator.validateContent(dto.getContent());
 
         review.update(dto.getContent(), dto.getStarRate(), dto.getImageUrls());
 
