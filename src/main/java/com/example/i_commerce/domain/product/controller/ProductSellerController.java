@@ -4,6 +4,7 @@ package com.example.i_commerce.domain.product.controller;
 import com.example.i_commerce.domain.product.application.service.ProductService;
 import com.example.i_commerce.domain.product.application.service.ProductUpdateService;
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
+import com.example.i_commerce.domain.product.controller.request.UpdateProductRequest;
 import com.example.i_commerce.domain.product.controller.request.UpdateProductStatusRequest;
 import com.example.i_commerce.domain.product.controller.response.CreatedProductResponse;
 import com.example.i_commerce.domain.product.controller.response.UpdateProductStatusResponse;
@@ -36,10 +37,20 @@ public class ProductSellerController {
     @Operation(summary = "상품 생성", description = "상품을 생성한다.")
     @PostMapping
     public ApiResponse<CreatedProductResponse> createProduct(
-        Long sellerId,
+        @AuthenticationPrincipal CustomUserPrincipal principal,
         @RequestBody @Validated CreateProductRequest request
     ) {
-        return ApiResponse.success(productService.createProduct(sellerId, request));
+        return ApiResponse.success(productService.createProduct(principal.getId(), request));
+    }
+
+    @PatchMapping("/{productId}")
+    public ApiResponse<Void> updateProduct(
+        @PathVariable Long productId,
+        @AuthenticationPrincipal CustomUserPrincipal principal,
+        @Valid @RequestBody UpdateProductRequest request
+    ) {
+        productUpdateService.updateBasicInfo(productId, principal.getId(), request);
+        return ApiResponse.success();
     }
 
     @PatchMapping("/{productId}/status")
