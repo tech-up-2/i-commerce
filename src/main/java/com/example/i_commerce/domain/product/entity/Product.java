@@ -114,6 +114,11 @@ public class Product extends BaseEntity {
             .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_ITEM_NOT_FOUND));
     }
 
+    public void updateBasicInfo(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
+
     public void changeStatus(ProductStatus newStatus) {
         if (this.status == newStatus) {
             return;

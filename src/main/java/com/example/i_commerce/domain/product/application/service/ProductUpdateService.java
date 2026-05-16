@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.product.application.service;
 
 
+import com.example.i_commerce.domain.product.controller.request.UpdateProductRequest;
 import com.example.i_commerce.domain.product.controller.request.UpdateProductStatusRequest;
 import com.example.i_commerce.domain.product.controller.response.UpdateProductStatusResponse;
 import com.example.i_commerce.domain.product.entity.Product;
@@ -17,6 +18,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductUpdateService {
 
     private final ProductRepository productRepository;
+
+    public void updateBasicInfo(
+        Long productId,
+        Long userId,
+        UpdateProductRequest request
+    ) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_NOT_FOUND));
+
+        product.updateBasicInfo(request.name(),request.description());
+    }
 
     public UpdateProductStatusResponse changeProductStatus(
         Long productId,
