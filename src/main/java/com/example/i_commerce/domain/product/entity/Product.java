@@ -114,4 +114,16 @@ public class Product extends BaseEntity {
             .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_ITEM_NOT_FOUND));
     }
 
+    public void changeStatus(ProductStatus newStatus) {
+        if (this.status == newStatus) {
+            return;
+        }
+        this.status.validateTransition(newStatus);
+        this.status = newStatus;
+
+        if (newStatus == ProductStatus.DISCONTINUED) {
+            this.items.forEach(ProductItem::discontinue);
+        }
+    }
+
 }
