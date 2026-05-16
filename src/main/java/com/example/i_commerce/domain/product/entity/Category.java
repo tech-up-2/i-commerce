@@ -84,13 +84,11 @@ public class Category extends BaseEntity {
         if (depth > maxDepth) {
             throw new AppException(ProductErrorCode.CATEGORY_DEPTH_EXCEEDED);
         }
-        Category child = Category.builder()
+        return Category.builder()
             .parent(parent)
             .name(name)
             .depth(depth)
             .build();
-        parent.children.add(child);
-        return child;
     }
 
 }
