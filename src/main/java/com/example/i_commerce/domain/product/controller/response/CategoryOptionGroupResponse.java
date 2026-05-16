@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.product.controller.response;
 
+import com.example.i_commerce.domain.product.entity.OptionInputType;
 import java.util.List;
 import lombok.Builder;
 
@@ -14,8 +15,7 @@ public record CategoryOptionGroupResponse(
         Long categoryOptionId,
         Long optionId,
         String value,
-        String displayName,
-        String inputType,
+        OptionInputType inputType,
         Boolean required
     ){
 
