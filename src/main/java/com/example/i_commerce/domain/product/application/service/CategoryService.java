@@ -58,6 +58,14 @@ public class CategoryService {
             : categoryRepository.findById(request.parentId())
               .orElseThrow(() -> new AppException(ProductErrorCode.CATEGORY_NOT_FOUND));
 
+        boolean isDuplicate = (parent == null)
+            ? categoryRepository.existsByParentIsNullAndName(request.name())
+            : categoryRepository.existsByParentAndName(parent, request.name());
+
+        if (isDuplicate) {
+            throw new AppException(ProductErrorCode.DUPLICATE_CATEGORY_NAME);
+        }
+
         Category category = (parent == null)
             ? Category.createRoot(request.name())
             : Category.createChild(parent, request.name(), MAX_DEPTH);
