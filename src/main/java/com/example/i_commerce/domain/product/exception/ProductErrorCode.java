@@ -36,8 +36,10 @@ public enum ProductErrorCode implements ErrorCode {
     INVALID_OPTION_TYPE(HttpStatus.CONFLICT, "PRD-40905", "존재하지 않는 옵션 타입입니다."),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "PRD-40903", "재고가 충분하지 않습니다."),
 
+    INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "PRD-40001", "허용되지 않는 상태 변경입니다."),
 
     DUPLICATE_ATTRIBUTE_KEY(HttpStatus.CONFLICT, "PRD-40906", "속성 키가 이미 존재합니다."),
+
     ;
 
     private final HttpStatus httpStatus;
