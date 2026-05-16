@@ -73,7 +73,7 @@ public class PaymentServiceTest {
         Payment payment = Payment.builder().payStatus(PaymentStatus.PAID).build();
         given(paymentRepository.findById(anyLong())).willReturn(Optional.of(payment));
 
-        AppException e = assertThrows(AppException.class, () -> paymentService.getPaymentDetails(1L));
+        AppException e = assertThrows(AppException.class, () -> paymentService.getPaymentDetails(1L, 1L));
         Assertions.assertEquals("INVALID_PAYMENT_STATUS", e.getErrorCode().toString());
     }
 

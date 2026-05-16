@@ -57,7 +57,7 @@ public class ChatMessage extends BaseEntity {
 
     private boolean isBlind = false;
 
-    public void Blind(){
+    public void blind(){
         this.isBlind =  true;
     }
 }

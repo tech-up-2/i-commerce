@@ -65,7 +65,7 @@ public class ChatReportService {
         chatReport.updateStatus(status);
         if(chatReport.getStatus() == ChatReportStatus.RESOLVED) {
             ChatMessage message = chatReport.getChatMessage();
-            message.Blind();
+            message.blind();
         }
         chatReportRepository.save(chatReport);
         return ApiResponse.success();
