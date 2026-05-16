@@ -20,9 +20,7 @@ import com.example.i_commerce.global.exception.AppException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,13 +75,8 @@ public class CategoryAttributeService {
         List<CategoryAttribute> categoryAttributes = new ArrayList<>();
         List<AlreadyExistsAttribute> existsAttributes = new ArrayList<>();
 
-        Map<Long, Category> categoryRefMap = tagetCategoryIds.stream()
-            .collect(Collectors.toMap(
-                id -> id,
-                categoryRepository::getReferenceById
-            ));
-
         for(Long targetCategoryId : tagetCategoryIds) {
+            Category categoryRef = categoryRepository.getReferenceById(targetCategoryId);
             for(Attribute attribute : attributes) {
                 if(existingKeys.contains(new CategoryAttributeKey(targetCategoryId, attribute.getId()))) {
                     existsAttributes.add(AlreadyExistsAttribute.of(
@@ -92,7 +85,7 @@ public class CategoryAttributeService {
                     continue;
                 }
                 categoryAttributes.add(CategoryAttribute.of(
-                    categoryRefMap.get(targetCategoryId),
+                    categoryRef,
                     attribute,
                     request.required()
                 ));
