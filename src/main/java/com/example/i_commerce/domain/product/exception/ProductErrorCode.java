@@ -34,9 +34,10 @@ public enum ProductErrorCode implements ErrorCode {
     GUEST_PAGE_LIMIT_EXCEEDED(HttpStatus.FORBIDDEN, "PRD-40301", "비로그인 사용자는 더 이상 페이지를 조회할 수 없습니다."),
 
     INVALID_OPTION_TYPE(HttpStatus.CONFLICT, "PRD-40905", "존재하지 않는 옵션 타입입니다."),
-    INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "PRD-40903", "재고가 충분하지 않습니다.")
+    INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "PRD-40903", "재고가 충분하지 않습니다."),
 
 
+    DUPLICATE_ATTRIBUTE_KEY(HttpStatus.CONFLICT, "PRD-40906", "속성 키가 이미 존재합니다."),
     ;
 
     private final HttpStatus httpStatus;
