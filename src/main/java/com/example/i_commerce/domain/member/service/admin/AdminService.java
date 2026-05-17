@@ -3,6 +3,7 @@ package com.example.i_commerce.domain.member.service.admin;
 import com.example.i_commerce.domain.member.entity.Admin;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.AdminRepository;
+import com.example.i_commerce.domain.member.service.admin.dto.AdminLoginResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;

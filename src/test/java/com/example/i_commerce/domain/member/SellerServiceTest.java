@@ -21,10 +21,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
+@TestPropertySource(locations = "file:.env")
 public class SellerServiceTest {
 
     @Autowired
@@ -88,9 +90,9 @@ public class SellerServiceTest {
             .ownerName("기존대표")
             .phoneNumber("01000000000")
             .sellerStatus(SellerStatus.WITHDRAW)
-            .bankName("기존은행")
-            .bankAccount("0000000000")
-            .depositorName("기존예금주")
+            .bankName(dataEncryptor.encrypt("기존은행"))
+            .bankAccount(dataEncryptor.encrypt("0000000000"))
+            .depositorName(dataEncryptor.encrypt("기존예금주"))
             .build();
 
         sellerRepository.save(withdrawSeller);
@@ -232,9 +234,9 @@ public class SellerServiceTest {
             .ownerName("홍길동")
             .phoneNumber("01012345678")
             .sellerStatus(status)
-            .bankName("국민은행")
-            .bankAccount("1234567890")
-            .depositorName("홍길동")
+            .bankName(dataEncryptor.encrypt("국민은행"))
+            .bankAccount(dataEncryptor.encrypt("1234567890"))
+            .depositorName(dataEncryptor.encrypt("홍길동"))
             .build();
     }
 }
