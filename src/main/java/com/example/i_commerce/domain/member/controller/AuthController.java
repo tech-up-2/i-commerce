@@ -98,9 +98,9 @@ public class AuthController {
     @DeleteMapping("/users/me")
     public ApiResponse<Void> withdraw(
         @AuthenticationPrincipal CustomUserPrincipal principal,
-        @RequestBody @Valid PasswordResetRequest dto
+        @RequestBody @Valid WithDrawRequest dto
     ) {
-        authService.resetPassword(principal.getId(), dto);
+        authService.withdraw(principal.getId(), dto);
         return ApiResponse.success(null);
     }
 
