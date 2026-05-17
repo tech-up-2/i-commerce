@@ -7,7 +7,9 @@ import com.example.i_commerce.domain.review.repo.ReviewCommentRepository;
 import com.example.i_commerce.domain.review.repo.ReviewRepository;
 import com.example.i_commerce.domain.review.service.dto.CreateCommentRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewCommentManagementResponse;
+import com.example.i_commerce.domain.review.service.dto.SellerReviewManagementResponse;
 import com.example.i_commerce.domain.review.service.dto.UpdateCommentRequest;
+import com.example.i_commerce.domain.review.validator.ReviewValidator;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ public class ReviewCommentService {
 
     private final ReviewRepository reviewRepo;
     private final ReviewCommentRepository reviewCommentRepo;
+    private final ReviewValidator reviewValidator;
 
     @Transactional
     public void createComment(Long reviewId, Long sellerId, CreateCommentRequest request) {
@@ -36,6 +39,7 @@ public class ReviewCommentService {
             throw new AppException(ReviewErrorCode.ALREADY_COMMENTED);
         }
 
+        reviewValidator.validateContent(request.getContent());
         ReviewComment comment = ReviewComment.of(review, sellerId, request);
 
         reviewCommentRepo.save(comment);
@@ -52,29 +56,15 @@ public class ReviewCommentService {
             throw new AppException(CommonErrorCode.INVALID_PERMISSION);
         }
 
+        reviewValidator.validateContent(request.getContent());
         comment.update(request.getContent());
 
         return commentId;
     }
 
     @Transactional
-    public List<ReviewCommentManagementResponse> getReviewsByProduct(Long productId) {
-
-        List<Review> reviews = reviewRepo.findAllByProductId(productId);
-
-        List<ReviewCommentManagementResponse> result = new ArrayList<>();
-        for (Review review : reviews) {
-
-            String commentText = (review.getComment() != null) ? review.getComment().getContent() : "아직 답글이 없습니다.";
-
-            result.add(ReviewCommentManagementResponse.builder()
-                .reviewId(review.getId())
-                .reviewContent(review.getContent())
-                .commentContent(commentText)
-                .reviewCreatedAt(review.getCreatedAt())
-                .build());
-        }
-        return result;
+    public List<SellerReviewManagementResponse> getReviewsForSeller(Long sellerId) {
+        return reviewRepo.findAllBySellerId(sellerId);
     }
 
 }

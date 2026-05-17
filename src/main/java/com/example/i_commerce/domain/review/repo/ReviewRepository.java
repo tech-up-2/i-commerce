@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.review.repo;
 
 import com.example.i_commerce.domain.review.entity.Review;
+import com.example.i_commerce.domain.review.service.dto.SellerReviewManagementResponse;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,9 +19,17 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("SELECT r FROM Review r " +
         "JOIN OrderProduct op ON r.orderProductId = op.id " +
         "JOIN ProductItem pi ON op.productSkuId = pi.id " +
-        "LEFT JOIN FETCH r.comment " +
         "WHERE pi.product.id = :productId " +
-        "AND r.deletedAt IS NULL")
+        "ORDER BY r.createdAt DESC")
     List<Review> findAllByProductId(@Param("productId") Long productId);
+
+    @Query("SELECT r FROM Review r " +
+        "JOIN OrderProduct op ON r.orderProductId = op.id " +
+        "JOIN ProductItem pi ON op.productSkuId = pi.id " +
+        "JOIN pi.product p " +
+        "JOIN Store s ON p.storeId = s.id " +
+        "WHERE s.seller.id = :sellerId " +
+        "ORDER BY r.createdAt DESC")
+    List<SellerReviewManagementResponse> findAllBySellerId(@Param("sellerId") Long sellerId);
 }
 

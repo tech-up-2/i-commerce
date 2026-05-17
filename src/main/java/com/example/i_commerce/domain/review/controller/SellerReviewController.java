@@ -7,6 +7,7 @@ import com.example.i_commerce.domain.review.service.ReviewService;
 import com.example.i_commerce.domain.review.service.dto.CreateCommentRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewCommentManagementResponse;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
+import com.example.i_commerce.domain.review.service.dto.SellerReviewManagementResponse;
 import com.example.i_commerce.domain.review.service.dto.UpdateCommentRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
@@ -88,7 +89,7 @@ public class SellerReviewController {
     }
 
     @Operation(summary = "리뷰 답글 수정", description = "판매자는 자신이 단 답글을 수정할 수 있다.")
-    @PatchMapping("/{commentId}")
+    @PatchMapping("/comments/{commentId}")
     public ApiResponse<Long> editComment(
         @PathVariable Long commentId,
         @AuthenticationPrincipal CustomUserPrincipal principal,
@@ -100,10 +101,10 @@ public class SellerReviewController {
 
     @Operation(summary = "내가 단 답글 목록 조회", description = "판매자 본인이 작성한 모든 답글을 조회한다.")
     @GetMapping("/comments")
-    public ApiResponse<List<ReviewCommentManagementResponse>> getMyComments(
+    public ApiResponse<List<SellerReviewManagementResponse>> getMyComments(
         @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
-        List<ReviewCommentManagementResponse> responses = reviewCommentService. getReviewsByProduct(principal.getId());
+        List<SellerReviewManagementResponse> responses = reviewCommentService.getReviewsForSeller(principal.getId());
         return ApiResponse.success(responses);
     }
 
