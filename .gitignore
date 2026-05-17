@@ -264,3 +264,4 @@ gradle-app.setting
 .idea/
 .gitattributes
 .env
+/src/main/generated/

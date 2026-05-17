@@ -87,6 +87,7 @@ public class ProductItem extends BaseEntity {
             .displayOptionName(displayOptionName)
             .optionValue1(optionValue1)
             .optionValue2(optionValue2)
+            .status(ProductItemStatus.ON_SALE)
             .isDefault(isDefault)
             .build();
     }
@@ -105,6 +106,14 @@ public class ProductItem extends BaseEntity {
 
     public void changeStatus(ProductItemStatus status) {
         this.status = status;
+    }
+
+    void discontinue() {
+        if (this.status == ProductItemStatus.OFF_SALE) {
+            return;
+        }
+        this.status = ProductItemStatus.OFF_SALE;
+        this.stock.markUnavailable();
     }
 
     void setProduct(Product product) {

@@ -5,11 +5,13 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum ChatReportStatus {
-    PENDING("처리 대기"),
-    IN_PROGRESS("처리 중"),
-    RESOLVED("처리 완료"),
-    REJECTED("반려");
+public enum ChatReportReason {
+    SWEARWORD("비속어"),
+    SPAM("스팸/광고"),
+    FRAUD("사기"),
+    OTHER("기타");
 
     private final String description;
 }
+
+
