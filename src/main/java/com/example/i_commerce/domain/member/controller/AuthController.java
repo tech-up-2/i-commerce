@@ -11,6 +11,7 @@ import com.example.i_commerce.domain.member.service.auth.dto.PasswordResetReques
 import com.example.i_commerce.domain.member.service.auth.dto.SignUpResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserInfoResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserUpdateRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
 import com.example.i_commerce.domain.member.service.member.MemberService;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
@@ -62,7 +63,7 @@ public class AuthController {
 
     //계정 찾기
     @Operation(summary = "이메일 찾기", description = "이름과 전화번호로 가입된 이메일을 찾습니다.")
-    @PostMapping("/auth/find/account")
+    @PostMapping("/find/account")
     public ApiResponse<AccountFindEmailResponse> findEmail(
         @Valid @RequestBody AccountFindEmailRequest request
     ) {
@@ -72,7 +73,7 @@ public class AuthController {
 
     //비밀번호 찾기
     @Operation(summary = "비밀번호 찾기", description = "이메일, 이름, 전화번호 확인 후 새 비밀번호로 변경합니다.")
-    @PatchMapping("/auth/find/password")
+    @PatchMapping("/find/password")
     public ApiResponse<Void> findPassword(
         @Valid @RequestBody PasswordFindRequest request
     ) {
@@ -83,7 +84,7 @@ public class AuthController {
     //비밀번호 재설정
     @PreAuthorize("@authChecker.canUpdateMemberInfo()")
     @Operation(summary = "비밀번호 재설정", description = "마이페이지에서 새 비밀번호로 변경합니다.")
-    @PatchMapping("/auth/password/reset")
+    @PatchMapping("/password/reset")
     public ApiResponse<Void> resetPassword(
         @AuthenticationPrincipal CustomUserPrincipal principal,
         @Valid @RequestBody PasswordResetRequest request
@@ -98,9 +99,9 @@ public class AuthController {
     @DeleteMapping("/users/me")
     public ApiResponse<Void> withdraw(
         @AuthenticationPrincipal CustomUserPrincipal principal,
-        @RequestBody @Valid PasswordResetRequest dto
+        @RequestBody @Valid WithDrawRequest dto
     ) {
-        authService.resetPassword(principal.getId(), dto);
+        authService.withdraw(principal.getId(), dto);
         return ApiResponse.success(null);
     }
 
