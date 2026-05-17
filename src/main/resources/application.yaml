@@ -12,6 +12,12 @@ app:
     key: "Gq1wXnzi+7PBHjbvIpEi4TwjuH+L64fFAFYQGE0x2bc="
   jwt:
     secret: "oMUV1EZ82PhPtaaldRsWrYCMll8kFoyv+o1u0CJGuIM="
+  bootstrap: #최초 MASTER 관리자
+    admin:
+      enabled: true
+      email: master@test.com
+      password: master123!
+      name: 최초관리자
 
 security:
   email-hmac-key: "m+Mtv+DxZbk0psKymGWCsAMTx1jSMIJnIV/SVtlCTT8="
