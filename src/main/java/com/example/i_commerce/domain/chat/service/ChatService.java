@@ -68,6 +68,7 @@ public class ChatService {
         Member otherMember = memberRepository.findById(otherMemberId)
             .orElseThrow(() -> new AppException(
                 MemberErrorCode.USER_NOT_FOUND));
+
         chatRoleChecker.roleCheck(member, otherMember);
 
 //       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 에러코드를 return
@@ -198,23 +199,7 @@ public class ChatService {
     public ApiResponse<List<MyChatListResponse>> getMyChatList() {
         Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
-        List<ChatParticipant> participants = chatParticipantRepository.findAllByMemberId(
-            member.getId());
-        List<MyChatListResponse> myChatListResponses = new ArrayList<>();
-        log.info("participants size: {}", participants.size());
-        for (ChatParticipant p : participants) {
-//            find와 같이 JPA에는 count라는 네이밍 규칙이 존재 Long 형태로 반환해줌
-            Long count = chatStatusRepository.countByChatRoomAndMemberIdAndIsReadFalse(
-                p.getChatRoom(), member.getId());
-            MyChatListResponse responseDto = MyChatListResponse.builder()
-                .roomId(p.getChatRoom().getId())
-                .roomName(p.getChatRoom().getName())
-                .isGroupChat(p.getChatRoom().getIsGroupChat())
-                .unReadCount(count)
-                .build();
-            myChatListResponses.add(responseDto);
-            log.info(myChatListResponses.toString());
-        }
+        List<MyChatListResponse> myChatListResponses = chatStatusRepository.findMyChatList(member.getId());
         return ApiResponse.success(myChatListResponses);
     }
 
@@ -266,7 +251,7 @@ public class ChatService {
         List<ChatMessageSendResponse> chatMessageSendResponses = new ArrayList<>();
         for (ChatMessage messages : chatMessages) {
             ChatMessageSendResponse messagesDto = ChatMessageSendResponse.builder()
-                .message(messages.getContent())
+                .message(messages.isBlind() ? "관리자에 의해 가려진 메시지입니다" : messages.getContent())
                 .messageId(messages.getId())
                 .senderId(messages.getMemberId())
                 .build();
