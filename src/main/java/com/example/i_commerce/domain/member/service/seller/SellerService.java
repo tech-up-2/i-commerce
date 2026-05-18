@@ -48,7 +48,7 @@ public class SellerService {
                     dataEncryptor.encrypt(dto.bankAccount()),
                     dataEncryptor.encrypt(dto.depositorName())
                 );
-                existingSeller.changeSellerStatus(SellerStatus.PENDING);
+                existingSeller.changeStatus(SellerStatus.PENDING);
                 return existingSeller;
             })
             .orElseGet(() -> Seller.builder()//seller 등록이 없으면 새로 생성

@@ -90,7 +90,12 @@ public class Seller extends BaseEntity {
         this.depositorName = depositorName;
     }
 
-    public void changeSellerStatus(SellerStatus sellerStatus) {
+    public void changeStatus(SellerStatus sellerStatus) {
         this.sellerStatus = sellerStatus;
+    }
+
+    public void approve() {
+        this.sellerStatus = SellerStatus.APPROVED;
+        this.approvedAt = LocalDateTime.now();
     }
 }
