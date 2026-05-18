@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum MemberErrorCode implements ErrorCode {
 
     // --- 공통 에러 (COM) ---
-//    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "COM-40001", "잘못된 입력값입니다."),
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "COM-40001", "잘못된 입력값입니다."),
 //    INVALID_PERMISSION(HttpStatus.UNAUTHORIZED, "COM-40101", "권한이 없습니다."),
 //    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COM-50001", "서버 내부 에러가 발생했습니다."),
 
@@ -33,7 +33,9 @@ public enum MemberErrorCode implements ErrorCode {
     SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40403", "존재하지 않는 판매자입니다."),
     DELIVERY_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND,
         "USR-40404", "배송지가 존재하지 않습니다."),
-    ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40405", "존재하지 않는 관리자입니다."),
+    STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40405", "존재하지 않는 상점입니다."),
+    STORE_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND,
+        "USR-40406", "상점 주소가 존재하지 않습니다."),
 
     // --- 409
     DUPLICATED_EMAIL(HttpStatus.CONFLICT, "USR-40901", "이미 가입된 이메일입니다."),
