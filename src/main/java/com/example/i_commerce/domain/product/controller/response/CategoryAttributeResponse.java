@@ -11,11 +11,11 @@ public record CategoryAttributeResponse(
 ) {
     public static CategoryAttributeResponse of(
         Long categoryId,
-        List<CategoryAttributeGroupDto> attributes
+        List<CategoryAttributeGroupDto> attributeGroups
     ) {
         return CategoryAttributeResponse.builder()
             .categoryId(categoryId)
-            .attributes(attributes)
+            .attributes(attributeGroups)
             .build();
     }
 }

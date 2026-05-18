@@ -6,11 +6,11 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
 import com.example.i_commerce.domain.product.application.service.ProductQueryService;
-import com.example.i_commerce.domain.product.application.service.option.OptionGroupBuilder;
-import com.example.i_commerce.domain.product.application.service.option.OptionLookupBuilder;
-import com.example.i_commerce.domain.product.controller.response.OptionItemLookupResponse;
+import com.example.i_commerce.domain.product.application.mapper.OptionGroupBuilder;
+import com.example.i_commerce.domain.product.application.mapper.OptionLookupBuilder;
+import com.example.i_commerce.domain.product.application.dto.OptionItemLookupDto;
 import com.example.i_commerce.domain.product.controller.response.ProductDetailResponse;
-import com.example.i_commerce.domain.product.controller.response.ProductOptionGroupResponse;
+import com.example.i_commerce.domain.product.application.dto.ProductOptionGroupDto;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductAttribute;
 import com.example.i_commerce.domain.product.entity.ProductImage;
@@ -66,8 +66,8 @@ public class ProductQueryServiceTest {
 
             List<ProductImage> images = product.getImages();
             List<ProductAttribute> attributes = defaultItem.getAttributes();
-            List<ProductOptionGroupResponse> optionGroups = List.of();
-            OptionItemLookupResponse optionItemLookup = OptionItemLookupResponse.ofNone();
+            List<ProductOptionGroupDto> optionGroups = List.of();
+            OptionItemLookupDto optionItemLookup = OptionItemLookupDto.ofNone();
 
             given(productQueryRepository.findProductWithItems(productId))
                 .willReturn(Optional.of(product));
@@ -100,8 +100,8 @@ public class ProductQueryServiceTest {
 
             List<ProductImage> images = product.getImages();
             List<ProductAttribute> attributes = targetItem.getAttributes();
-            List<ProductOptionGroupResponse> optionGroups = List.of();
-            OptionItemLookupResponse optionItemLookup = OptionItemLookupResponse.ofNone();
+            List<ProductOptionGroupDto> optionGroups = List.of();
+            OptionItemLookupDto optionItemLookup = OptionItemLookupDto.ofNone();
 
             given(productQueryRepository.findProductWithItems(productId))
                 .willReturn(Optional.of(product));

@@ -96,5 +96,28 @@ public class Member extends BaseEntity {
 //    @OneToMany(mappedBy = "member")
 //    private List<ChatMessage> chatMessages = new ArrayList<>();
 
+    public void changePassword(String password) {
+        this.password = password;
+    }
 
+    public void delete() {
+        this.status = MemberStatus.WITHDRAWN;
+        super.delete();
+    }
+
+    public void updateInfo(
+        byte[] name,
+        byte[] phoneNumber,
+        Gender sex,
+        byte[] birthday
+    ) {
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.sex = sex;
+        this.birthday = birthday;
+    }
+
+    public void changeStatus(MemberStatus status) {
+        this.status = status;
+    }
 }

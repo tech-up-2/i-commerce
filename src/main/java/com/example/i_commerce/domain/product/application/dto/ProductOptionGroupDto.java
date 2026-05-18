@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.product.controller.response;
+package com.example.i_commerce.domain.product.application.dto;
 
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.entity.ProductItemStatus;
@@ -11,20 +11,20 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 
 @Builder
-public record ProductOptionGroupResponse(
+public record ProductOptionGroupDto(
     String optionName,
     Integer optionOrder,
-    List<ProductOptionValueResponse> values
+    List<ProductOptionValueDto> values
 ) {
 
-    public static ProductOptionGroupResponse of(
+    public static ProductOptionGroupDto of(
         List<ProductOptionValue> groupValues,
         Set<Long> selectedOptionIds,
         Map<Long, List<ProductItem>> optionItemMap
     ) {
         ProductOptionValue first = groupValues.getFirst();
 
-        List<ProductOptionValueResponse> valueResponses = groupValues.stream()
+        List<ProductOptionValueDto> valueResponses = groupValues.stream()
             .sorted(Comparator.comparingInt(ProductOptionValue::getDisplayOrder))
             .map(v -> {
                 boolean selected = selectedOptionIds.contains(v.getId());
@@ -35,11 +35,11 @@ public record ProductOptionGroupResponse(
                     item.getStatus() == ProductItemStatus.ON_SALE
                 );
 
-                return ProductOptionValueResponse.of(v, selected, available);
+                return ProductOptionValueDto.of(v, selected, available);
             })
             .collect(Collectors.toList());
 
-        return ProductOptionGroupResponse.builder()
+        return ProductOptionGroupDto.builder()
             .optionName(first.getOptionName())
             .optionOrder(first.getOptionOrder())
             .values(valueResponses)

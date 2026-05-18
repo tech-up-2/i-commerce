@@ -1,11 +1,11 @@
 package com.example.i_commerce.domain.product.application.service;
 
 
-import com.example.i_commerce.domain.product.application.service.option.OptionGroupBuilder;
-import com.example.i_commerce.domain.product.application.service.option.OptionLookupBuilder;
-import com.example.i_commerce.domain.product.controller.response.OptionItemLookupResponse;
+import com.example.i_commerce.domain.product.application.mapper.OptionGroupBuilder;
+import com.example.i_commerce.domain.product.application.mapper.OptionLookupBuilder;
+import com.example.i_commerce.domain.product.application.dto.OptionItemLookupDto;
 import com.example.i_commerce.domain.product.controller.response.ProductDetailResponse;
-import com.example.i_commerce.domain.product.controller.response.ProductOptionGroupResponse;
+import com.example.i_commerce.domain.product.application.dto.ProductOptionGroupDto;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductAttribute;
 import com.example.i_commerce.domain.product.entity.ProductImage;
@@ -76,11 +76,11 @@ public class ProductQueryService implements ProductQueryFacade {
         List<ProductAttribute> attributes = productAttributeRepository
             .findByItemIdOrdered(selectedItem.getId());
 
-        List<ProductOptionGroupResponse> optionGroups = optionGroupBuilder.build(
+        List<ProductOptionGroupDto> optionGroups = optionGroupBuilder.build(
             product.getOptionType(), product.getOptions(), allItems, selectedItem
         );
 
-        OptionItemLookupResponse optionItemLookup = optionLookupBuilder.build(
+        OptionItemLookupDto optionItemLookup = optionLookupBuilder.build(
             product.getOptionType(), allItems
         );
 

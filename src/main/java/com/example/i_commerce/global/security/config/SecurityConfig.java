@@ -44,9 +44,9 @@ public class SecurityConfig {
 
                 // 로그인 / 회원가입도 보통 공개
                 .requestMatchers(
-                    "/api/v1/auth/**"
+                    "/api/v1/auth/**",
+                    "/api/v1/admin/auth/**"
                 ).permitAll()
-
 
                 // 리뷰 조회 공개
                 .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()

@@ -1,8 +1,8 @@
 package com.example.i_commerce.domain.member.controller;
 
 
-import com.example.i_commerce.domain.member.service.admin.AdminLoginResponse;
 import com.example.i_commerce.domain.member.service.admin.AdminService;
+import com.example.i_commerce.domain.member.service.admin.dto.AdminLoginResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;

@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.product.application.service.query;
+package com.example.i_commerce.domain.product.application.dto;
 
 
 import com.example.i_commerce.domain.product.repository.enums.ProductSortType;

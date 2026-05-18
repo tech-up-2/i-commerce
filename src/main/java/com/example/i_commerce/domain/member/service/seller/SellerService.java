@@ -9,6 +9,7 @@ import com.example.i_commerce.domain.member.repository.SellerRepository;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerInfoResponse;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerRequest;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerResponse;
+import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.global.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class SellerService {
 
     private final SellerRepository sellerRepository;
     private final MemberRepository memberRepository;
+    private final DataEncryptor dataEncryptor;
 
     //판매자 신청 서비스
     @Transactional
@@ -36,8 +38,17 @@ public class SellerService {
                     throw new AppException(MemberErrorCode.ALREADY_APPLIED_SELLER);
                 }
 
-                existingSeller.update(dto);
-                existingSeller.changeSellerStatus(SellerStatus.PENDING);
+                existingSeller.update(
+                    dto.businessName(),
+                    dto.businessNumber(),
+                    dto.mailOrderRegistrationNumber(),
+                    dto.ownerName(),
+                    dto.phoneNumber(),
+                    dataEncryptor.encrypt(dto.bankName()),
+                    dataEncryptor.encrypt(dto.bankAccount()),
+                    dataEncryptor.encrypt(dto.depositorName())
+                );
+                existingSeller.changeStatus(SellerStatus.PENDING);
                 return existingSeller;
             })
             .orElseGet(() -> Seller.builder()//seller 등록이 없으면 새로 생성
@@ -48,9 +59,9 @@ public class SellerService {
                 .ownerName(dto.ownerName())
                 .phoneNumber(dto.phoneNumber())
                 .sellerStatus(SellerStatus.PENDING)
-                .bankName(dto.bankName())
-                .bankAccount(dto.bankAccount())
-                .depositorName(dto.depositorName())
+                .bankName(dataEncryptor.encrypt(dto.bankName()))
+                .bankAccount(dataEncryptor.encrypt(dto.bankAccount()))
+                .depositorName(dataEncryptor.encrypt(dto.depositorName()))
                 .build()
             );
 
@@ -76,9 +87,9 @@ public class SellerService {
             seller.getPhoneNumber(),
             seller.getSellerStatus(),
             seller.getApprovedAt(),
-            seller.getBankName(),
-            seller.getBankAccount(),
-            seller.getDepositorName()
+            dataEncryptor.decrypt(seller.getBankName()),
+            dataEncryptor.decrypt(seller.getBankAccount()),
+            dataEncryptor.decrypt(seller.getDepositorName())
         );
     }
 
@@ -91,7 +102,16 @@ public class SellerService {
         Seller seller = sellerRepository.findById(memberId)
             .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
 
-        seller.update(dto);
+        seller.update(
+            dto.businessName(),
+            dto.businessNumber(),
+            dto.mailOrderRegistrationNumber(),
+            dto.ownerName(),
+            dto.phoneNumber(),
+            dataEncryptor.encrypt(dto.bankName()),
+            dataEncryptor.encrypt(dto.bankAccount()),
+            dataEncryptor.encrypt(dto.depositorName())
+        );
 
         Seller savedSeller = sellerRepository.save(seller);
 
