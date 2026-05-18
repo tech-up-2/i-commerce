@@ -20,7 +20,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         "JOIN ProductItem pi ON op.productSkuId = pi.id " +
         "JOIN pi.product p " +
         "JOIN Store s ON p.storeId = s.id " +
-        "WHERE r.id = :reviewId AND s.seller.id = :sellerId")
+        "WHERE r.id = :reviewId AND s.sellerId = :sellerId")
     boolean existsByIdAndSellerId(@Param("reviewId") Long reviewId, @Param("sellerId") Long sellerId);
 
     @Query("SELECT r FROM Review r " +
