@@ -65,7 +65,7 @@ public class CustomUserPrincipal implements UserDetails {
         return new CustomUserPrincipal(
             payload.principalType(),
             payload.accountId(),
-            payload.email(),
+            null,
             null,
             authorities
         );

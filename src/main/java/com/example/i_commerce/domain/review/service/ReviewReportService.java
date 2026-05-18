@@ -39,21 +39,12 @@ public class ReviewReportService {
             throw new AppException(ReviewErrorCode.INVALID_SELF_REPORTING);
         }
 
-        ReviewReport report = ReviewReport.builder()
-            .reporterId(reporterId)
-            .review(review)
-            .reportType(dto.getReportType())
-            .reportReason(dto.getReason())
-            .status(ReviewReportStatus.NORMAL)
-            .build();
+        ReviewReport report = ReviewReport.of(review, reporterId, dto);
 
         reviewReportRepo.save(report);
 
-        boolean isThresholdReached = review.incrementReportCount();
+        review.incrementReportCount();
 
-        if (isThresholdReached) {
-            review.updateStatus(ReviewReportStatus.HIDDEN_PENDING);
-        }
     }
 
     @Transactional

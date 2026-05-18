@@ -13,6 +13,7 @@ import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.enums.AdminRole;
 import com.example.i_commerce.domain.member.entity.enums.AdminStatus;
+import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
@@ -104,7 +105,7 @@ class AdminManagementIntegrationTest {
                       "email": "admin1@test.com",
                       "password": "admin123!",
                       "name": "관리자1",
-                      "role": "ADMIN"
+                      "adminRole": "ADMIN"
                     }
                     """))
             .andExpect(status().isOk())
@@ -139,7 +140,7 @@ class AdminManagementIntegrationTest {
 
         Long adminId = createAdminByApi(
             token,
-            "role-target@test.com",
+            "adminRole-target@test.com",
             "admin123!",
             "권한변경대상",
             "ADMIN"
@@ -178,14 +179,14 @@ class AdminManagementIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
-                      "adminStatus": "INACTIVE"
+                      "adminStatus": "SUSPENDED"
                     }
                     """))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"))
             .andExpect(jsonPath("$.data.adminId").value(adminId))
             .andExpect(jsonPath("$.data.adminRole").value("ADMIN"))
-            .andExpect(jsonPath("$.data.adminStatus").value("INACTIVE"));
+            .andExpect(jsonPath("$.data.adminStatus").value("SUSPENDED"));
     }
 
     @Test
@@ -207,7 +208,7 @@ class AdminManagementIntegrationTest {
     }
 
     @Test
-    @DisplayName("마지막 ACTIVE MASTER 관리자는 INACTIVE 상태로 변경할 수 없다")
+    @DisplayName("마지막 ACTIVE MASTER 관리자는 SUSPENDED 상태로 변경할 수 없다")
     void updateLastActiveMasterStatus_fail() throws Exception {
         String token = loginAndGetToken("master@test.com", "master123!");
 
@@ -218,7 +219,7 @@ class AdminManagementIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
-                      "adminStatus": "INACTIVE"
+                      "adminStatus": "SUSPENDED"
                     }
                     """))
             .andExpect(status().isBadRequest());
@@ -366,7 +367,7 @@ class AdminManagementIntegrationTest {
                       "email": "%s",
                       "password": "%s",
                       "name": "%s",
-                      "role": "%s"
+                      "adminRole": "%s"
                     }
                     """.formatted(email, password, name, role)))
             .andExpect(status().isOk())
@@ -393,6 +394,7 @@ class AdminManagementIntegrationTest {
             .emailEncrypted(dataEncryptor.encrypt(email))
             .password(passwordEncoder.encode("password123!"))
             .name(dataEncryptor.encrypt(name))
+            .sex(Gender.MALE)
             .birthday(dataEncryptor.encrypt("1999-01-01"))
             .phoneNumber(dataEncryptor.encrypt("010-1234-5678"))
             .role(MemberType.CUSTOMER)
@@ -408,6 +410,7 @@ class AdminManagementIntegrationTest {
             .emailEncrypted(dataEncryptor.encrypt(email))
             .password(passwordEncoder.encode("password123!"))
             .name(dataEncryptor.encrypt(name))
+            .sex(Gender.MALE)
             .birthday(dataEncryptor.encrypt("1999-01-01"))
             .phoneNumber(dataEncryptor.encrypt("010-1234-5678"))
             .role(MemberType.SELLER)
@@ -424,6 +427,8 @@ class AdminManagementIntegrationTest {
             .ownerName("대표자")
             .phoneNumber("010-9999-8888")
             .bankName(dataEncryptor.encrypt("테스트은행"))
+            .bankAccount(dataEncryptor.encrypt("테스트계좌"))
+            .depositorName(dataEncryptor.encrypt(name))
             .sellerStatus(SellerStatus.PENDING)
             .build();
 

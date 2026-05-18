@@ -1,3 +1,4 @@
+
 package com.example.i_commerce.domain.chat.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -302,4 +303,5 @@ class ChatServiceTest {
         assertEquals("SUCCESS", response.code());
     }
 }
+
 

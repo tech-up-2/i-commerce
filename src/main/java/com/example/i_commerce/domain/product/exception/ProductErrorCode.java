@@ -40,6 +40,9 @@ public enum ProductErrorCode implements ErrorCode {
 
     DUPLICATE_ATTRIBUTE_KEY(HttpStatus.CONFLICT, "PRD-40906", "속성 키가 이미 존재합니다."),
 
+    CATEGORY_DEPTH_EXCEEDED(HttpStatus.BAD_REQUEST, "PRD-40005", "카테고리 최대 깊이를 초과했습니다."),
+    DUPLICATE_CATEGORY_NAME(HttpStatus.CONFLICT, "PRD-40909", "이미 존재하는 카테고리입니다."),
+
     ;
 
     private final HttpStatus httpStatus;

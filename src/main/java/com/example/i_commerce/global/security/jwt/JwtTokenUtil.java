@@ -40,7 +40,6 @@ public class JwtTokenUtil {
             .issuer("i-commerce")
             .claim("principalType", payload.principalType().name())
             .claim("accountId", payload.accountId())
-            .claim("email", payload.email())
             .claim("role", payload.role().getAuthority())
             .claim("accountStatus", payload.accountStatus().getAuthority())
             .issuedAt(Date.from(now))
@@ -62,7 +61,6 @@ public class JwtTokenUtil {
         );
 
         Long accountId = claims.get("accountId", Long.class);
-        String email = claims.get("email", String.class);
         String role = claims.get("role", String.class);
         String accountStatus = claims.get("accountStatus", String.class);
         String sellerStatus = claims.get("sellerStatus", String.class);
@@ -86,7 +84,6 @@ public class JwtTokenUtil {
         return new TokenPayload(
             principalType,
             accountId,
-            email,
             parsedRole,
             parsedAccountStatus,
             parsedSellerStatus

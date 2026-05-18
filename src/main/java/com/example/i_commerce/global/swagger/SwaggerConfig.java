@@ -84,8 +84,12 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
             .group("Review")
             .pathsToMatch(
-                "/api/v1/reviews",
-                "/api/v1/reviews/**"
+                "/api/v1/reviews/**",
+                "/api/v1/order-products/*/reviews",
+                "/api/v1/order-products/*/reviews/**",
+                "/api/v1/admin/reports/**",
+                "/api/v1/admin/reviews/**",
+                "/api/v1/seller/reviews/**"
             )
             .addOpenApiCustomizer(securityCustomizer())
             .build();

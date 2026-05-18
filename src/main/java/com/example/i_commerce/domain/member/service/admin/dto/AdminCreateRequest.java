@@ -22,7 +22,7 @@ public record AdminCreateRequest(
 
     @Schema(description = "관리자 역할", example = "ADMIN")
     @NotNull
-    AdminRole role
+    AdminRole adminRole
 ) {
 
 }
