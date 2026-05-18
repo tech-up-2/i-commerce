@@ -25,6 +25,9 @@ jobs:
       - name: Grant execute permission
         run: chmod +x ./gradlew
 
+      - name: Create Dummy .env for GitHub Actions
+        run: touch .env
+
       # 1. 테스트 단계
       - name: Run Test
 
