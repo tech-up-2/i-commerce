@@ -52,11 +52,10 @@ public class ChatService {
     public ApiResponse<Void> messageRead(Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        Long memberId = TempChatUtil.getCurrentUserId();
 //      기존 강의에서는 읽은 채팅과 안읽은 채팅을 모두 불러왔지만 안읽은 채팅만 불러오는 것이 조회 측면에서 효율적임
         List<MessageReadStatus> readStatuses = chatStatusRepository.findByChatRoomAndMemberIdAndIsReadFalse(
-            chatRoom, member.getId());
+            chatRoom, memberId);
         for (MessageReadStatus r : readStatuses) {
             r.updateIsRead(true);
         }
@@ -89,10 +88,11 @@ public class ChatService {
 //            멤버에서 ID를 가져오는 부분 시큐리티가 ws에서 작동하려면 StompHandler 수정이 필요
 //            추후 리펙토링을 통해 보완예정
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        Long memberId = TempChatUtil.getCurrentUserId();
+        Member member = memberRepository.findById(chatMessageSendRequest.senderId())
+            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
         ChatMessage chatMessage = ChatMessage.builder()
             .chatRoom(chatRoom)
-            .memberId(memberId)
+            .memberId(member.getId())
             .content(chatMessageSendRequest.message())
             .build();
         chatMessageRepository.save(chatMessage);
@@ -102,7 +102,7 @@ public class ChatService {
                 .chatRoom(chatRoom)
                 .memberId(p.getMemberId())
                 .chatMessage(chatMessage)
-                .isRead(p.getMemberId().equals(memberId))
+                .isRead(p.getMemberId().equals(member.getId()))
                 .build();
             chatStatusRepository.save(readStatus);
         }
@@ -112,12 +112,11 @@ public class ChatService {
     public ApiResponse<List<ChatMessageSendResponse>> getChatHistory(Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        Long memberId = TempChatUtil.getCurrentUserId();
         List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
         boolean check = false;
         for (ChatParticipant p : chatParticipants) {
-            if (p.getMemberId().equals(member.getId())) {
+            if (p.getMemberId().equals(memberId)) {
                 check = true;
             }
         }

@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Admin Chat API", description = "관리자 채팅 신고 관련 API")
+@Tag(name = "Chat Admin API", description = "관리자 채팅 신고 관련 API")
 @SecurityRequirement(name = "BearerAuth")
 @RestController
-@RequestMapping("/api/v1/admin/chat")
+@RequestMapping("/api/v1/chat/admin")
 @RequiredArgsConstructor
 public class AdminChatController {
     private final ChatReportService chatReportService;
