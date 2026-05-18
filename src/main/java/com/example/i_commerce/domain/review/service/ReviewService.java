@@ -11,7 +11,6 @@ import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
 import com.example.i_commerce.domain.review.validator.ReviewValidator;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
-import com.example.i_commerce.global.s3.controller.GlobalImageController;
 import com.example.i_commerce.global.s3.service.S3ImageService;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +47,6 @@ public class ReviewService {
             for (MultipartFile file : imageFiles) {
                 if (!file.isEmpty()) {
                     String imageUrl = s3ImageService.uploadImage(file, "reviews");
-                    System.out.println("🔥 [S3 업로드 성공!!] 반환된 URL 주소: " + imageUrl);
                     review.addImage(imageUrl);
                 }
             }

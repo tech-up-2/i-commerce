@@ -16,6 +16,14 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findAllByOrderProductIdAndDeletedAtIsNull(Long orderProductId);
 
+    @Query("SELECT COUNT(r) > 0 FROM Review r " +
+        "JOIN OrderProduct op ON r.orderProductId = op.id " +
+        "JOIN ProductItem pi ON op.productSkuId = pi.id " +
+        "JOIN pi.product p " +
+        "JOIN Store s ON p.storeId = s.id " +
+        "WHERE r.id = :reviewId AND s.seller.id = :sellerId")
+    boolean existsByIdAndSellerId(@Param("reviewId") Long reviewId, @Param("sellerId") Long sellerId);
+
     @Query("SELECT r FROM Review r " +
         "JOIN OrderProduct op ON r.orderProductId = op.id " +
         "JOIN ProductItem pi ON op.productSkuId = pi.id " +
