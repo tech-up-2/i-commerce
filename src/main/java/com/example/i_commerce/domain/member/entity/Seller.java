@@ -1,9 +1,7 @@
 package com.example.i_commerce.domain.member.entity;
 
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
-import com.example.i_commerce.domain.member.service.seller.dto.SellerRequest;
 import com.example.i_commerce.global.common.entity.BaseEntity;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,12 +10,9 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -62,28 +57,37 @@ public class Seller extends BaseEntity {
 
     private LocalDateTime approvedAt;
 
-    @Column(nullable = false)
-    private String bankName;
+    @Column(nullable = false)//암호화
+    private byte[] bankName;
 
-    @Column(nullable = false)
-    private String bankAccount;
+    @Column(nullable = false)//암호화
+    private byte[] bankAccount;
 
-    @Column(nullable = false)
-    private String depositorName;
+    @Column(nullable = false)//암호화
+    private byte[] depositorName;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Store> stores = new ArrayList<>();
+//    @Builder.Default
+//    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Store> stores = new ArrayList<>();
 
-    public void update(SellerRequest request) {
-        this.businessName = request.businessName();
-        this.businessNumber = request.businessNumber();
-        this.mailOrderRegistrationNumber = request.mailOrderRegistrationNumber();
-        this.ownerName = request.ownerName();
-        this.phoneNumber = request.phoneNumber();
-        this.bankName = request.bankName();
-        this.bankAccount = request.bankAccount();
-        this.depositorName = request.depositorName();
+    public void update(
+        String businessName,
+        String businessNumber,
+        String mailOrderRegistrationNumber,
+        String ownerName,
+        String phoneNumber,
+        byte[] bankName,
+        byte[] bankAccount,
+        byte[] depositorName
+    ) {
+        this.businessName = businessName;
+        this.businessNumber = businessNumber;
+        this.mailOrderRegistrationNumber = mailOrderRegistrationNumber;
+        this.ownerName = ownerName;
+        this.phoneNumber = phoneNumber;
+        this.bankName = bankName;
+        this.bankAccount = bankAccount;
+        this.depositorName = depositorName;
     }
 
     public void changeSellerStatus(SellerStatus sellerStatus) {

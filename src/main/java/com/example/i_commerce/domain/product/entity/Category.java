@@ -1,7 +1,9 @@
 package com.example.i_commerce.domain.product.entity;
 
 
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.global.common.entity.BaseEntity;
+import com.example.i_commerce.global.exception.AppException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,6 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -22,7 +25,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "categories")
+@Table(
+    name = "categories",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_category_parent_name",
+            columnNames = {"parent_id", "name"}
+        )
+    }
+)
 @Getter
 @Builder
 @AllArgsConstructor
@@ -58,5 +69,26 @@ public class Category extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<CategoryAttribute> categoryAttributes = new ArrayList<>();
+
+    public static Category createRoot(String name) {
+        return Category.builder()
+            .name(name)
+            .depth(0)
+            .build();
+    }
+
+    public static Category createChild(
+        Category parent, String name, int maxDepth
+    ) {
+        int depth = parent.depth + 1;
+        if (depth > maxDepth) {
+            throw new AppException(ProductErrorCode.CATEGORY_DEPTH_EXCEEDED);
+        }
+        return Category.builder()
+            .parent(parent)
+            .name(name)
+            .depth(depth)
+            .build();
+    }
 
 }

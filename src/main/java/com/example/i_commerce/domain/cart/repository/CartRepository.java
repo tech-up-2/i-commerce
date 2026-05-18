@@ -14,8 +14,9 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     @Query("""
         SELECT c
         FROM Cart c
-        LEFT JOIN FETCH c.cartItems
+        LEFT JOIN FETCH c.cartItems ci
         WHERE c.userId = :userId
+        AND ci.deletedAt IS NULL
     """)
     Optional<Cart> findByUserIdWithItems(Long userId);
 }

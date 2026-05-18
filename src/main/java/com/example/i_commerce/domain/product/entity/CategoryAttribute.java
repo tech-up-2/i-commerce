@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +18,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "category_attributes")
+@Table(
+    name = "category_attributes",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_category_attribute",
+        columnNames = {"category_id", "attribute_id"}
+    )
+)
 @Getter
 @Builder
 @AllArgsConstructor
@@ -38,5 +45,17 @@ public class CategoryAttribute extends BaseEntity {
 
     @Builder.Default
     private Boolean required = false;
+
+    public static CategoryAttribute of(
+        Category category,
+        Attribute attribute,
+        Boolean required
+    ) {
+        return CategoryAttribute.builder()
+            .category(category)
+            .attribute(attribute)
+            .required(required)
+            .build();
+    }
 
 }

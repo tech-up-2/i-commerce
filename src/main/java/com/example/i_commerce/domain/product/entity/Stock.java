@@ -58,6 +58,7 @@ public class Stock extends BaseEntity {
         return Stock.builder()
             .productItem(item)
             .quantity(quantity)
+            .status(StockStatus.IN_STOCK)
             .build();
     }
 
@@ -84,10 +85,12 @@ public class Stock extends BaseEntity {
         return this.status == StockStatus.OUT_OF_STOCK;
     }
 
+    public void markUnavailable() {
+        if (this.status == StockStatus.UNAVAILABLE) {
+            return;
+        }
+        this.status = StockStatus.UNAVAILABLE;
+    }
+
 }
-
-
-
-
-
 

@@ -1,3 +1,4 @@
+
 package com.example.i_commerce.domain.chat.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -250,6 +251,21 @@ class ChatServiceTest {
         assertEquals("SUCCESS", response.code());
     }
 
+//    @Test
+//    @DisplayName("그룹 채팅방에서 퇴장합니다.")
+//    void leaveGroupRoom() {
+//        when(chatRoomRepository.findById(groupchatRoom.getId())).thenReturn(
+//            Optional.of(groupchatRoom));
+//        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+//        when(chatParticipantRepository.findByChatRoomAndMember(groupchatRoom, member))
+//            .thenReturn(Optional.of(chatParticipant));
+//
+//        ApiResponse<Void> response = chatService.leaveGroupRoom(groupchatRoom.getId(),
+//            member.getId());
+//
+//        assertEquals("SUCCESS", response.code());
+//
+//    }
     @Test
     @DisplayName("그룹 채팅방에서 퇴장합니다.")
     void leaveGroupRoom() {
@@ -287,4 +303,5 @@ class ChatServiceTest {
         assertEquals("SUCCESS", response.code());
     }
 }
+
 
