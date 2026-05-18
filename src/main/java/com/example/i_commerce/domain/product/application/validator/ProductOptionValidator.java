@@ -44,7 +44,7 @@ public class ProductOptionValidator {
             .toList();
 
         if(!invalidOptionIds.isEmpty()) {
-            throw new AppException(ProductErrorCode.INVALID_OPTION);
+            throw new AppException(ProductErrorCode.NOT_SUPPORTED_OPTION);
         }
 
     }
