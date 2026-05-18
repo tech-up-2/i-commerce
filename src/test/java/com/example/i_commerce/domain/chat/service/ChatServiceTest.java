@@ -57,6 +57,10 @@ class ChatServiceTest {
     @Mock
     private ChatParticipantRepository chatParticipantRepository;
     @Mock
+    private MemberRepository memberRepository;
+    @Mock
+    private ProductRepository productRepository;
+    @Mock
     private ChatRoomNameGenerator chatRoomNameGenerator;
     @Spy
     private ChatRoleChecker chatRoleChecker = new ChatRoleChecker();
@@ -159,10 +163,128 @@ class ChatServiceTest {
 
     }
 
+//  1:1 채팅방 테스트코드
+
+    @Test
+    @DisplayName("1:1 채팅방이 정상적으로 생성됩니다.")
+    void successCreatePrivateChatRoom() {
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when(memberRepository.findById(otherMember.getId())).thenReturn(Optional.of(otherMember));
+        when(chatParticipantRepository.findExistingPrivateRoom
+            (member.getId(), otherMember.getId())).thenReturn(Optional.empty());
+
+        ApiResponse<Long> response = chatService.getOrCreatePrivateRoom(otherMember.getId());
+
+        assertEquals("SUCCESS", response.code());
+
+    }
+
+    @Test
+    @DisplayName("1:1 채팅방이 이미 존재하면 예외를 터트립니다.")
+    void existingChatRoom() {
+
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when(memberRepository.findById(otherMember.getId())).thenReturn(Optional.of(otherMember));
+        when(chatParticipantRepository.findExistingPrivateRoom(member.getId(),
+            otherMember.getId())).thenReturn(Optional.of(singlechatRoom));
+
+        AppException exception = assertThrows(AppException.class,
+            () -> chatService.getOrCreatePrivateRoom(otherMember.getId()));
+
+        Assertions.assertThat(exception.getErrorCode())
+            .isEqualTo(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
+    }
+
+    @Test
+    @DisplayName("1:1 채팅 생성시 서로의 권한이 같으면 에러를 터트립니다.")
+    void cannotSameRole(){
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when((memberRepository.findById(member2.getId()))).thenReturn(Optional.of(member2));
+
+        AppException exception = assertThrows(AppException.class, () ->
+            chatService.getOrCreatePrivateRoom(member2.getId())); //
+
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ChatErrorCode.CANNOT_CHAT_SAME_ROLE);
+    }
+
+//    그룹채팅 테스트코드
+    @Test
+    @DisplayName("그룹 채팅방이 이미 존재하면 예외를 터트립니다.")
+    void createGroupChatRoom() {
+
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        when(chatRoomRepository.existsByProductIdAndIsGroupChat(product.getId(), true)).thenReturn(
+            true);
+
+        AppException exception = assertThrows(AppException.class, () ->
+            chatService.createGroupRoom(product.getId()));
+
+        Assertions.assertThat(exception.getErrorCode())
+            .isEqualTo(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
+    }
+
+    @Test
+    @DisplayName("그룹 채팅방이 없으면 새로 생성합니다.")
+    void createGroupRoomSuccess() {
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+        when(chatRoomRepository.existsByProductIdAndIsGroupChat(product.getId(), true)).thenReturn(
+            false);
+
+        ApiResponse<Long> response = chatService.createGroupRoom(product.getId());
+
+        assertEquals("SUCCESS", response.code());
+    }
+
+
+    @Test
+    @DisplayName("그룹 채팅방에 참여합니다.")
+    void joinGroupChatRoom() {
+        //when
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when(chatRoomRepository.findById(groupchatRoom.getId())).thenReturn(
+            Optional.of(groupchatRoom));
+
+        ApiResponse<Void> response = chatService.joinGroupRoom(groupchatRoom.getId());
+
+        assertEquals("SUCCESS", response.code());
+    }
+
+//    @Test
+//    @DisplayName("그룹 채팅방에서 퇴장합니다.")
+//    void leaveGroupRoom() {
+//        when(chatRoomRepository.findById(groupchatRoom.getId())).thenReturn(
+//            Optional.of(groupchatRoom));
+//        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+//        when(chatParticipantRepository.findByChatRoomAndMember(groupchatRoom, member))
+//            .thenReturn(Optional.of(chatParticipant));
+//
+//        ApiResponse<Void> response = chatService.leaveGroupRoom(groupchatRoom.getId(),
+//            member.getId());
+//
+//        assertEquals("SUCCESS", response.code());
+//
+//    }
+    @Test
+    @DisplayName("그룹 채팅방에서 퇴장합니다.")
+    void leaveGroupRoom() {
+        when(chatRoomRepository.findById(groupchatRoom.getId())).thenReturn(
+            Optional.of(groupchatRoom));
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
+        when(chatParticipantRepository.findByChatRoomAndMemberId(groupchatRoom, member.getId()))
+            .thenReturn(Optional.of(chatParticipant));
+
+        ApiResponse<Void> response = chatService.leaveGroupRoom(groupchatRoom.getId());
+
+        assertEquals("SUCCESS", response.code());
+
+    }
 //    채팅내역 조회
     @Test
     @DisplayName("채팅에 참여중이 아닌 사람이 조회를 시도하면 오류를 발생시킵니다.")
     void getChatHistory_NoMember(){
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
         when(chatRoomRepository.findById(singlechatRoom.getId())).thenReturn(Optional.of(singlechatRoom));
         when(chatParticipantRepository.findByChatRoom(singlechatRoom)).thenReturn(List.of());
         AppException exception = assertThrows(AppException.class, () ->
@@ -172,6 +294,7 @@ class ChatServiceTest {
     @Test
     @DisplayName("채팅 내역을 정상적으로 불러옵니다")
     void getChatHistorySuccess(){
+        when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
         when(chatRoomRepository.findById(singlechatRoom.getId())).thenReturn(Optional.of(singlechatRoom));
         when(chatParticipantRepository.findByChatRoom(singlechatRoom)).thenReturn(List.of(chatParticipant));
         when(chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(singlechatRoom)).thenReturn(List.of());
