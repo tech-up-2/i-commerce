@@ -40,9 +40,9 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @Transactional
 @TestPropertySource(properties = {
-    "app.bootstrap.admin.enabled=true",
-    "app.bootstrap.admin.email=master@test.com",
-    "app.bootstrap.admin.password=master123!",
+    "app.bootstrap.admin.enabled=${ADMIN_ENABLED}",
+    "app.bootstrap.admin.email=${ADMIN_EMAIL}",
+    "app.bootstrap.admin.password=${ADMIN_PASSWORD}",
     "app.bootstrap.admin.name=최초관리자"
 }, locations = "file:.env")
 class AdminManagementIntegrationTest {

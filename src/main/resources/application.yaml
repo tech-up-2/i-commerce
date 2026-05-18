@@ -14,10 +14,10 @@ app:
     secret: "oMUV1EZ82PhPtaaldRsWrYCMll8kFoyv+o1u0CJGuIM="
   bootstrap: #최초 MASTER 관리자
     admin:
-      enabled: true
-      email: master@test.com
-      password: master123!
-      name: 최초관리자
+      enabled: ${ADMIN_ENABLED}
+      email: ${ADMIN_EMAIL}
+      password: ${ADMIN_PASSWORD}
+      name: "최초관리자"
 
 security:
   email-hmac-key: "m+Mtv+DxZbk0psKymGWCsAMTx1jSMIJnIV/SVtlCTT8="
