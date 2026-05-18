@@ -1,6 +1,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/java,git,intellij,gradle,macos,windows,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,git,intellij,gradle,macos,windows,visualstudiocode
 
+.env
 ### Git ###
 # Created by git for backups. To disable backups in Git:
 # $ git config --global mergetool.keepBackup false
@@ -263,3 +264,5 @@ gradle-app.setting
 # End of https://www.toptal.com/developers/gitignore/api/java,git,intellij,gradle,macos,windows,visualstudiocode
 .idea/
 .gitattributes
+.env
+/src/main/generated/

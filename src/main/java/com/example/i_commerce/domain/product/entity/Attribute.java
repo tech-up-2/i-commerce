@@ -1,0 +1,54 @@
+package com.example.i_commerce.domain.product.entity;
+
+import com.example.i_commerce.global.common.entity.BaseEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+
+@Entity
+@Table(name = "attributes")
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Attribute extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String key;
+
+    @Column(nullable = false)
+    private String value;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "attribute", cascade = CascadeType.ALL)
+    private List<ProductAttribute> productAttributes = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(mappedBy = "attribute", cascade = CascadeType.ALL)
+    private List<CategoryAttribute> categoryAttributes = new ArrayList<>();
+
+    public static Attribute of(String key, String value) {
+        return Attribute.builder()
+            .key(key)
+            .value(value)
+            .build();
+    }
+
+}
