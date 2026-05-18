@@ -32,7 +32,7 @@ public class ProductOptionValidator {
         List<OptionRequest> requests = request.options();
 
         Set<Long> availableOptions = categoryOptionRepository
-            .findByCategoryId(request.categoryId())
+            .findAllByCategoryId(request.categoryId())
             .stream()
             .map(CategoryOption::getOption)
             .map(Option::getId)

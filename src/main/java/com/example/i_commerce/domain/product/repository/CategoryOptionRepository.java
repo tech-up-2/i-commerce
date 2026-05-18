@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CategoryOptionRepository extends JpaRepository<CategoryOption, Long> {
 
-    Optional<CategoryOption> findByCategoryId(Long categoryId);
+    List<CategoryOption> findAllByCategoryId(Long categoryId);
 
     @Query("""
     SELECT
