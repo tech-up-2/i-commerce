@@ -11,6 +11,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
+    boolean existsByParentIsNullAndName(String name);
+
+    boolean existsByParentAndName(Category parent, String name);
+
     @Query(value = """
         WITH RECURSIVE category_tree AS (
             SELECT id, parent_id, name, depth, 0 AS relative_depth
