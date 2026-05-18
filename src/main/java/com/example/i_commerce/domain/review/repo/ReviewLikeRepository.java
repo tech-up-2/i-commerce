@@ -13,10 +13,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReviewLikeRepository extends JpaRepository<ReviewLike, Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select rl from ReviewLike rl where rl.review = :review and rl.likerId = :likerId")
-    Optional<ReviewLike> findByReviewAndLikerId(
-        @Param("review") Review review,
-        @Param("likerId") Long likerId);
+    Optional<ReviewLike> findByReviewAndLikerId(Review review, Long likerId);
 
 }

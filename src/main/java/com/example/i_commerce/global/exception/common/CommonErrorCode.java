@@ -12,6 +12,7 @@ public enum CommonErrorCode implements ErrorCode {
     INVALID_MULTIPART_FILE(HttpStatus.BAD_REQUEST, "COM-40002", "멀티파트 파일이 유효하지 않습니다."),
 
     INVALID_PERMISSION(HttpStatus.UNAUTHORIZED, "COM-40101", "권한이 없습니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "COM-40102", "로그인이 필요합니다."),
 
     FORBIDDEN(HttpStatus.FORBIDDEN, "COM-40301", "접근 권한이 없습니다."),
 

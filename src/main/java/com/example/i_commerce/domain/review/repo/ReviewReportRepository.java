@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReviewReportRepository extends JpaRepository<ReviewReport,Long> {
 
-    boolean existsByReporterIdAndReviewId(Long reviewId, Long reporterId);
+    boolean existsByReporterIdAndReviewId(Long reporterId, Long reviewId);
 }

@@ -13,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.util.ArrayList;
@@ -33,6 +34,8 @@ import org.hibernate.annotations.SQLRestriction;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
+
+    private static final int REPORT_THRESHOLD = 10;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,6 +73,9 @@ public class Review extends BaseEntity {
     @Builder.Default
     private Long version = 0L;
 
+    @OneToOne(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ReviewComment comment;
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "best_status")
@@ -84,9 +90,6 @@ public class Review extends BaseEntity {
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> images = new ArrayList<>();
 
-    @Builder.Default
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewComment> comments = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -198,18 +201,16 @@ public class Review extends BaseEntity {
         }
     }
 
-    public boolean incrementReportCount() {
+    public void incrementReportCount() {
         if (this.reportCount == null) {
             this.reportCount = 0L;
         }
 
         this.reportCount++;
 
-        if (this.reportCount >= 10 && this.reportStatus != ReviewReportStatus.HIDDEN_PENDING) {
+        if (this.reportCount >= REPORT_THRESHOLD && this.reportStatus != ReviewReportStatus.HIDDEN_PENDING) {
             this.reportStatus = ReviewReportStatus.HIDDEN_PENDING;
-            return true;
         }
-        return false;
     }
 
     public void resetReportCount() {
@@ -220,10 +221,10 @@ public class Review extends BaseEntity {
         this.reportStatus = reviewReportStatus;
     }
 
-    public static Review from(CreateReviewRequest dto) {
+    public static Review from(Long orderProductId, Long userId, CreateReviewRequest dto) {
         Review review = Review.builder()
-            .orderProductId(dto.getOrderProductId())
-            .userId(dto.getUserId())
+            .orderProductId(orderProductId)
+            .userId(userId)
             .content(dto.getContent())
             .starRate(dto.getStarRate())
             .likeCount(0L)
