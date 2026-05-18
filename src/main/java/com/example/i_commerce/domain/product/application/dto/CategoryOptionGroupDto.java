@@ -1,17 +1,17 @@
-package com.example.i_commerce.domain.product.controller.response;
+package com.example.i_commerce.domain.product.application.dto;
 
 import com.example.i_commerce.domain.product.entity.OptionInputType;
 import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record CategoryOptionGroupResponse(
+public record CategoryOptionGroupDto(
     String optionType,
-    List<CategoryOptionValueResponse> optionValues
+    List<CategoryOptionValueDto> optionValues
 ) {
 
     @Builder
-    public record CategoryOptionValueResponse(
+    public record CategoryOptionValueDto(
         Long categoryOptionId,
         Long optionId,
         String value,
