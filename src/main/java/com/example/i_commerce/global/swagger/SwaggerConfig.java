@@ -80,6 +80,17 @@ public class SwaggerConfig {
     }
 
     @Bean
+    public GroupedOpenApi cartApi() {
+        return GroupedOpenApi.builder()
+            .group("Cart")
+            .pathsToMatch(
+                "/api/v1/carts/**"
+            )
+            .addOpenApiCustomizer(securityCustomizer())
+            .build();
+    }
+
+    @Bean
     public GroupedOpenApi reviewApi() {
         return GroupedOpenApi.builder()
             .group("Review")
