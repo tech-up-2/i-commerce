@@ -14,6 +14,7 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
         SELECT ci
         FROM CartItem ci
         WHERE ci.cart.id = :cartId
+        AND ci.deletedAt IS NULL
         ORDER BY ci.createdAt DESC
     """)
     List<CartItem> findAllByCartId(@Param("cartId") Long cartId);
