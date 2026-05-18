@@ -11,6 +11,7 @@ import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
 import com.example.i_commerce.domain.chat.repository.ChatStatusRepository;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendRequest;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
+import com.example.i_commerce.domain.chat.service.dto.GroupChatListResponse;
 import com.example.i_commerce.domain.chat.service.dto.MyChatListResponse;
 import com.example.i_commerce.domain.chat.util.ChatRoleChecker;
 import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
@@ -44,152 +45,17 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatParticipantRepository chatParticipantRepository;
-    private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
     private final ChatStatusRepository chatStatusRepository;
-    private final DataEncryptor dataEncryptor;
-    private final ChatRoleChecker chatRoleChecker;
-    private final ChatRoomNameGenerator chatRoomNameGenerator;
 
-
-    public void addParticipantToRoom(ChatRoom chatRoom, Long memberId) {
-        ChatParticipant chatParticipant = ChatParticipant.builder()
-            .chatRoom(chatRoom)
-            .memberId(memberId)
-            .build();
-        chatParticipantRepository.save(chatParticipant);
-    }
-
-    public ApiResponse<Long> getOrCreatePrivateRoom(Long otherMemberId) {
-
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(
-                MemberErrorCode.USER_NOT_FOUND));
-        Member otherMember = memberRepository.findById(otherMemberId)
-            .orElseThrow(() -> new AppException(
-                MemberErrorCode.USER_NOT_FOUND));
-
-        chatRoleChecker.roleCheck(member, otherMember);
-
-//       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 에러코드를 return
-//       사용자 입장에서는 에러코드 보다는 참여하고있는 채팅 리다이렉션이 훨씬 편리할 것 같음.
-        Optional<ChatRoom> chatRoom = chatParticipantRepository.findExistingPrivateRoom(
-            member.getId(), otherMember.getId());
-        if (chatRoom.isPresent()) {
-            throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
-        }
-//      만약에 1:1 채팅방이 없을 경우 기존 채팅방 개설
-        String PrivateRoomName = chatRoomNameGenerator.getPrivateRoomName(member.getName(), otherMember.getName());
-        ChatRoom newRoom = ChatRoom.builder()
-            .isGroupChat(false)
-            .name(PrivateRoomName)
-            .build();
-        chatRoomRepository.save(newRoom);
-//        두 사람을 채팅방에 참여자로 새롭게 추가
-        addParticipantToRoom(newRoom, member.getId());
-        addParticipantToRoom(newRoom, otherMember.getId());
-
-        return ApiResponse.success(newRoom.getId());
-    }
-
-    public ApiResponse<Long> createGroupRoom(Long productId) {
-//      채팅방 참여 멤버 검증
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(
-                MemberErrorCode.USER_NOT_FOUND));
-//      상품 존재여부 검증
-        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(
-            ProductErrorCode.PRODUCT_NOT_FOUND));
-
-//      채팅방 중복 여부 검증
-        if (chatRoomRepository.existsByProductIdAndIsGroupChat(productId, true)) {
-            throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
-        }
-
-//      채팅방 생성
-        String ProductRoomName = chatRoomNameGenerator.getProductRoomName(product.getName());
-        ChatRoom chatRoom = ChatRoom.builder()
-            .name(ProductRoomName)
-            .isGroupChat(true)
-            .product(product)
-            .build();
-
-        chatRoomRepository.save(chatRoom);
-
-//      최초 생성자를 방에 참가시킨다.
-        addParticipantToRoom(chatRoom, member.getId());
-
-        return ApiResponse.success(chatRoom.getId());
-    }
-
-
-    public ApiResponse<Void> joinGroupRoom(Long roomId) {
-        //실제로 채팅방이 존재하는지 검증
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        //해당 채팅방이 그룹채팅인지 검증
-        if (!chatRoom.getIsGroupChat()) {
-            throw new AppException(ChatErrorCode.CANNOT_JOIN_PRIVATE_ROOM);
-        }
-        //참여하고자 하는 멤버가 존재하는지 검증
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
-        //강퇴 여부 확인(미구현)
-
-        //이미 참여하고 있는지 검증 및 멤버 추가
-        Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndMemberId(
-            chatRoom, member.getId());
-        if (participant.isPresent()) {
-            throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
-        }
-        addParticipantToRoom(chatRoom, member.getId());
-        return ApiResponse.success();
-    }
-
-    public ApiResponse<Void> leaveGroupRoom(Long roomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
-        //해당 채팅방이 그룹채팅인지 검증
-        if (!chatRoom.getIsGroupChat()) {
-            throw new AppException(ChatErrorCode.ONLY_GROUP_CHAT_CAN_LEAVE);
-        }
-        //해당 사용자가 해당 채팅방에 참가하고 있는지 검증
-        ChatParticipant chatParticipant = chatParticipantRepository.findByChatRoomAndMemberId(
-                chatRoom, member.getId())
-            .orElseThrow(() -> new AppException(ChatErrorCode.NOT_A_ROOM_MEMBER));
-        //유저를 해당 채팅방에서 제거
-        chatParticipantRepository.delete(chatParticipant);
-
-        //해당 방에 유저가 아무도 없는지 조회
-        List<ChatParticipant> participants = chatParticipantRepository.findByChatRoom(chatRoom);
-        //만약 유저가 한명도 없으면 채팅방을 제거한다.
-        if (participants.isEmpty()) {
-            //소프트 딜리트 적용
-            chatRoom.delete();
-            //실제로 DB에서 제거가 되지 않으므로 저장 해주어야함.
-            chatRoomRepository.save(chatRoom);
-        }
-
-        return ApiResponse.success();
-    }
-
-    public Boolean isRoomParticipant(Long myId, Long roomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-
-        return chatParticipantRepository.findByChatRoomAndMemberId(chatRoom, myId).isPresent();
-    }
 
     public ApiResponse<Void> messageRead(Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        Long memberId = TempChatUtil.getCurrentUserId();
 //      기존 강의에서는 읽은 채팅과 안읽은 채팅을 모두 불러왔지만 안읽은 채팅만 불러오는 것이 조회 측면에서 효율적임
         List<MessageReadStatus> readStatuses = chatStatusRepository.findByChatRoomAndMemberIdAndIsReadFalse(
-            chatRoom, member.getId());
+            chatRoom, memberId);
         for (MessageReadStatus r : readStatuses) {
             r.updateIsRead(true);
         }
@@ -199,11 +65,23 @@ public class ChatService {
     public ApiResponse<List<MyChatListResponse>> getMyChatList() {
         Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
-        List<MyChatListResponse> myChatListResponses = chatStatusRepository.findMyChatList(member.getId());
+        List<MyChatListResponse> myChatListResponses = chatStatusRepository.findMyChatList(
+            member.getId());
         return ApiResponse.success(myChatListResponses);
     }
 
-//    해당 부분은 메시지를 보냈을 때, 새로고침을 통해만 확인이 가능하기 때문에 ws를 이용해서 실시간 처리가 가능하도록 하는게 최종 목표.
+    public ApiResponse<List<GroupChatListResponse>> getGroupChatList() {
+        List<ChatRoom> groupRooms = chatRoomRepository.findByIsGroupChatTrueAndDeletedAtIsNull();
+        List<GroupChatListResponse> responseList = new ArrayList<>();
+        for (ChatRoom room : groupRooms) {
+            GroupChatListResponse dto = new GroupChatListResponse(room.getId(), room.getName());
+            responseList.add(dto);
+        }
+        return ApiResponse.success(responseList);
+    }
+
+
+    //    해당 부분은 메시지를 보냈을 때, 새로고침을 통해만 확인이 가능하기 때문에 ws를 이용해서 실시간 처리가 가능하도록 하는게 최종 목표.
     public ApiResponse<Void> saveMessage(Long roomId,
         ChatMessageSendRequest chatMessageSendRequest) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
@@ -234,12 +112,11 @@ public class ChatService {
     public ApiResponse<List<ChatMessageSendResponse>> getChatHistory(Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        Long memberId = TempChatUtil.getCurrentUserId();
         List<ChatParticipant> chatParticipants = chatParticipantRepository.findByChatRoom(chatRoom);
         boolean check = false;
         for (ChatParticipant p : chatParticipants) {
-            if (p.getMemberId().equals(member.getId())) {
+            if (p.getMemberId().equals(memberId)) {
                 check = true;
             }
         }
@@ -258,5 +135,14 @@ public class ChatService {
             chatMessageSendResponses.add(messagesDto);
         }
         return ApiResponse.success(chatMessageSendResponses);
+    }
+
+    public Boolean isRoomParticipant(Long myId, Long roomId) {
+
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+            .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        return chatParticipantRepository.findByChatRoomAndMemberId(chatRoom, myId).isPresent();
+
     }
 }
