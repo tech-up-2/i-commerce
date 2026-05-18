@@ -8,7 +8,6 @@ public record TokenPayload(
     PrincipalType principalType,
 
     Long accountId,
-    String email,
 
     AccountRole role,
 

@@ -96,7 +96,6 @@ public class AuthService {
             payload = new TokenPayload(
                 PrincipalType.MEMBER,
                 member.getId(),
-                email,
                 MemberType.SELLER,
                 member.getStatus(),
                 seller.getSellerStatus()
@@ -105,7 +104,6 @@ public class AuthService {
             payload = new TokenPayload(
                 PrincipalType.MEMBER,
                 member.getId(),
-                email,
                 MemberType.CUSTOMER,
                 member.getStatus(),
                 null
