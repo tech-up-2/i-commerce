@@ -2,6 +2,7 @@ package com.example.i_commerce.domain.cart.controller;
 
 
 import com.example.i_commerce.domain.cart.controller.request.AddCartItemRequest;
+import com.example.i_commerce.domain.cart.controller.request.DeleteCartItemRequest;
 import com.example.i_commerce.domain.cart.controller.response.AddCartItemResponse;
 import com.example.i_commerce.domain.cart.controller.response.CartResponse;
 import com.example.i_commerce.domain.cart.service.CartQueryService;
@@ -11,6 +12,7 @@ import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,5 +46,14 @@ public class CartController {
         return ApiResponse.success(response);
     }
 
+
+    @DeleteMapping("/items")
+    public ApiResponse<Void> deleteCartItems(
+        @AuthenticationPrincipal CustomUserPrincipal principal,
+        @RequestBody @Valid DeleteCartItemRequest request
+    ) {
+        cartService.deleteItems(principal.getId(), request);
+        return ApiResponse.success();
+    }
 
 }
