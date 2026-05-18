@@ -13,7 +13,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15 # 사용 중인 PostgreSQL 버전
+        image: postgres:18
         env:
           POSTGRES_DB: testdb
           POSTGRES_USER: testuser
