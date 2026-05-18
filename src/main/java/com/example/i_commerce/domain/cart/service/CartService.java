@@ -2,6 +2,7 @@ package com.example.i_commerce.domain.cart.service;
 
 
 import com.example.i_commerce.domain.cart.controller.request.AddCartItemRequest;
+import com.example.i_commerce.domain.cart.controller.request.DeleteCartItemRequest;
 import com.example.i_commerce.domain.cart.controller.response.AddCartItemResponse;
 import com.example.i_commerce.domain.cart.entity.Cart;
 import com.example.i_commerce.domain.cart.entity.CartItem;
@@ -56,6 +57,13 @@ public class CartService {
             });
 
         return AddCartItemResponse.from(cartItem);
+    }
+
+    public void deleteItems(Long userId, DeleteCartItemRequest request) {
+        Cart cart = cartRepository.findByUserIdWithItems(userId)
+            .orElseThrow(() -> new AppException(CartErrorCode.CART_NOT_FOUND));
+
+        cart.removeItems(request.cartItemIds());
     }
 
 }
