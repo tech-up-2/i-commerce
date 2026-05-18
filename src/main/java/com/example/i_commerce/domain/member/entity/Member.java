@@ -116,4 +116,8 @@ public class Member extends BaseEntity {
         this.sex = sex;
         this.birthday = birthday;
     }
+
+    public void changeStatus(MemberStatus status) {
+        this.status = status;
+    }
 }

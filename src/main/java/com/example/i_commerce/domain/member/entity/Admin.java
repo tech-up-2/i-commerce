@@ -58,4 +58,17 @@ public class Admin extends BaseEntity {
     @OneToMany(mappedBy = "admin")
     private List<AdminLoginHistory> loginHistories = new ArrayList<>();
 
+    public void changeRole(AdminRole adminRole) {
+        this.adminRole = adminRole;
+    }
+
+    public void changeStatus(AdminStatus adminStatus) {
+        this.adminStatus = adminStatus;
+    }
+
+    public boolean isActiveMaster() {
+        return this.adminRole == AdminRole.MASTER
+            && this.adminStatus == AdminStatus.ACTIVE
+            && this.getDeletedAt() == null;
+    }
 }

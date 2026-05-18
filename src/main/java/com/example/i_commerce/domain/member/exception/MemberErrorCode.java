@@ -22,6 +22,8 @@ public enum MemberErrorCode implements ErrorCode {
     WITHDRAWN_MEMBER(HttpStatus.BAD_REQUEST, "USR-40003", "탈퇴 처리된 계정입니다."),
     DELIVERY_ADDRESS_LIMIT_EXCEEDED(
         HttpStatus.BAD_REQUEST, "USR-40004", "배송지는 최대 5개까지 등록할 수 있습니다."),
+    LAST_ACTIVE_MASTER_REQUIRED(HttpStatus.BAD_REQUEST, "ADM-40001",
+        "사용 가능한 MASTER 관리자는 최소 1명 이상 존재해야 합니다."),
 
     // --- 401
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "USR-40101", "패스워드가 틀렸습니다."),
@@ -36,6 +38,7 @@ public enum MemberErrorCode implements ErrorCode {
     STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40405", "존재하지 않는 상점입니다."),
     STORE_ADDRESS_NOT_FOUND(HttpStatus.NOT_FOUND,
         "USR-40406", "상점 주소가 존재하지 않습니다."),
+    ADMIN_NOT_FOUND(HttpStatus.NOT_FOUND, "ADM-40407", "관리자를 찾을 수 없습니다."),
 
     // --- 409
     DUPLICATED_EMAIL(HttpStatus.CONFLICT, "USR-40901", "이미 가입된 이메일입니다."),
