@@ -90,7 +90,6 @@ public class ChatAdminReportTest {
    @Test
     @DisplayName("관리자가 유저의 채팅의 신고를 정상적으로 처리할 수 있다.")
     public void controlReportTest() {
-        when(adminRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
         when(chatReportRepository.findById(chatReport.getId())).thenReturn(Optional.of(chatReport));
 
         ApiResponse<Void>response = chatReportService.controlReport(chatReport.getId(), ChatReportStatus.RESOLVED);
