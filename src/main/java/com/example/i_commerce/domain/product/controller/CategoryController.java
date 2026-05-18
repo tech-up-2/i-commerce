@@ -2,12 +2,17 @@ package com.example.i_commerce.domain.product.controller;
 
 
 import com.example.i_commerce.domain.product.application.service.CategoryService;
+import com.example.i_commerce.domain.product.controller.request.CreateCategoryRequest;
 import com.example.i_commerce.domain.product.controller.response.CategoryResponse;
+import com.example.i_commerce.domain.product.controller.response.CreateCategoryResponse;
 import com.example.i_commerce.global.common.response.ApiResponse;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class CategoryController {
 
     private final CategoryService categoryService;
+
+    @PostMapping
+    public ApiResponse<CreateCategoryResponse> createCategory(
+        @Valid @RequestBody CreateCategoryRequest request
+    ) {
+        return ApiResponse.success(categoryService.createCategory(request));
+    }
 
     @GetMapping
     public ApiResponse<List<CategoryResponse>> getAllCategories(

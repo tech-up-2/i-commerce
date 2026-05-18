@@ -5,12 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-@Schema(name = "DeleteReviewRequest", description = "리뷰 삭제 요청")
+@Schema(name = "UpdateCommentRequest", description = "리뷰 답글 수정")
 @Getter
 @AllArgsConstructor
 @Builder
-public class DeleteReviewRequest {
+public class UpdateCommentRequest {
 
-    private Long userId;
-
+    private String content;
 }

@@ -4,6 +4,7 @@ import com.example.i_commerce.domain.review.entity.enums.ReportProcessStatus;
 import com.example.i_commerce.domain.review.entity.enums.ReportType;
 import com.example.i_commerce.domain.review.entity.enums.ReviewReportStatus;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
+import com.example.i_commerce.domain.review.service.dto.CreateReportRequest;
 import com.example.i_commerce.global.exception.AppException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -88,6 +89,16 @@ public class ReviewReport {
         if (this.processStatus != ReportProcessStatus.PENDING) {
             throw new AppException(ReviewErrorCode.ALREADY_PROCESSED);
         }
+    }
+
+    public static ReviewReport of(Review review, Long reporterId, CreateReportRequest dto) {
+        return ReviewReport.builder()
+            .reporterId(reporterId)
+            .review(review)
+            .reportType(dto.getReportType())
+            .reportReason(dto.getReason())
+            .status(ReviewReportStatus.NORMAL)
+            .build();
     }
 
 }
