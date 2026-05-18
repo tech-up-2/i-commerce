@@ -14,9 +14,9 @@ app:
     secret: "oMUV1EZ82PhPtaaldRsWrYCMll8kFoyv+o1u0CJGuIM="
   bootstrap: #최초 MASTER 관리자
     admin:
-      enabled: ${ADMIN_ENABLED}
-      email: ${ADMIN_EMAIL}
-      password: ${ADMIN_PASSWORD}
+      enabled: true
+      email: master@test.com
+      password: master123!
       name: "최초관리자"
 
 security:
