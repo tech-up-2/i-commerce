@@ -36,10 +36,6 @@ jobs:
           SPRING_DATASOURCE_USERNAME: testuser
           SPRING_DATASOURCE_PASSWORD: testpassword
           SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
-          
-          ADMIN_ENABLED: "${{ secrets.ADMIN_ENABLED }}"
-          ADMIN_EMAIL: "${{ secrets.ADMIN_EMAIL }}"
-          ADMIN_PASSWORD: "${{ secrets.ADMIN_PASSWORD }}"
 
         run: ./gradlew test
 
