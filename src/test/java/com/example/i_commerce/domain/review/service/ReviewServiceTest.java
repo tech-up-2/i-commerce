@@ -12,9 +12,10 @@ import static org.mockito.Mockito.verify;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repo.ReviewRepository;
-import com.example.i_commerce.domain.review.service.ReviewService;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
+import com.example.i_commerce.domain.review.validator.ReviewValidator;
 import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.s3.service.S3ImageService;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 public class ReviewServiceTest {
@@ -32,6 +34,12 @@ public class ReviewServiceTest {
     @InjectMocks
     private ReviewService reviewService;
 
+    @Mock
+    private ReviewValidator reviewValidator;
+
+    @Mock
+    private S3ImageService s3ImageService;
+
     @Test
     @DisplayName("성공: 모든 조건이 맞으면 리뷰가 정상적으로 저장된다")
     void createReview_Success() {
@@ -40,11 +48,8 @@ public class ReviewServiceTest {
         Long orderProductId = 10L;
         Long reviewId = 100L;
 
-        CreateReviewRequest request = new CreateReviewRequest(
-            "굳굳",
-            5,
-            List.of("image.jpg")
-        );
+        CreateReviewRequest request = new CreateReviewRequest("굳굳", 5);
+        List<MultipartFile> imageFiles = List.of();
 
         //중복된 데이터가 없다고 가정
         given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(false);
@@ -53,7 +58,7 @@ public class ReviewServiceTest {
         given(reviewRepo.save(any(Review.class))).willReturn(mockReview);
 
         //when
-        Long resultId = reviewService.createReview(orderProductId, userId, request);
+        Long resultId = reviewService.createReview(orderProductId, userId, request, imageFiles);
 
         //then
         assertThat(resultId).isEqualTo(100L);
@@ -67,16 +72,13 @@ public class ReviewServiceTest {
         Long userId = 1L;
         Long orderProductId= 10L;
 
-        CreateReviewRequest request = new CreateReviewRequest(
-            "리뷰 또 쓰고 싶다",
-            5,
-            null
-        );
+        CreateReviewRequest request = new CreateReviewRequest("리뷰 또 쓰고 싶다", 5);
+        List<MultipartFile> imageFiles = List.of();
 
         given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(true);
 
         //when&then
-        assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request))
+        assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request, imageFiles))
             .isInstanceOf(AppException.class)
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.ALREADY_REVIEWED);
 
@@ -92,14 +94,11 @@ public class ReviewServiceTest {
         Long userId = 1L;
         Long orderProductId = 10L;
 
-        CreateReviewRequest request = new CreateReviewRequest(
-            "6점 주고 싶다",
-            6,
-            null
-        );
+        CreateReviewRequest request = new CreateReviewRequest("6점 주고 싶다", 6);
+        List<MultipartFile> imageFiles = List.of();
 
         //when&then
-        assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request))
+        assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request, imageFiles))
             .isInstanceOf(AppException.class)
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.INVALID_STAR_RATING);
 

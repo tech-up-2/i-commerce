@@ -48,6 +48,7 @@ public class S3ImageService {
             return s3Client.utilities().getUrl(builder -> builder.bucket(bucket).key(s3FileName)).toExternalForm();
 
         } catch (IOException | SdkException e) {
+            e.printStackTrace();
             throw new AppException(CommonErrorCode.S3_UPLOAD_FAILED);
         }
     }

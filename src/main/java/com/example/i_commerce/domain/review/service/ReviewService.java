@@ -11,12 +11,15 @@ import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
 import com.example.i_commerce.domain.review.validator.ReviewValidator;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
+import com.example.i_commerce.global.s3.controller.GlobalImageController;
+import com.example.i_commerce.global.s3.service.S3ImageService;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -25,9 +28,10 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepo;
     private final ReviewValidator reviewValidator;
+    private final S3ImageService s3ImageService;
 
     @Transactional
-    public Long createReview(Long orderProductId, Long userId, CreateReviewRequest dto) {
+    public Long createReview(Long orderProductId, Long userId, CreateReviewRequest dto, List<MultipartFile> imageFiles) {
         validateStarRating(dto.getStarRate());
 
         if (reviewRepo.existsByOrderProductIdAndUserId(orderProductId, userId)) {
@@ -39,6 +43,16 @@ public class ReviewService {
         Review review = Review.from(orderProductId, userId, dto);
 
         Review savedReview = reviewRepo.save(review);
+
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            for (MultipartFile file : imageFiles) {
+                if (!file.isEmpty()) {
+                    String imageUrl = s3ImageService.uploadImage(file, "reviews");
+                    System.out.println("🔥 [S3 업로드 성공!!] 반환된 URL 주소: " + imageUrl);
+                    review.addImage(imageUrl);
+                }
+            }
+        }
 
         return savedReview.getId();
     }
