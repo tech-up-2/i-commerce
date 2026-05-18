@@ -2,7 +2,7 @@ package com.example.i_commerce.domain.product.application.mapper;
 
 
 import com.example.i_commerce.domain.product.application.dto.CategoryOptionGroupDto;
-import com.example.i_commerce.domain.product.application.dto.CategoryOptionGroupDto.CategoryOptionValueResponse;
+import com.example.i_commerce.domain.product.application.dto.CategoryOptionGroupDto.CategoryOptionValueDto;
 import com.example.i_commerce.domain.product.repository.projection.CategoryOptionProjection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,17 +28,17 @@ public class CategoryOptionMapper {
                 Collectors.toList()
             ))
             .entrySet().stream()
-            .map(this::toGroupResponse)
+            .map(this::group)
             .toList();
     }
 
-    private CategoryOptionGroupDto toGroupResponse(
+    private CategoryOptionGroupDto group(
         Entry<String, List<CategoryOptionProjection>> entry
     ) {
         return CategoryOptionGroupDto.builder()
             .optionType(entry.getKey())
             .optionValues(entry.getValue().stream()
-                .map(p -> CategoryOptionValueResponse.builder()
+                .map(p -> CategoryOptionValueDto.builder()
                     .categoryOptionId(p.getCategoryOptionId())
                     .optionId(p.getOptionId())
                     .value(p.getOptionValue())

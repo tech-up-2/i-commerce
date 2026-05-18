@@ -7,11 +7,11 @@ import lombok.Builder;
 @Builder
 public record CategoryOptionGroupDto(
     String optionType,
-    List<CategoryOptionValueResponse> optionValues
+    List<CategoryOptionValueDto> optionValues
 ) {
 
     @Builder
-    public record CategoryOptionValueResponse(
+    public record CategoryOptionValueDto(
         Long categoryOptionId,
         Long optionId,
         String value,
