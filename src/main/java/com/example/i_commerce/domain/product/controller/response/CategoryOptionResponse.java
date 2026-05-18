@@ -1,22 +1,22 @@
 package com.example.i_commerce.domain.product.controller.response;
 
-import com.example.i_commerce.domain.product.application.dto.CategoryOptionGroupDto;
+import com.example.i_commerce.domain.product.application.dto.CategoryOptionDto;
 import java.util.List;
 import lombok.Builder;
 
 @Builder
 public record CategoryOptionResponse(
     Long categoryId,
-    List<CategoryOptionGroupDto> options
+    List<CategoryOptionDto> options
 ) {
 
     public static CategoryOptionResponse of(
         Long categoryId,
-        List<CategoryOptionGroupDto> optionGroups
+        List<CategoryOptionDto> options
     ) {
         return CategoryOptionResponse.builder()
             .categoryId(categoryId)
-            .options(optionGroups)
+            .options(options)
             .build();
     }
 }
