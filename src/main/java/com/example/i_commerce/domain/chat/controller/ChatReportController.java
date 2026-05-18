@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
 public class ChatReportController {
+
     public final ChatReportService chatReportService;
+
     @Operation(summary = "유저 신고 생성", description = "채팅에 대해 신고를 진행할 수 있다.")
     @PostMapping("/report/create")
     public ApiResponse<Void> createChatReport(@RequestBody ChatReportRequest chatReportRequest) {

@@ -2,6 +2,7 @@
 
     import com.example.i_commerce.domain.chat.service.ChatService;
     import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
+    import com.example.i_commerce.domain.chat.service.dto.GroupChatListResponse;
     import com.example.i_commerce.domain.chat.service.dto.MyChatListResponse;
     import com.example.i_commerce.domain.order.service.OrderService;
     import com.example.i_commerce.global.common.response.ApiResponse;
@@ -19,8 +20,6 @@
     import org.springframework.web.bind.annotation.RequestParam;
     import org.springframework.web.bind.annotation.RestController;
 
-    //import com.example.i_commerce.domain.order.service.OrderService;
-
     @Tag(name = "Chat API", description = "채팅 관련 API")
     @SecurityRequirement(name = "BearerAuth")
     @RestController
@@ -29,39 +28,6 @@
     public class ChatController {
 
         private final ChatService chatService;
-
-        //    개인 1:1 채팅방 개설
-    //    JWT 도입시 파라미터 변경
-        @Operation(summary = "개인 1:1 채팅방 개설", description = "개인 1:1 채팅방을 개설한다.")
-        @PostMapping("/room/{otherMemberId}")
-        public ApiResponse<Long> getOrCreatePrivateRoom(@PathVariable Long otherMemberId) {
-
-            return chatService.getOrCreatePrivateRoom(otherMemberId);
-        }
-
-        //    단체 채팅방 개설
-        @Operation(summary = "단체 채팅방 개설", description = "단체 채팅방을 개설한다.")
-        @PostMapping("/group/{productId}")
-        public ApiResponse<Long> CreateGroupRoom(@PathVariable Long productId) {
-            return chatService.createGroupRoom(productId);
-        }
-
-        //    단체 채팅방 참여
-        @Operation(summary = "단체 채팅방 참여", description = "단체 채팅방에 참여한다.")
-        @PostMapping("/group/{roomId}/join")
-        public ApiResponse<Void> joinGroupRoom(@PathVariable Long roomId) {
-            chatService.joinGroupRoom(roomId);
-            return ApiResponse.success();
-        }
-
-
-        //    단체 채팅방 나가기
-        @Operation(summary = "단체 채팅방 퇴장", description = "단체 채팅방에서 퇴장한다.")
-        @DeleteMapping("/group/{roomId}/leave")
-        public ApiResponse<Void> leaveGroupRoom(@PathVariable Long roomId) {
-            chatService.leaveGroupRoom(roomId);
-            return ApiResponse.success();
-        }
 
         //    채팅내역 조회
         @Operation(summary = "이전 채팅내역 조회", description = "채팅 내역을 조회힌다.")
@@ -85,5 +51,10 @@
             return chatService.getMyChatList();
         }
 
+        @Operation(summary = "개설된 그룹 채팅 목록 조회", description = "현재 개설된 그룹 채팅방 목록입니다.")
+        @GetMapping("/group/list")
+        public ApiResponse<List<GroupChatListResponse>> getGroupChatList() {
+            return chatService.getGroupChatList();
+        }
 
     }

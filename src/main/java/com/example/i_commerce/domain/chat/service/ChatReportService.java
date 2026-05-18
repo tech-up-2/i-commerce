@@ -1,5 +1,4 @@
 package com.example.i_commerce.domain.chat.service;
-import static com.example.i_commerce.domain.chat.entity.QChatReport.chatReport;
 
 import com.example.i_commerce.domain.chat.entity.ChatMessage;
 import com.example.i_commerce.domain.chat.entity.ChatReport;
@@ -58,12 +57,12 @@ public class ChatReportService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> controlReport(Long reportId, ChatReportStatus status) {
-        Admin admin = adminRepository.findById(TempChatUtil.getCurrentUserId()).orElseThrow(() -> new AppException(
-            MemberErrorCode.ADMIN_NOT_FOUND));
-        ChatReport chatReport = chatReportRepository.findById(reportId).orElseThrow(() -> new AppException(
-         ChatErrorCode.REPORT_NOT_FOUND));
+
+        ChatReport chatReport = chatReportRepository.findById(reportId)
+            .orElseThrow(() -> new AppException(
+                ChatErrorCode.REPORT_NOT_FOUND));
         chatReport.updateStatus(status);
-        if(chatReport.getStatus() == ChatReportStatus.RESOLVED) {
+        if (chatReport.getStatus() == ChatReportStatus.RESOLVED) {
             ChatMessage message = chatReport.getChatMessage();
             message.blind();
         }
