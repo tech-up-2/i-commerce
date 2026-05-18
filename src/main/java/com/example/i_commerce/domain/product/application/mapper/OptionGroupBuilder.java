@@ -1,6 +1,6 @@
-package com.example.i_commerce.domain.product.application.service.option;
+package com.example.i_commerce.domain.product.application.mapper;
 
-import com.example.i_commerce.domain.product.controller.response.ProductOptionGroupResponse;
+import com.example.i_commerce.domain.product.application.dto.ProductOptionGroupDto;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.entity.ProductOptionType;
 import com.example.i_commerce.domain.product.entity.ProductOptionValue;
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class OptionGroupBuilder {
 
-    public List<ProductOptionGroupResponse> build(
+    public List<ProductOptionGroupDto> build(
         ProductOptionType optionType,
         List<ProductOptionValue> allOptions,
         List<ProductItem> allItems,
@@ -33,7 +33,7 @@ public class OptionGroupBuilder {
         };
     }
 
-    private List<ProductOptionGroupResponse> buildSingleOptionGroups(
+    private List<ProductOptionGroupDto> buildSingleOptionGroups(
         List<ProductOptionValue> allOptions,
         List<ProductItem> allItems,
         ProductItem selectedItem
@@ -47,11 +47,11 @@ public class OptionGroupBuilder {
             .orElse(Collections.emptySet());
 
         return List.of(
-            ProductOptionGroupResponse.of(allOptions, selectedOptionIds, itemsByOptionValue)
+            ProductOptionGroupDto.of(allOptions, selectedOptionIds, itemsByOptionValue)
         );
     }
 
-    private List<ProductOptionGroupResponse> buildDoubleOptionGroups(
+    private List<ProductOptionGroupDto> buildDoubleOptionGroups(
         List<ProductOptionValue> allOptions,
         List<ProductItem> allItems,
         ProductItem selectedItem
@@ -87,7 +87,7 @@ public class OptionGroupBuilder {
             ));
 
         return optionValuesByOrder.entrySet().stream().map(
-            entry -> ProductOptionGroupResponse.of(
+            entry -> ProductOptionGroupDto.of(
                 entry.getValue(),
                 selectedOptionIds,
                 itemMapByOrder.get(entry.getKey())

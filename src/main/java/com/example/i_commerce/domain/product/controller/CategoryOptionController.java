@@ -3,7 +3,8 @@ package com.example.i_commerce.domain.product.controller;
 import com.example.i_commerce.domain.product.application.service.CategoryOptionService;
 import com.example.i_commerce.domain.product.controller.request.AddCategoryOptionRequest;
 import com.example.i_commerce.domain.product.controller.response.AddCategoryOptionResponse;
-import com.example.i_commerce.domain.product.controller.response.CategoryOptionGroupResponse;
+import com.example.i_commerce.domain.product.application.dto.CategoryOptionGroupDto;
+import com.example.i_commerce.domain.product.controller.response.CategoryOptionResponse;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -23,7 +24,7 @@ public class CategoryOptionController {
     private final CategoryOptionService categoryOptionService;
 
     @GetMapping
-    public ApiResponse<List<CategoryOptionGroupResponse>> getCategoryOptions(
+    public ApiResponse<CategoryOptionResponse> getCategoryOptions(
         @PathVariable Long categoryId
     ) {
         return ApiResponse.success(categoryOptionService.getOptionsByCategory(categoryId));

@@ -1,8 +1,8 @@
 package com.example.i_commerce.domain.product.application.mapper;
 
 
-import com.example.i_commerce.domain.product.controller.response.CategoryOptionGroupResponse;
-import com.example.i_commerce.domain.product.controller.response.CategoryOptionGroupResponse.CategoryOptionValueResponse;
+import com.example.i_commerce.domain.product.application.dto.CategoryOptionGroupDto;
+import com.example.i_commerce.domain.product.application.dto.CategoryOptionGroupDto.CategoryOptionValueResponse;
 import com.example.i_commerce.domain.product.repository.projection.CategoryOptionProjection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class CategoryOptionMapper {
 
 
-    public List<CategoryOptionGroupResponse> toGroupedResponseList(
+    public List<CategoryOptionGroupDto> toGroupedResponseList(
         List<CategoryOptionProjection> projections
     ) {
         if (projections.isEmpty()) {
@@ -32,10 +32,10 @@ public class CategoryOptionMapper {
             .toList();
     }
 
-    private CategoryOptionGroupResponse toGroupResponse(
+    private CategoryOptionGroupDto toGroupResponse(
         Entry<String, List<CategoryOptionProjection>> entry
     ) {
-        return CategoryOptionGroupResponse.builder()
+        return CategoryOptionGroupDto.builder()
             .optionType(entry.getKey())
             .optionValues(entry.getValue().stream()
                 .map(p -> CategoryOptionValueResponse.builder()
