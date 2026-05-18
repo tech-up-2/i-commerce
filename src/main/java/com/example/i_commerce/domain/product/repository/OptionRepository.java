@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface OptionRepository extends JpaRepository<Option, Long> {
 
-    boolean existsByName(String type);
+    boolean existsByName(String name);
 
     @Query("SELECT o FROM Option o ORDER BY o.name ASC")
     List<Option> findAllOrderedByName();
