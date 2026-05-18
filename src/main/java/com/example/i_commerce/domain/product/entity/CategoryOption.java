@@ -38,4 +38,15 @@ public class CategoryOption extends BaseEntity {
     @Builder.Default
     private Boolean required = false;
 
+    public static CategoryOption of(
+        Category category,
+        Option option,
+        Boolean required
+    ) {
+        return CategoryOption.builder()
+            .category(category)
+            .option(option)
+            .required(required)
+            .build();
+    }
 }

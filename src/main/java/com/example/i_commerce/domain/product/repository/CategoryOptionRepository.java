@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.product.repository;
 
 import com.example.i_commerce.domain.product.entity.CategoryOption;
+import com.example.i_commerce.domain.product.repository.projection.CategoryOptionKey;
 import com.example.i_commerce.domain.product.repository.projection.CategoryOptionProjection;
 import java.util.List;
 import java.util.Optional;
@@ -30,5 +31,19 @@ public interface CategoryOptionRepository extends JpaRepository<CategoryOption, 
     """)
     List<CategoryOptionProjection> findOptionsByCategoryId(
         @Param("categoryId") Long categoryId
+    );
+
+    @Query("""
+    SELECT new com.example.i_commerce.domain.product.repository.projection.CategoryOptionKey(
+        co.category.id,
+        co.option.id
+    )
+    FROM CategoryOption co
+    WHERE co.category.id IN :categoryIds
+    AND co.option.id IN :optionIds
+    """)
+    List<CategoryOptionKey> findExistingKeys(
+        @Param("categoryIds") List<Long> categoryIds,
+        @Param("optionIds") List<Long> optionIds
     );
 }
