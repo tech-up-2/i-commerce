@@ -64,11 +64,11 @@ public class ChatRoomService {
             throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
         }
 //      만약에 1:1 채팅방이 없을 경우 기존 채팅방 개설
-        String PrivateRoomName = chatRoomNameGenerator.getPrivateRoomName(member.getName(),
+        String privateRoomName = chatRoomNameGenerator.getPrivateRoomName(member.getName(),
             otherMember.getName());
         ChatRoom newRoom = ChatRoom.builder()
             .isGroupChat(false)
-            .name(PrivateRoomName)
+            .name(privateRoomName)
             .build();
         chatRoomRepository.save(newRoom);
 //        두 사람을 채팅방에 참여자로 새롭게 추가

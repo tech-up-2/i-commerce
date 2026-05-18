@@ -72,12 +72,12 @@ public class ChatService {
 
     public ApiResponse<List<GroupChatListResponse>> getGroupChatList() {
         List<ChatRoom> groupRooms = chatRoomRepository.findByIsGroupChatTrueAndDeletedAtIsNull();
-        List<GroupChatListResponse> reponseList = new ArrayList<>();
+        List<GroupChatListResponse> responseList = new ArrayList<>();
         for (ChatRoom room : groupRooms) {
             GroupChatListResponse dto = new GroupChatListResponse(room.getId(), room.getName());
-            reponseList.add(dto);
+            responseList.add(dto);
         }
-        return ApiResponse.success(reponseList);
+        return ApiResponse.success(responseList);
     }
 
 

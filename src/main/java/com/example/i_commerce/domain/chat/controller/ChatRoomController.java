@@ -33,7 +33,7 @@ public class ChatRoomController {
     //    단체 채팅방 개설
     @Operation(summary = "단체 채팅방 개설", description = "단체 채팅방을 개설한다.")
     @PostMapping("/group/{productId}")
-    public ApiResponse<Long> CreateGroupRoom(@PathVariable Long productId) {
+    public ApiResponse<Long> createGroupRoom(@PathVariable Long productId) {
         return chatRoomService.createGroupRoom(productId);
     }
 
