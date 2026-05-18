@@ -7,8 +7,8 @@ public record AdminCreateResponse(
     Long adminId,
     String email,
     String name,
-    AdminRole role,
-    AdminStatus status
+    AdminRole adminRole,
+    AdminStatus adminStatus
 ) {
 
 }

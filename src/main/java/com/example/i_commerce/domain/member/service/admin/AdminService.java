@@ -98,7 +98,7 @@ public class AdminService {
             .emailEncrypted(dataEncryptor.encrypt(request.email()))
             .password(passwordEncoder.encode(request.password()))
             .name(dataEncryptor.encrypt(request.name()))
-            .adminRole(request.role())
+            .adminRole(request.adminRole())
             .adminStatus(AdminStatus.ACTIVE)
             .build();
 
