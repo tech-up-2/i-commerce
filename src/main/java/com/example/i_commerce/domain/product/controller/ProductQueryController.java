@@ -8,6 +8,8 @@ import com.example.i_commerce.domain.product.controller.response.ProductDetailRe
 import com.example.i_commerce.domain.product.controller.response.ProductItemSearchResponse;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.common.response.SliceResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -22,13 +24,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
+@Tag(name = "Product Query API", description = "상품 조회 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/products")
-public class ProductController {
+public class ProductQueryController {
     private final ProductQueryService productQueryService;
     private final ProductSearchService productSearchService;
 
+    @Operation(summary = "상품 상세 조회", description = "상품 상세 정보를 조회합니다.")
     @GetMapping("/{productId}")
     public ApiResponse<ProductDetailResponse> getProduct(
         @PathVariable Long productId,
@@ -40,6 +45,7 @@ public class ProductController {
     }
 
 
+    @Operation(summary = "상품 검색", description = "요청 파라미터를 바탕으로 상품을 검색합니다.")
     @GetMapping("/search")
     public ApiResponse<SliceResponse<ProductItemSearchResponse>> search(
         @Valid @ModelAttribute SearchProductRequest request,

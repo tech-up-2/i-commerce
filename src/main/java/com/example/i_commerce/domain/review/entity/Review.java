@@ -25,6 +25,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
+import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Table(name = "reviews")
@@ -103,6 +104,7 @@ public class Review extends BaseEntity {
     public void addImage(String imageUrl) {
         ReviewImage reviewImage = ReviewImage.builder()
             .imageUrl(imageUrl)
+            .sortOrder(this.images.size() + 1)
             .review(this)
             .build();
         this.images.add(reviewImage);
@@ -231,11 +233,9 @@ public class Review extends BaseEntity {
             .reportCount(0L)
             .isBest(false)
             .isUpdated(false)
+            .images(new ArrayList<>())
             .build();
 
-        if (dto.getImageUrls() != null) {
-            dto.getImageUrls().forEach(review::addImage);
-        }
         return review;
     }
 }

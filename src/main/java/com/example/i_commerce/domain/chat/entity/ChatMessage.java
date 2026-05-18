@@ -55,9 +55,10 @@ public class ChatMessage extends BaseEntity {
     @OneToMany(mappedBy = "chatMessage")
     private List<ChatReport> reports = new ArrayList<>();
 
+    @Builder.Default
     private boolean isBlind = false;
 
-    public void Blind(){
+    public void blind(){
         this.isBlind =  true;
     }
 }

@@ -35,9 +35,14 @@ public class ReviewCommentService {
         Review review = reviewRepo.findById(reviewId)
             .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
 
+        if (!reviewRepo.existsByIdAndSellerId(reviewId, sellerId)) {
+            throw new AppException(CommonErrorCode.INVALID_PERMISSION);
+        }
+
         if (reviewCommentRepo.existsByReviewId(reviewId)) {
             throw new AppException(ReviewErrorCode.ALREADY_COMMENTED);
         }
+
 
         reviewValidator.validateContent(request.getContent());
         ReviewComment comment = ReviewComment.of(review, sellerId, request);
