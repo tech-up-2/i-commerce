@@ -16,6 +16,4 @@ public class CreateReviewRequest {
 
     private Integer starRate;
 
-    private List<String> imageUrls;
-
 }

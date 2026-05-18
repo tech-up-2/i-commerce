@@ -9,6 +9,7 @@ import com.example.i_commerce.domain.chat.entity.enums.ChatReportReason;
 import com.example.i_commerce.domain.chat.entity.enums.ChatReportStatus;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatReportRepository;
+import com.example.i_commerce.domain.chat.service.ChatReportService;
 import com.example.i_commerce.domain.member.entity.Admin;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.enums.AdminRole;
@@ -86,7 +87,7 @@ public class ChatAdminReportTest {
             .status(ChatReportStatus.PENDING)
             .build();
     }
-    @Test
+   @Test
     @DisplayName("관리자가 유저의 채팅의 신고를 정상적으로 처리할 수 있다.")
     public void controlReportTest() {
         when(adminRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
