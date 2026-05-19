@@ -21,9 +21,13 @@ import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
 import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.security.jwt.BlacklistedToken;
+import com.example.i_commerce.global.security.jwt.BlacklistedTokenRepository;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
+import com.example.i_commerce.global.security.jwt.TokenHashUtil;
 import com.example.i_commerce.global.security.jwt.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,7 +44,10 @@ public class AuthService {
     private final EmailHashEncoder emailHashEncoder;
     private final JwtTokenUtil jwtTokenUtil;
     private final SellerRepository sellerRepository;
+    private final BlacklistedTokenRepository blacklistedTokenRepository;
+    private final TokenHashUtil tokenHashUtil;
 
+    //회원 가입
     @Transactional
     public SignUpResponse signUp(MemberSignUpRequest dto) {
         String emailHash = emailHashEncoder.encode(dto.email());
@@ -70,6 +77,7 @@ public class AuthService {
 
     }
 
+    //로그인
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest dto) {
         Member member = memberRepository.findByEmailHash(emailHashEncoder.encode(dto.email()))
@@ -117,6 +125,27 @@ public class AuthService {
             email,
             accessToken
         );
+    }
+
+    //로그아웃
+    @Transactional
+    public void logout(String token) {
+        String tokenHash = tokenHashUtil.hash(token);
+        LocalDateTime expiresAt = jwtTokenUtil.getExpiration(token);
+
+        if (blacklistedTokenRepository.existsByTokenHashAndExpiresAtAfter(
+            tokenHash,
+            LocalDateTime.now()
+        )) {
+            return;
+        }
+
+        BlacklistedToken blacklistedToken = BlacklistedToken.builder()
+            .tokenHash(tokenHash)
+            .expiresAt(expiresAt)
+            .build();
+
+        blacklistedTokenRepository.save(blacklistedToken);
     }
 
     //    계정 찾기
