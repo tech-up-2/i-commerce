@@ -3,7 +3,7 @@ package com.example.i_commerce.domain.product.controller;
 
 import com.example.i_commerce.domain.product.application.service.OptionService;
 import com.example.i_commerce.domain.product.controller.request.CreateOptionRequest;
-import com.example.i_commerce.domain.product.controller.response.OptionGroupResponse;
+import com.example.i_commerce.domain.product.controller.response.OptionResponse;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,9 +35,8 @@ public class OptionController {
 
     @Operation(summary = "전체 옵션 조회", description = "존재하는 모든 옵션을 조회합니다.")
     @GetMapping
-    public ApiResponse<List<OptionGroupResponse>> getAllOptions() {
-        List<OptionGroupResponse> res = optionService.getAllOptionsGroupedByType();
-        return ApiResponse.success(res);
+    public ApiResponse<List<OptionResponse>> getAllOptions() {
+        return ApiResponse.success(optionService.getAllOptions());
     }
 
 }

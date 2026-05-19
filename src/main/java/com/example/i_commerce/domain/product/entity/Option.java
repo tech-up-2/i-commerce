@@ -11,7 +11,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -21,12 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(
-    name = "options",
-    uniqueConstraints = @UniqueConstraint(
-        columnNames = {"type", "value"}
-    )
-)
+@Table(name = "options")
 @Getter
 @Builder
 @AllArgsConstructor
@@ -37,11 +31,8 @@ public class Option extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 100, nullable = false)
-    private String type;
-
-    @Column(length = 100, nullable = false)
-    private String value;
+    @Column(length = 100, unique = true, nullable = false)
+    private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 100)
@@ -51,10 +42,9 @@ public class Option extends BaseEntity {
     @OneToMany(mappedBy = "option", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CategoryOption> categoryOptions = new ArrayList<>();
 
-    public static Option of(String type, String value, OptionInputType inputType) {
+    public static Option of(String name, OptionInputType inputType) {
         return Option.builder()
-            .type(type)
-            .value(value)
+            .name(name)
             .inputType(inputType)
             .build();
     }

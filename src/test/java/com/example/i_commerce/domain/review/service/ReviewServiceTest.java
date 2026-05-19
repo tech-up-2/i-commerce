@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repo.ReviewRepository;
@@ -51,7 +52,9 @@ public class ReviewServiceTest {
         CreateReviewRequest request = new CreateReviewRequest("굳굳", 5);
         List<MultipartFile> imageFiles = List.of();
 
-        //중복된 데이터가 없다고 가정
+        given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
+            .willReturn(true);
+
         given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(false);
 
         Review mockReview = Review.builder().id(reviewId).build();
@@ -66,6 +69,27 @@ public class ReviewServiceTest {
     }
 
     @Test
+    @DisplayName("실패: 주문 상태가 구매 확정(COMPLETED)이 아니면 리뷰 작성이 불가능하다")
+    void createReview_Fail_NotCompletedStatus() {
+        // given
+        Long userId = 1L;
+        Long orderProductId = 10L;
+        CreateReviewRequest request = new CreateReviewRequest("내 돈 내 산 리뷰", 5);
+        List<MultipartFile> imageFiles = List.of();
+
+        given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
+            .willReturn(false);
+
+        // when & then
+        assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request, imageFiles))
+            .isInstanceOf(AppException.class)
+            .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.NOT_ACTUAL_BUYER);
+
+        verify(reviewRepo, never()).save(any(Review.class));
+        verify(reviewRepo, never()).existsByOrderProductIdAndUserId(anyLong(), anyLong());
+    }
+
+    @Test
     @DisplayName("실패: 해당 주문 상품에 리뷰를 이미 남겼다면 예외 발생")
     void createReview_Fail_AlreadyReviewed() {
         //given
@@ -74,6 +98,9 @@ public class ReviewServiceTest {
 
         CreateReviewRequest request = new CreateReviewRequest("리뷰 또 쓰고 싶다", 5);
         List<MultipartFile> imageFiles = List.of();
+
+        given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
+            .willReturn(true);
 
         given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(true);
 
