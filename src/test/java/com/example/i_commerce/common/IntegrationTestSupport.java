@@ -12,13 +12,12 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@TestExecutionListeners(listeners = WithSecurityContextTestExecutionListener.class, mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
 public abstract class IntegrationTestSupport {
 
     static final PostgreSQLContainer<?> postgresContainer;
 
     static {
-        postgresContainer = new PostgreSQLContainer<>("postgres:18-alpine")
+        postgresContainer = new PostgreSQLContainer<>("postgres:16-alpine")
                 .withDatabaseName("testdb")
                 .withUsername("testuser")
                 .withPassword("testpass");

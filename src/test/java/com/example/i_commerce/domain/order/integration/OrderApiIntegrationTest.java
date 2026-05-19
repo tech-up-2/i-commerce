@@ -34,7 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -75,7 +74,7 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
         // 2. 주입용 CustomUserPrincipal 생성 및 반환
         return new CustomUserPrincipal(
                 PrincipalType.MEMBER,
-                1L,
+                member.getId(),
                 "testMember",
                 "",
                 List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))
@@ -87,8 +86,9 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
     void 주문_생성_통합테스트() throws Exception {
 
         CustomUserPrincipal testPrincipal = loginAsMember();
+
         DeliveryAddress address = DeliveryAddress.builder()
-                .memberId(1L)
+                .memberId(testPrincipal.getId())
                 .label("집")
                 .recipientName(dataEncryptor.encrypt("홍길동"))
                 .recipientPhone(dataEncryptor.encrypt("01012345678"))
@@ -147,15 +147,14 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
                 .build()
         );
 
-        OrderItemDto orderItemDto1 = new OrderItemDto(1L, 2);
-        OrderItemDto orderItemDto2 = new OrderItemDto(2L, 1);
+        OrderItemDto orderItemDto1 = new OrderItemDto(item1.getId(), 2);
+        OrderItemDto orderItemDto2 = new OrderItemDto(item2.getId(), 1);
         CreateOrderRequest requestDto = new CreateOrderRequest(savedAddress.getId(), List.of(orderItemDto1, orderItemDto2));
 
         String jsonContent = objectMapper.writeValueAsString(requestDto);
 
         // when & then
         mockMvc.perform(post("/api/v1/orders")
-                        .with(csrf())
                         .with(user(testPrincipal))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonContent))
@@ -163,4 +162,45 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("SUCCESS"));
     }
+
+//    @Test
+//    @DisplayName("인증된 사용자는 자신의 주문 요약 목록을 전체 조회할 수 있다.")
+//    @WithMockCustomUser(id = 1L)
+//    void 주문_목록_조회_통합테스트() throws Exception {
+//        // given
+//        // 실제 PostgreSQL DB에 테스트용 가짜 주문 데이터 2개를 보관 처리합니다.
+//        Order order1 = Order.builder().memberId(1L).totalAmount(50000).build();
+//        Order order2 = Order.builder().memberId(1L).totalAmount(30000).build();
+//        orderRepository.saveAll(List.of(order1, order2));
+//
+//        // when & then
+//        mockMvc.perform(get("/api/orders"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.status").value("SUCCESS"))
+//                .andExpect(jsonPath("$.data").isArray())
+//                .andExpect(jsonPath("$.data.length()").value(2)); // 데이터가 2개 조회되는지 검증
+//    }
+//
+//    @Test
+//    @DisplayName("주문 ID를 통해 특정 주문의 세부 정보를 상세 조회할 수 있다.")
+//    @WithMockCustomUser(id = 1L)
+//    void 주문_상세_조회_통합테스트() throws Exception {
+//        // given
+//        Order savedOrder = orderRepository.save(Order.builder().memberId(1L).totalAmount(120000).build());
+//        Long orderId = savedOrder.getId(); // 실제 PostgreSQL에서 자동 생성된 PK ID 추출
+//
+//        // when & then
+//        mockMvc.perform(get("/api/orders/" + orderId))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.status").value("SUCCESS"))
+//                .andExpect(jsonPath("$.data.totalAmount").value(120000));
+//    }
+//
+//    @Test
+//    @DisplayName("로그인하지 않은 사용자가 주문 API를 호출하면 401(또는 403) 에러가 발생한다.")
+//    void 미인증_사용자_접근_실패테스트() throws Exception {
+//        // @WithMockCustomUser 어노테이션이 없으므로 권한 없는 상태입니다.
+//        mockMvc.perform(get("/api/orders"))
+//                .andExpect(status().isForbidden()); // Spring Security에 의해 403(또는 설정에 따라 401) 리턴 검증
+//    }
 }
