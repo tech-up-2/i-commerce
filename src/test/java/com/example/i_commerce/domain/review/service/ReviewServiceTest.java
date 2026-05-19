@@ -9,6 +9,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repo.ReviewRepository;
@@ -51,7 +52,9 @@ public class ReviewServiceTest {
         CreateReviewRequest request = new CreateReviewRequest("굳굳", 5);
         List<MultipartFile> imageFiles = List.of();
 
-        //중복된 데이터가 없다고 가정
+        given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
+            .willReturn(true);
+
         given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(false);
 
         Review mockReview = Review.builder().id(reviewId).build();
@@ -74,6 +77,9 @@ public class ReviewServiceTest {
 
         CreateReviewRequest request = new CreateReviewRequest("리뷰 또 쓰고 싶다", 5);
         List<MultipartFile> imageFiles = List.of();
+
+        given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
+            .willReturn(true);
 
         given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(true);
 

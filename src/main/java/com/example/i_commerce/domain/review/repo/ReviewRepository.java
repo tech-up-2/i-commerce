@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.review.repo;
 
+import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.service.dto.SellerReviewManagementResponse;
 import java.util.List;
@@ -38,5 +39,16 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         "WHERE s.sellerId = :sellerId " +
         "ORDER BY r.createdAt DESC")
     List<SellerReviewManagementResponse> findAllBySellerId(@Param("sellerId") Long sellerId);
+
+    @Query("SELECT COUNT(op) > 0 FROM OrderProduct op " +
+        "JOIN op.order o " +
+        "WHERE op.id = :orderProductId " +
+        "AND o.userId = :userId " +
+        "AND o.orderStatus = :status")
+    boolean isReviewableStatus(
+        @Param("orderProductId") Long orderProductId,
+        @Param("userId") Long userId,
+        @Param("status") OrderStatus status
+    );
 }
 
