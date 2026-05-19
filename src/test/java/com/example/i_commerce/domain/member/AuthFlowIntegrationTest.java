@@ -234,7 +234,7 @@ class AuthFlowIntegrationTest {
         String responseBody = result.getResponse().getContentAsString();
         JsonNode root = objectMapper.readTree(responseBody);
 
-        return root.path("data").path("accessToken").asText();
+        return root.path("data").path("accessToken").asString();
     }
 
     @TestConfiguration
