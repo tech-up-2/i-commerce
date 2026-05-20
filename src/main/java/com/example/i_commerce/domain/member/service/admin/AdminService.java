@@ -26,9 +26,13 @@ import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
 import com.example.i_commerce.global.common.response.SliceResponse;
 import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.security.jwt.BlacklistedToken;
+import com.example.i_commerce.global.security.jwt.BlacklistedTokenRepository;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
+import com.example.i_commerce.global.security.jwt.TokenHashUtil;
 import com.example.i_commerce.global.security.jwt.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -47,6 +51,8 @@ public class AdminService {
     private final JwtTokenUtil jwtTokenUtil;
     private final MemberRepository memberRepository;
     private final SellerRepository sellerRepository;
+    private final BlacklistedTokenRepository blacklistedTokenRepository;
+    private final TokenHashUtil tokenHashUtil;
 
     @Transactional(readOnly = true)
     public AdminLoginResponse login(LoginRequest dto) {
@@ -64,7 +70,6 @@ public class AdminService {
         TokenPayload payload = new TokenPayload(
             PrincipalType.ADMIN,
             admin.getId(),
-            email,
             admin.getAdminRole(),
             admin.getAdminStatus(),
             null
@@ -82,6 +87,27 @@ public class AdminService {
         switch (admin.getAdminStatus()) {
             case WITHDRAWN -> throw new AppException(MemberErrorCode.WITHDRAWN_MEMBER);
         }
+    }
+
+    //로그아웃
+    @Transactional
+    public void logout(String token) {
+        String tokenHash = tokenHashUtil.hash(token);
+        LocalDateTime expiresAt = jwtTokenUtil.getExpiration(token);
+
+        if (blacklistedTokenRepository.existsByTokenHashAndExpiresAtAfter(
+            tokenHash,
+            LocalDateTime.now()
+        )) {
+            return;
+        }
+
+        BlacklistedToken blacklistedToken = BlacklistedToken.builder()
+            .tokenHash(tokenHash)
+            .expiresAt(expiresAt)
+            .build();
+
+        blacklistedTokenRepository.save(blacklistedToken);
     }
 
     //관리자 생성

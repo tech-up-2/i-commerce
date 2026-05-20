@@ -10,9 +10,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,7 +37,12 @@ public class AdminAuthController {
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "관리자 로그아웃", description = "로그아웃한다.")
     @PostMapping("/logout")
-    public ApiResponse<Void> logout() {//나중에 redis를 붙이면 토큰을 blacklist로 전달해야함.
+    public ApiResponse<Void> logout(
+        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization
+    ) {//나중에 redis를 붙이면 토큰을 blacklist로 전달해야함.
+        String token = authorization.substring(7);
+        adminService.logout(token);
+
         return ApiResponse.success();
     }
 }

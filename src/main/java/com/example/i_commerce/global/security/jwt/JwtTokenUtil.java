@@ -13,6 +13,8 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Date;
@@ -40,8 +42,7 @@ public class JwtTokenUtil {
             .issuer("i-commerce")
             .claim("principalType", payload.principalType().name())
             .claim("accountId", payload.accountId())
-            .claim("email", payload.email())
-            .claim("adminRole", payload.role().getAuthority())
+            .claim("role", payload.role().getAuthority())
             .claim("accountStatus", payload.accountStatus().getAuthority())
             .issuedAt(Date.from(now))
             .expiration(Date.from(expiry))
@@ -62,8 +63,7 @@ public class JwtTokenUtil {
         );
 
         Long accountId = claims.get("accountId", Long.class);
-        String email = claims.get("email", String.class);
-        String role = claims.get("adminRole", String.class);
+        String role = claims.get("role", String.class);
         String accountStatus = claims.get("accountStatus", String.class);
         String sellerStatus = claims.get("sellerStatus", String.class);
 
@@ -86,7 +86,6 @@ public class JwtTokenUtil {
         return new TokenPayload(
             principalType,
             accountId,
-            email,
             parsedRole,
             parsedAccountStatus,
             parsedSellerStatus
@@ -96,8 +95,18 @@ public class JwtTokenUtil {
     public Claims getClaims(String token) {
         return Jwts.parser()
             .verifyWith(getSigningKey())
+            .requireIssuer("i-commerce")
             .build()
             .parseSignedClaims(token)
             .getPayload();
+    }
+
+    public LocalDateTime getExpiration(String token) {
+        Claims claims = getClaims(token);
+
+        return claims.getExpiration()
+            .toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime();
     }
 }
