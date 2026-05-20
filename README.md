@@ -44,7 +44,7 @@
 > ⚠️ **보안 주의:** AWS S3 시크릿 키나 DB 비밀번호가 포함된 `.env` 파일은 절대 GitHub에 커밋되지 않도록 주의하세요! (`.gitignore` 확인)
 
 ```env
-# Database (PostgreSQL) - 누락된 필수 정보 추가!
+# Database (PostgreSQL)
 DB_URL=jdbc:postgresql://localhost:5432/icommerce
 DB_USERNAME=your_db_username
 DB_PASSWORD=your_db_password
