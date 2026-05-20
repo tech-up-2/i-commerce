@@ -53,7 +53,7 @@ public class AuthController {
     public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest dto) {
         LoginResponse response = authService.login(dto);
         return ApiResponse.success(response);
-    }
+    }//개선필요사항: 로그인 되어 있을 때 로그인이 안되게 해야함
 
     //로그아웃
     @PreAuthorize("isAuthenticated()")
