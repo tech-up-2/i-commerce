@@ -25,6 +25,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             WHERE p.category.id IN :categoryIds
         ) THEN true ELSE false END
     """)
-    boolean existsActiveByCategoryIds(@Param("categoryIds") List<Long> categoryIds);
+    boolean existsByCategoryIds(@Param("categoryIds") List<Long> categoryIds);
 
 }

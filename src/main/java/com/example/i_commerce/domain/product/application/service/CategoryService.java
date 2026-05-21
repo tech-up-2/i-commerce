@@ -83,7 +83,7 @@ public class CategoryService {
 
         List<Long> categoryIds = categoryRepository.findAllDescendantIds(categoryId);
 
-        if(productRepository.existsActiveByCategoryIds(categoryIds)) {
+        if(productRepository.existsByCategoryIds(categoryIds)) {
             throw new AppException(ProductErrorCode.CATEGORY_HAS_PRODUCTS);
         }
 
