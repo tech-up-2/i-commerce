@@ -102,10 +102,6 @@ public class CategoryOptionService {
     @Transactional
     public void deleteOption(Long categoryId, Long categoryOptionId) {
 
-        if(!categoryRepository.existsById(categoryId)) {
-            throw new AppException(ProductErrorCode.CATEGORY_NOT_FOUND);
-        }
-
         CategoryOption categoryOption = categoryOptionRepository
             .findByIdAndCategoryId(categoryOptionId, categoryId)
             .orElseThrow(() -> new AppException(ProductErrorCode.CATEGORY_OPTION_NOT_FOUND));

@@ -100,10 +100,6 @@ public class CategoryAttributeService {
     @Transactional
     public void deleteCategoryAttribute(Long categoryId, Long categoryAttributeId) {
 
-        if(!categoryRepository.existsById(categoryId)) {
-            throw new AppException(ProductErrorCode.CATEGORY_NOT_FOUND);
-        }
-
         CategoryAttribute categoryAttribute = categoryAttributeRepository
             .findByIdAndCategoryId(categoryAttributeId, categoryId)
             .orElseThrow(() -> new AppException(ProductErrorCode.CATEGORY_ATTRIBUTE_NOT_FOUND));
