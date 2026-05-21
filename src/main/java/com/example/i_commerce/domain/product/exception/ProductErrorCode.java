@@ -42,7 +42,7 @@ public enum ProductErrorCode implements ErrorCode {
     DUPLICATE_CATEGORY_NAME(HttpStatus.CONFLICT, "PRD-40904", "이미 존재하는 카테고리입니다."),
     STOCK_ALREADY_INITIALIZED(HttpStatus.CONFLICT, "PRD-40905", "재고가 이미 초기화되었습니다."),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "PRD-40906", "재고가 충분하지 않습니다."),
-
+    CATEGORY_HAS_PRODUCTS(HttpStatus.CONFLICT, "PRD-40907", "하위 상품이 존재하는 카테고리는 삭제할 수 없습니다."),
 
     ;
 
