@@ -33,7 +33,7 @@ public class CartService {
             throw new AppException(CartErrorCode.PRODUCT_NOT_AVAILABLE);
         }
 
-        Cart cart = cartRepository.findByUserIdWithItems(userId)
+        Cart cart = cartRepository.findByUserId(userId)
             .orElseGet(() -> cartRepository.save(Cart.create(userId)));
 
         CartItem cartItem = cart.findCartItem(request.productItemId())
