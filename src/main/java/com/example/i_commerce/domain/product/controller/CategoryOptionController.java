@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +35,7 @@ public class CategoryOptionController {
     }
 
     @Operation(summary = "카테고리 제공 옵션 추가", description = "특정 카테고리에서 제공할 옵션을 추가합니다.")
+    @PreAuthorize("@authChecker.canManageCategory()")
     @PostMapping
     public ApiResponse<AddCategoryOptionResponse> addCategoryOption(
         @PathVariable Long categoryId,
@@ -41,6 +44,17 @@ public class CategoryOptionController {
         AddCategoryOptionResponse res =
             categoryOptionService.addCategoryOptions(categoryId, request);
         return ApiResponse.success(res);
+    }
+
+    @Operation(summary = "카테고리 제공 옵션 제거", description = "특정 카테고리에서 제공할 옵션을 제거합니다.")
+    @PreAuthorize("@authChecker.canManageCategory()")
+    @DeleteMapping("/{categoryOptionId}")
+    public ApiResponse<Void> deleteCategoryOption(
+        @PathVariable Long categoryId,
+        @PathVariable Long categoryOptionId
+    ) {
+        categoryOptionService.deleteOption(categoryId, categoryOptionId);
+        return ApiResponse.success();
     }
 
 }

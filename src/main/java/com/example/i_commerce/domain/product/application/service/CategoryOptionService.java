@@ -32,6 +32,7 @@ public class CategoryOptionService {
     private final OptionRepository optionRepository;
     private final CategoryOptionRepository categoryOptionRepository;
 
+
     @Transactional(readOnly = true)
     public CategoryOptionResponse getOptionsByCategory(Long categoryId) {
 
@@ -96,5 +97,24 @@ public class CategoryOptionService {
 
         return AddCategoryOptionResponse.of(categoryId, existsOptions);
     }
+
+
+    @Transactional
+    public void deleteOption(Long categoryId, Long categoryOptionId) {
+
+        if(!categoryRepository.existsById(categoryId)) {
+            throw new AppException(ProductErrorCode.CATEGORY_NOT_FOUND);
+        }
+
+        CategoryOption categoryOption = categoryOptionRepository
+            .findByIdAndCategoryId(categoryOptionId, categoryId)
+            .orElseThrow(() ->
+                new AppException(ProductErrorCode.CATEGORY_OPTION_NOT_FOUND_HISTORY_NOT_FOUND)
+            );
+
+        categoryOptionRepository.delete(categoryOption);
+    }
+
+
 
 }

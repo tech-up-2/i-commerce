@@ -31,6 +31,9 @@ public enum ProductErrorCode implements ErrorCode {
     ATTRIBUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40406","속성이 존재하지 않습니다."),
     STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40407", "상품 재고가 존재하지 않습니다."),
     STOCK_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40408", "재고 기록이 존재하지 않습니다."),
+    CATEGORY_OPTION_NOT_FOUND_HISTORY_NOT_FOUND(
+        HttpStatus.NOT_FOUND, "PRD-40409", "해당 카테고리의 옵션을 찾을 수 없습니다."
+    ),
 
 
     // 409 Conflict
