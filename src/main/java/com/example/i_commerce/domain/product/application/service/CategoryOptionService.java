@@ -108,9 +108,7 @@ public class CategoryOptionService {
 
         CategoryOption categoryOption = categoryOptionRepository
             .findByIdAndCategoryId(categoryOptionId, categoryId)
-            .orElseThrow(() ->
-                new AppException(ProductErrorCode.CATEGORY_OPTION_NOT_FOUND_HISTORY_NOT_FOUND)
-            );
+            .orElseThrow(() -> new AppException(ProductErrorCode.CATEGORY_OPTION_NOT_FOUND));
 
         categoryOptionRepository.delete(categoryOption);
     }
