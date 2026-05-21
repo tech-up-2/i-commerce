@@ -254,7 +254,7 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
 
 
         // 결제 취소
-        PaymentCancelRequest paymentCancelRequest = new PaymentCancelRequest(paymentId, 10000, "toss_1_123", "단순 변심");
+        PaymentCancelRequest paymentCancelRequest = new PaymentCancelRequest(paymentId, 10000, paymentKey, "단순 변심");
 
         jsonContent = objectMapper.writeValueAsString(paymentCancelRequest);
 
