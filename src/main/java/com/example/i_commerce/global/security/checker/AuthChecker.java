@@ -142,7 +142,7 @@ public class AuthChecker {
     }
 
     // 시스템 옵션
-    public boolean canManageSystemOption() {
+    public boolean canManageOption() {
         return isAdmin()
             && has(SecurityAuthority.STATUS_ACTIVE)
             && hasAny(SecurityAuthority.ADMIN_MASTER,
