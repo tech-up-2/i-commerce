@@ -76,16 +76,11 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReviewListResponse> viewReviewList(Long productId) {
-        List<Review> reviews = reviewRepo.findAllByProductId(productId);
+    public SliceResponse<ReviewListResponse> viewReviewList(Long productId, Pageable pageable) {
 
-        List<ReviewListResponse> responseDtoLists = new ArrayList<>();
+        Slice<Review> reviewSlice = reviewRepo.findSliceByProductId(productId, pageable);
 
-        for (Review review : reviews) {
-            ReviewListResponse responses = ReviewListResponse.from(review);
-            responseDtoLists.add(responses);
-        }
-        return responseDtoLists;
+        return SliceResponse.of(reviewSlice, ReviewListResponse::from);
     }
 
     @Transactional

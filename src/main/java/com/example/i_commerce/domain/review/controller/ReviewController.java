@@ -48,10 +48,11 @@ public class ReviewController {
 
     @Operation(summary = "리뷰 목록 보기", description = "특정 상품에 대한 전체 리뷰를 본다.")
     @GetMapping
-    public ApiResponse<List<ReviewListResponse>> viewReviewList(
-        @RequestParam Long productId
+    public ApiResponse<SliceResponse<ReviewListResponse>> viewReviewList(
+        @RequestParam Long productId,
+        @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        List<ReviewListResponse> responses = reviewService.viewReviewList(productId);
+        SliceResponse<ReviewListResponse> responses = reviewService.viewReviewList(productId, pageable);
         return ApiResponse.success(responses);
     }
 
