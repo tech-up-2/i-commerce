@@ -11,7 +11,8 @@ public enum OrderStatus {
     SHIPPING("배송 중", "상품이 배송 중입니다.(하나라도 출발 시)"),
     DELIVERED("배송 완료", "모든 상품이 배송지에 도착했습니다."),
     COMPLETED("구매 확정", ""),
-    CANCELLED("주문 취소", "");
+    CANCELLED("주문 취소", ""),
+    UNKNOWN_HOLD("알 수 없는 상태", "결제가 성공/실패 했는지 파악할 수 없습니다.");
 
     private final String status;
     private final String description;

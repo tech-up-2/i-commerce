@@ -20,7 +20,12 @@ public enum PaymentErrorCode implements ErrorCode {
 
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "PAY-40301", "접근 권한이 없습니다."),
 
-    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "PAY-40401", "결제 정보를 찾을 수 없습니다.");
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "PAY-40401", "결제 정보를 찾을 수 없습니다."),
+
+    PAYMENT_UNKNOWN_HOLD(HttpStatus.INTERNAL_SERVER_ERROR, "PAY-5001", "결제 상태 확인이 지연되고 있습니다. 고객센터 확인이 필요합니다."),
+
+    PAYMENT_NETWORK_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "PAY-50401", "결제 처리 중 네트워크 타임아웃이 발생했습니다. 결제 결과를 확인 중입니다.")
+    ;
 
     private final HttpStatus httpStatus;
     private final String code;
