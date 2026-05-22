@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.i_commerce.domain.member.entity.DeliveryAddress;
 import com.example.i_commerce.domain.member.entity.Member;
+import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.DeliveryAddressRepository;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
@@ -13,6 +14,7 @@ import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddress
 import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressResponse;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
+import com.example.i_commerce.domain.testtools.MemberFixture;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +56,7 @@ class DeliveryAddressServiceTest {
     void setUp() {
         member = memberRepository.save(
             MemberFixture.createMember(
+                MemberStatus.ACTIVE,
                 passwordEncoder,
                 emailHashEncoder,
                 dataEncryptor

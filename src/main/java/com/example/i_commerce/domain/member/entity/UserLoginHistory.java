@@ -45,12 +45,10 @@ public class UserLoginHistory extends BaseEntity {
     @Column(length = 45)
     private String ipAddress;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime loginAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LoginFailReason failReason;
-
-    private LocalDateTime logoutAt;
 }
