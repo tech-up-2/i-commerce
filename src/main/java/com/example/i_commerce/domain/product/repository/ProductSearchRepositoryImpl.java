@@ -1,6 +1,6 @@
 package com.example.i_commerce.domain.product.repository;
 
-import com.example.i_commerce.domain.product.application.service.query.ProductSearchQuery;
+import com.example.i_commerce.domain.product.application.dto.ProductSearchQuery;
 import com.example.i_commerce.domain.product.controller.response.ProductItemSearchResponse;
 import com.example.i_commerce.domain.product.entity.ProductItemStatus;
 import com.example.i_commerce.domain.product.entity.ProductStatus;
@@ -17,7 +17,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberTemplate;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;

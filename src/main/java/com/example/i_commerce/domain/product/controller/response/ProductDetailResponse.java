@@ -1,5 +1,7 @@
 package com.example.i_commerce.domain.product.controller.response;
 
+import com.example.i_commerce.domain.product.application.dto.OptionItemLookupDto;
+import com.example.i_commerce.domain.product.application.dto.ProductOptionGroupDto;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductAttribute;
 import com.example.i_commerce.domain.product.entity.ProductImage;
@@ -18,8 +20,8 @@ public record ProductDetailResponse(
     String categoryName,
     List<String> imageUrls,
     ProductItemResponse selectedItem,
-    List<ProductOptionGroupResponse> optionGroups,
-    OptionItemLookupResponse optionItemLookup
+    List<ProductOptionGroupDto> optionGroups,
+    OptionItemLookupDto optionItemLookup
 ) {
 
 
@@ -28,8 +30,8 @@ public record ProductDetailResponse(
         List<ProductImage> images,
         ProductItem selectedItem,
         List<ProductAttribute> attributes,
-        List<ProductOptionGroupResponse> optionGroups,
-        OptionItemLookupResponse optionItemLookup
+        List<ProductOptionGroupDto> optionGroups,
+        OptionItemLookupDto optionItemLookup
     ) {
         return ProductDetailResponse.builder()
             .productId(product.getId())

@@ -2,10 +2,10 @@ package com.example.i_commerce.domain.product.application.service;
 
 
 import com.example.i_commerce.domain.product.application.dto.AlreadyExistsOption;
-import com.example.i_commerce.domain.product.application.mapper.CategoryOptionMapper;
+import com.example.i_commerce.domain.product.application.dto.CategoryOptionDto;
 import com.example.i_commerce.domain.product.controller.request.AddCategoryOptionRequest;
 import com.example.i_commerce.domain.product.controller.response.AddCategoryOptionResponse;
-import com.example.i_commerce.domain.product.controller.response.CategoryOptionGroupResponse;
+import com.example.i_commerce.domain.product.controller.response.CategoryOptionResponse;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.CategoryOption;
 import com.example.i_commerce.domain.product.entity.Option;
@@ -31,19 +31,22 @@ public class CategoryOptionService {
     private final CategoryRepository categoryRepository;
     private final OptionRepository optionRepository;
     private final CategoryOptionRepository categoryOptionRepository;
-    private final CategoryOptionMapper categoryOptionMapper;
 
     @Transactional(readOnly = true)
-    public List<CategoryOptionGroupResponse> getOptionsByCategory(Long categoryId) {
+    public CategoryOptionResponse getOptionsByCategory(Long categoryId) {
 
         if(!categoryRepository.existsById(categoryId)) {
             throw new AppException(ProductErrorCode.CATEGORY_NOT_FOUND);
         }
 
-        List<CategoryOptionProjection> projections = categoryOptionRepository
-            .findOptionsByCategoryId(categoryId);
+        List<CategoryOptionProjection> projections =
+            categoryOptionRepository.findOptionsByCategoryId(categoryId);
 
-        return categoryOptionMapper.toGroupedResponseList(projections);
+        List<CategoryOptionDto> options = projections.stream()
+            .map(CategoryOptionDto::from)
+            .toList();
+
+        return CategoryOptionResponse.of(categoryId, options);
     }
 
     @Transactional

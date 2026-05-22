@@ -32,7 +32,7 @@ public class ProductOptionValidator {
         List<OptionRequest> requests = request.options();
 
         Set<Long> availableOptions = categoryOptionRepository
-            .findByCategoryId(request.categoryId())
+            .findAllByCategoryId(request.categoryId())
             .stream()
             .map(CategoryOption::getOption)
             .map(Option::getId)
@@ -44,7 +44,7 @@ public class ProductOptionValidator {
             .toList();
 
         if(!invalidOptionIds.isEmpty()) {
-            throw new AppException(ProductErrorCode.INVALID_OPTION);
+            throw new AppException(ProductErrorCode.NOT_SUPPORTED_OPTION);
         }
 
     }

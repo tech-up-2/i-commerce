@@ -31,12 +31,12 @@ spring:
   cloud:
     aws:
       credentials:
-        access-key: ${AWS_ACCESS_KEY}
-        secret-key: ${AWS_SECRET_KEY}
+        access-key: ${AWS_ACCESS_KEY:dummy}
+        secret-key: ${AWS_SECRET_KEY:dummy}
       region:
         static: ap-northeast-2
       s3:
-        bucket: ${AWS_S3_BUCKET_NAME}
+        bucket: ${AWS_S3_BUCKET_NAME:dummy}
       stack:
         auto: false
 
@@ -45,11 +45,5 @@ spring:
       max-file-size: 10MB
       max-request-size: 20MB
 
-#임시적인 JWT 설정 추후 필수 삭제
-jwt:
-  # chatserversecretaccesstokenchatserversecretaccesstokenchatserversecretaccesstoken
-  secretKey: Y2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2VuY2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2VuY2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2Vu
-  expiration: 3000 # 3000?
-
 toss:
-  secretKey: ${TOSS_SECRET_KEY}
+  secretKey: ${TOSS_SECRET_KEY:dummy}

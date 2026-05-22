@@ -73,7 +73,21 @@ public class SwaggerConfig {
         return GroupedOpenApi.builder()
             .group("Product")
             .pathsToMatch(
-                "/api/v1/seller/products"
+                "/api/v1/products/**",
+                "/api/v1/categories/**",
+                "/api/v1/options/**",
+                "/api/v1/attributes/**"
+            )
+            .addOpenApiCustomizer(securityCustomizer())
+            .build();
+    }
+
+    @Bean
+    public GroupedOpenApi cartApi() {
+        return GroupedOpenApi.builder()
+            .group("Cart")
+            .pathsToMatch(
+                "/api/v1/carts/**"
             )
             .addOpenApiCustomizer(securityCustomizer())
             .build();
