@@ -64,7 +64,9 @@ public class TossPaymentClient {
 
         try{
             return executePost(url, params);
-        } catch (HttpStatusCodeException e) {
+        } catch (ResourceAccessException e) {
+            throw new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT);
+        }catch (HttpStatusCodeException e) {
             throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_FAILED);
         }
     }
