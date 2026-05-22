@@ -10,6 +10,7 @@ import com.example.i_commerce.domain.order.event.dto.DeliveryCancelRequestEvent;
 import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
 import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
+import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
@@ -20,6 +21,7 @@ import com.example.i_commerce.global.exception.AppException;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.SystemException;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,25 +45,49 @@ import org.springframework.web.client.RestTemplate;
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
+    private final OrderRepository orderRepository;
     private final ApplicationEventPublisher publisher;
     private final StockFacade stockFacade;
     private final TossPaymentClient tossPaymentClient;
 
 
-    @Transactional(readOnly = true)
-    public PaymentDetailResponse getPaymentDetails(Long userId, Long paymentId) {
-        Payment payment = paymentRepository.findById(paymentId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
-
-        Order order = payment.getOrder();
+    @Transactional
+    public PaymentDetailResponse getPaymentDetails(Long userId, Long orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
         if(!(userId).equals(order.getUserId())) {
             throw new AppException(PaymentErrorCode.ACCESS_DENIED);
         }
 
-        if(payment.getPayStatus() != PaymentStatus.READY) {
+        if(!order.getOrderStatus().equals(OrderStatus.PENDING)) {
             throw new AppException(PaymentErrorCode.INVALID_PAYMENT_STATUS);
         }
 
+        List<Payment> readyPayments = order.getPayments().stream()
+                .filter(payment -> payment.getPayStatus() == PaymentStatus.READY)
+                .sorted(Comparator.comparing(Payment::getId).reversed())
+                .toList();
+
+        Payment payment;
+        if(readyPayments.isEmpty()) {
+
+            payment = paymentRepository.save(Payment.builder()
+                    .order(order)
+                    .amount(order.getTotalPayAmount())
+                    .cancelableAmount(0)
+                    .payStatus(PaymentStatus.READY)
+                    .build());
+
+            order.getPayments().add(payment);
+        } else {
+            payment = readyPayments.getFirst();
+
+            if(readyPayments.size() > 1) {
+                for(int i = 1 ; i < readyPayments.size() ; i++) {
+                    readyPayments.get(i).changePayStatus(PaymentStatus.FAILED);
+                }
+            }
+        }
 
         String firstProductName = order.getOrderProducts().getFirst().getProductName();
 
@@ -70,11 +96,7 @@ public class PaymentService {
 
     @Transactional
     public void confirmPayment(PaymentConfirmRequest dto) {
-        if (dto.tossOrderId() == null || !dto.tossOrderId().contains("_")) {
-            throw new AppException(PaymentErrorCode.INVALID_PAYMENT_REQUEST);
-        }
-        Long paymentId = Long.valueOf(dto.tossOrderId().split("_")[1]);
-        Payment payment = paymentRepository.findById(paymentId)
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(dto.tossOrderId())
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
         if(payment.getPayStatus() != PaymentStatus.READY) {
@@ -124,15 +146,12 @@ public class PaymentService {
             }
 
             if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
-                log.error("💥 [비상] 최종 상태 조회마저 타임아웃으로 실패했습니다. 돈이 나갔는지 알 수 없습니다.");
                 payment.changePayStatus(PaymentStatus.UNKNOWN_HOLD);
                 order.changeOrderStatus(OrderStatus.UNKNOWN_HOLD);
                 throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
             }
         }
     }
-
-
 
     @Transactional
     public void cancelPayment(PaymentCancelRequest dto) {
@@ -156,7 +175,21 @@ public class PaymentService {
 
         Order order = payment.getOrder();
 
-        Map<String, Object> response = tossPaymentClient.requestCanceled(dto);
+        Map<String, Object> response;
+        try {
+            response = tossPaymentClient.requestCanceled(dto);
+
+        } catch (AppException e) {
+            if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
+                log.error("💥 [취소 비상] 결제 취소 중 타임아웃 발생. 토스 장부 확인 불가.");
+
+                payment.changePayStatus(PaymentStatus.CANCEL_UNKNOWN_HOLD);
+                order.changeOrderStatus(OrderStatus.CANCEL_REQUESTED);
+
+                throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
+            }
+            throw e;
+        }
 
         PaymentStatus previousStatus = payment.getPayStatus();
         String pgTid = (String) response.get("paymentKey");

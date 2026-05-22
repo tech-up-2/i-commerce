@@ -14,9 +14,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,6 +52,8 @@ public class Payment extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PaymentStatus payStatus;
 
+    private String tossOrderId;
+
     @Column(name = "pg_tid", length = 100)
     private String pgTid; // PG사 거래 고유 번호
 
@@ -73,6 +77,13 @@ public class Payment extends BaseEntity {
     public void cancelPayment(Integer cancelAmount) {
         this.cancelableAmount -= cancelAmount;
         this.payStatus = PaymentStatus.CANCELLED;
+    }
+
+    @PrePersist
+    public void initTossOrderId() {
+        if(this.tossOrderId == null) {
+            this.tossOrderId = "PAY-" + UUID.randomUUID();
+        }
     }
 
 }

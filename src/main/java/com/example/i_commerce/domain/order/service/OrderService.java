@@ -113,7 +113,7 @@ public class OrderService {
 
         String firstProductName = order.getOrderProducts().stream().findFirst().map(OrderProduct::getProductName).orElse("");
 
-        return ApiResponse.success(CreateOrderResponse.of(order, payment, firstProductName));
+        return ApiResponse.success(CreateOrderResponse.of(order, firstProductName));
 
     }
 
@@ -144,12 +144,8 @@ public class OrderService {
     @Transactional
     public void validateOrderOwner(String tossOrderId, Long userId) {
 
-        if (tossOrderId == null || !tossOrderId.contains("_")) {
-            throw new AppException(PaymentErrorCode.INVALID_PAYMENT_REQUEST); // 400 Bad Request
-        }
-
-        Long paymentId = Long.valueOf(tossOrderId.split("_")[1]);
-        Payment payment = paymentRepository.findById(paymentId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId)
+                .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
         Order order = payment.getOrder();
 
