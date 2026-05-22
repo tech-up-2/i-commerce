@@ -3,12 +3,14 @@ package com.example.i_commerce.domain.review.service;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
-import com.example.i_commerce.domain.review.repo.ReviewRepository;
+import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
+import com.example.i_commerce.domain.review.service.dto.SearchReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
 import com.example.i_commerce.domain.review.validator.ReviewValidator;
+import com.example.i_commerce.global.common.response.SliceResponse;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
 import com.example.i_commerce.global.s3.service.S3ImageService;
@@ -16,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -57,6 +61,18 @@ public class ReviewService {
         }
 
         return savedReview.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public SliceResponse<ReviewResponse> searchReviews(SearchReviewRequest request, Pageable pageable) {
+
+        Slice<Review> reviewSlice = reviewRepo.searchReviews(
+            request.getOptionName(),
+            request.getKeyword(),
+            pageable
+        );
+
+        return SliceResponse.of(reviewSlice, ReviewResponse::from);
     }
 
     @Transactional(readOnly = true)

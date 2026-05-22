@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewLike;
 import com.example.i_commerce.domain.review.entity.enums.ReviewIsBestStatus;
-import com.example.i_commerce.domain.review.repo.ReviewLikeRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

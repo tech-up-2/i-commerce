@@ -6,8 +6,10 @@ import com.example.i_commerce.domain.review.service.ReviewService;
 import com.example.i_commerce.domain.review.service.dto.CreateReportRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
+import com.example.i_commerce.domain.review.service.dto.SearchReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
+import com.example.i_commerce.global.common.response.SliceResponse;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -15,11 +17,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,6 +60,16 @@ public class ReviewController {
     public ApiResponse<ReviewResponse> viewDetailReview(
         @PathVariable Long reviewId) {
         ReviewResponse response = reviewService.viewDetailReview(reviewId);
+        return ApiResponse.success(response);
+    }
+
+    @Operation(summary = "리뷰 검색 및 페이징 조회", description = "옵션명과 키워드로 리뷰를 검색합니다.")
+    @GetMapping("/search")
+    public ApiResponse<SliceResponse<ReviewResponse>> searchReviews(
+        @ModelAttribute SearchReviewRequest request,
+        @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        SliceResponse<ReviewResponse> response = reviewService.searchReviews(request, pageable);
         return ApiResponse.success(response);
     }
 

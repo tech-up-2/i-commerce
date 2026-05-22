@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.review.service;
 
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
-import com.example.i_commerce.domain.review.repo.ReviewForbiddenWordRepository;
+import com.example.i_commerce.domain.review.repository.ReviewForbiddenWordRepository;
 import com.example.i_commerce.domain.review.validator.ReviewValidator;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
