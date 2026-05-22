@@ -7,6 +7,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.example.i_commerce.domain.order.entity.Order;
@@ -46,13 +47,13 @@ public class PaymentServiceTest {
     PaymentRepository paymentRepository;
 
     @Mock
-    RestTemplate restTemplate;
-
-    @Mock
     ApplicationEventPublisher publisher;
 
     @Mock
     StockFacade stockFacade;
+
+    @Mock
+    TossPaymentClient tossPaymentClient;
 
     @InjectMocks
     PaymentService paymentService;
@@ -62,7 +63,7 @@ public class PaymentServiceTest {
 
     @BeforeEach
     void setUp() {
-        order = Mockito.mock(Order.class);
+        order = mock(Order.class);
         payment = Payment.builder()
                 .id(1L)
                 .amount(10000)
@@ -97,10 +98,9 @@ public class PaymentServiceTest {
 
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("paymentKey", "toss_1_123");
-        ResponseEntity<Map> responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
 
-        given(restTemplate.postForEntity(anyString(), any(), eq(Map.class)))
-                .willReturn(responseEntity);
+        given(tossPaymentClient.requestConfirm(any()))
+                .willReturn(responseBody);
 
         // when
         paymentService.confirmPayment(dto);
@@ -148,10 +148,9 @@ public class PaymentServiceTest {
 
         Map<String, Object> responseBody = new HashMap<>();
         responseBody.put("paymentKey", "toss_1_123");
-        ResponseEntity<Map> responseEntity = new ResponseEntity<>(responseBody, HttpStatus.OK);
 
-        given(restTemplate.postForEntity(anyString(), any(), eq(Map.class)))
-                .willReturn(responseEntity);
+        given(tossPaymentClient.requestCanceled(any()))
+                .willReturn(responseBody);
 
         // when
         paymentService.cancelPayment(dto);
