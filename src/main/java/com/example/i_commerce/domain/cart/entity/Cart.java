@@ -55,6 +55,7 @@ public class Cart extends BaseEntity {
     public Optional<CartItem> findCartItem(Long productId) {
         return cartItems.stream()
             .filter(item -> Objects.equals(item.getProductItemId(), productId))
+            .filter(item -> !item.isDeleted())
             .findFirst();
     }
 

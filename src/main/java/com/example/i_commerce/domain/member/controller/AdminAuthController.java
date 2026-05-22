@@ -5,6 +5,7 @@ import com.example.i_commerce.domain.member.service.admin.AdminService;
 import com.example.i_commerce.domain.member.service.admin.dto.AdminLoginResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
+import com.example.i_commerce.global.security.jwt.BlacklistedTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminAuthController {
 
     private final AdminService adminService;
+    private final BlacklistedTokenService blacklistedTokenService;
 
     @Operation(summary = "관리자 로그인", description = "관리자임을 인증하고 토큰을 발급받는다.")
     @PostMapping("/login")
@@ -41,7 +43,7 @@ public class AdminAuthController {
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization
     ) {//나중에 redis를 붙이면 토큰을 blacklist로 전달해야함.
         String token = authorization.substring(7);
-        adminService.logout(token);
+        blacklistedTokenService.logout(token);
 
         return ApiResponse.success();
     }

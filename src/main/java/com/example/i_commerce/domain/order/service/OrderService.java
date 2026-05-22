@@ -119,7 +119,9 @@ public class OrderService {
                 .cancelableAmount(0)
                 .payStatus(PaymentStatus.READY)
                 .build());
-        
+
+        order.getPayments().add(payment);
+
         String firstProductName = order.getOrderProducts().stream().findFirst().map(OrderProduct::getProductName).orElse("");
 
         return ApiResponse.success(CreateOrderResponse.of(order, payment, firstProductName));
