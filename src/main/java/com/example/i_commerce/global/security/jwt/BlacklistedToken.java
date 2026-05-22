@@ -38,6 +38,5 @@ public class BlacklistedToken {
     public BlacklistedToken(String tokenHash, LocalDateTime expiresAt) {
         this.tokenHash = tokenHash;
         this.expiresAt = expiresAt;
-        this.createdAt = LocalDateTime.now();
     }
 }

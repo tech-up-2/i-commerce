@@ -12,6 +12,28 @@ public class BlacklistedTokenService {
 
     private final BlacklistedTokenRepository blacklistedTokenRepository;
     private final TokenHashUtil tokenHashUtil;
+    private final JwtTokenUtil jwtTokenUtil;
+
+    //로그아웃
+    @Transactional
+    public void logout(String token) {
+        String tokenHash = tokenHashUtil.hash(token);
+        LocalDateTime expiresAt = jwtTokenUtil.getExpiration(token);
+
+        if (blacklistedTokenRepository.existsByTokenHashAndExpiresAtAfter(
+            tokenHash,
+            LocalDateTime.now()
+        )) {
+            return;
+        }
+
+        BlacklistedToken blacklistedToken = BlacklistedToken.builder()
+            .tokenHash(tokenHash)
+            .expiresAt(expiresAt)
+            .build();
+
+        blacklistedTokenRepository.save(blacklistedToken);
+    }
 
     //토큰이 블랙리스트에 등록되어 있는지 확인하는 코드
     @Transactional(readOnly = true)

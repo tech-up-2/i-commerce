@@ -70,7 +70,6 @@ public class SellerService {
 
         Seller savedSeller = sellerRepository.save(seller);
         member.isSeller();
-        memberRepository.save(member);
 
         return new SellerResponse(
             savedSeller.getId(),
@@ -129,7 +128,7 @@ public class SellerService {
             .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
 
         Member member = memberRepository.findById(seller.getId())
-            .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
+            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
             throw new AppException(MemberErrorCode.INVALID_PASSWORD);
