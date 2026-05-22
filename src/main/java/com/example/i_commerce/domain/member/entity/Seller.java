@@ -98,4 +98,9 @@ public class Seller extends BaseEntity {
         this.sellerStatus = SellerStatus.APPROVED;
         this.approvedAt = LocalDateTime.now();
     }
+
+    public void delete() {
+        this.sellerStatus = SellerStatus.WITHDRAW;
+        super.delete();
+    }
 }

@@ -79,6 +79,8 @@ public class AdminManagementController {
     }
 
     //관리자 로그인 이력 관리
+
+    
     //관리자-사용자 관리
 
     /**
@@ -103,6 +105,8 @@ public class AdminManagementController {
     ) {
         return ApiResponse.success(adminService.updateMemberStatus(userId, request));
     }
+
+
     //관리자-판매자 관리
 
     /**
