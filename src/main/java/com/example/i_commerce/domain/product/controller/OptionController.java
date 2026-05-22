@@ -10,7 +10,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Option API", description = "옵션 API")
 @RestController
 @RequiredArgsConstructor
+@PreAuthorize("@authChecker.canManageOption()")
 @RequestMapping("/api/v1/options")
 public class OptionController {
 
@@ -37,6 +41,13 @@ public class OptionController {
     @GetMapping
     public ApiResponse<List<OptionResponse>> getAllOptions() {
         return ApiResponse.success(optionService.getAllOptions());
+    }
+
+    @Operation(summary = "옵션 삭제", description = "옵션을 삭제합니다.")
+    @DeleteMapping("/{optionId}")
+    public ApiResponse<Void> deleteOption(@PathVariable Long optionId) {
+        optionService.deleteOption(optionId);
+        return ApiResponse.success();
     }
 
 }

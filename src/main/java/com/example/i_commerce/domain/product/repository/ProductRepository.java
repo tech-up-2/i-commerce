@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.product.repository;
 
 import com.example.i_commerce.domain.product.entity.Product;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,4 +18,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
       WHERE p.id = :id
     """)
     Optional<Product> findByIdWithItemsAndStock(@Param("id") Long id);
+
+    @Query("""
+        SELECT CASE WHEN EXISTS (
+            SELECT 1 FROM Product p
+            WHERE p.category.id IN :categoryIds
+        ) THEN true ELSE false END
+    """)
+    boolean existsByCategoryIds(@Param("categoryIds") List<Long> categoryIds);
+
 }

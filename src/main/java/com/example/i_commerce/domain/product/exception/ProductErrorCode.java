@@ -31,6 +31,8 @@ public enum ProductErrorCode implements ErrorCode {
     ATTRIBUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40406","속성이 존재하지 않습니다."),
     STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40407", "상품 재고가 존재하지 않습니다."),
     STOCK_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40408", "재고 기록이 존재하지 않습니다."),
+    CATEGORY_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40409", "해당 카테고리의 옵션을 찾을 수 없습니다."),
+    CATEGORY_ATTRIBUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40410", "해당 카테고리의 속성을 찾을 수 없습니다."),
 
 
     // 409 Conflict
@@ -40,7 +42,7 @@ public enum ProductErrorCode implements ErrorCode {
     DUPLICATE_CATEGORY_NAME(HttpStatus.CONFLICT, "PRD-40904", "이미 존재하는 카테고리입니다."),
     STOCK_ALREADY_INITIALIZED(HttpStatus.CONFLICT, "PRD-40905", "재고가 이미 초기화되었습니다."),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "PRD-40906", "재고가 충분하지 않습니다."),
-
+    CATEGORY_HAS_PRODUCTS(HttpStatus.CONFLICT, "PRD-40907", "하위 상품이 존재하는 카테고리는 삭제할 수 없습니다."),
 
     ;
 
