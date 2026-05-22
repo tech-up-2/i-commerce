@@ -15,8 +15,10 @@ import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentDetailResponse;
 import com.example.i_commerce.domain.product.facade.StockFacade;
+import com.example.i_commerce.domain.product.facade.dto.StockDeductCommand;
 import com.example.i_commerce.global.exception.AppException;
 import jakarta.annotation.PostConstruct;
+import jakarta.transaction.SystemException;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -42,17 +44,9 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher publisher;
-    private final RestTemplate restTemplate;
     private final StockFacade stockFacade;
+    private final TossPaymentClient tossPaymentClient;
 
-    @Value("${toss.secretKey}")
-    private String SECRET_KEY;
-    private String encodedKey;
-
-    @PostConstruct
-    public void init() {
-        this.encodedKey = Base64.getEncoder().encodeToString((SECRET_KEY + ":").getBytes());
-    }
 
     @Transactional(readOnly = true)
     public PaymentDetailResponse getPaymentDetails(Long userId, Long paymentId) {
@@ -90,50 +84,55 @@ public class PaymentService {
         if (!payment.getAmount().equals(dto.amount())) {
             throw new AppException(PaymentErrorCode.INVALID_PAYMENT_AMOUNT);
         }
+        Order order = payment.getOrder();
+        List<StockDeductCommand> stockDeductCommands = order.getOrderProducts().stream()
+                .map(orderProduct ->
+                        new StockDeductCommand(
+                                orderProduct.getProductSkuId(),
+                                orderProduct.getCount(),
+                                order.getId()
+                        ))
+                .toList();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Basic " + encodedKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("orderId", dto.tossOrderId());
-        params.put("amount", dto.amount());
-        params.put("paymentKey", dto.paymentKey());
-
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(params, headers);
+        stockFacade.deductStock(stockDeductCommands);
 
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    "https://api.tosspayments.com/v1/payments/confirm",
-                    entity,
-                    Map.class
-            );
-            log.info(String.valueOf(response));
+            Map<String, Object> response = tossPaymentClient.requestConfirm(dto);
 
-            if (response.getStatusCode() == HttpStatus.OK) {
-                PaymentStatus previousStatus = payment.getPayStatus();
-                String pgTid = (String) response.getBody().get("paymentKey");
+            PaymentStatus previousStatus = payment.getPayStatus();
+            String pgTid = (String) response.get("paymentKey");
 
-                payment.completePayment(pgTid);
-                payment.getOrder().changeOrderStatus(OrderStatus.CONFIRMED);
+            payment.completePayment(pgTid);
+            payment.getOrder().changeOrderStatus(OrderStatus.CONFIRMED);
 
-                publisher.publishEvent(new PaymentApprovedEvent(payment.getOrder().getId()));
+            publisher.publishEvent(new PaymentApprovedEvent(payment.getOrder().getId()));
 
-                publisher.publishEvent(new PaymentStatusChangedEvent(
-                        payment,
-                        previousStatus,
-                        "결제 완료",
-                        PaymentStatus.PAID,
-                        pgTid,
-                        response.getBody().toString()));
+            publisher.publishEvent(new PaymentStatusChangedEvent(
+                    payment,
+                    previousStatus,
+                    "결제 완료",
+                    PaymentStatus.PAID,
+                    pgTid,
+                    response.toString()));
+
+        } catch (AppException e) {
+
+            if(e.getErrorCode() == PaymentErrorCode.PAYMENT_NOT_FOUND ||
+                    e.getErrorCode() == PaymentErrorCode.PAYMENT_CONFIRM_FAILED) {
+                payment.changePayStatus(PaymentStatus.FAILED);
+                throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
             }
-        } catch (Exception e) {
-            // TODO: 외부 API가 응답하지 않거나, 응답이 예상과 다를 때의 예외 처리 로직 보완
-            log.info("something wrong");
-            payment.changePayStatus(PaymentStatus.FAILED);
-            throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
+
+            if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
+                log.error("💥 [비상] 최종 상태 조회마저 타임아웃으로 실패했습니다. 돈이 나갔는지 알 수 없습니다.");
+                payment.changePayStatus(PaymentStatus.UNKNOWN_HOLD);
+                order.changeOrderStatus(OrderStatus.UNKNOWN_HOLD);
+                throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
+            }
         }
     }
+
+
 
     @Transactional
     public void cancelPayment(PaymentCancelRequest dto) {
@@ -157,47 +156,22 @@ public class PaymentService {
 
         Order order = payment.getOrder();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Basic " + encodedKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        Map<String, Object> response = tossPaymentClient.requestCanceled(dto);
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("cancelReason", dto.cancelReason());
-        params.put("cancelAmount", dto.cancelAmount());
+        PaymentStatus previousStatus = payment.getPayStatus();
+        String pgTid = (String) response.get("paymentKey");
 
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(params, headers);
+        payment.cancelPayment(dto.cancelAmount());
+        order.changeOrderStatus(OrderStatus.CANCELLED);
 
-        try{
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    "https://api.tosspayments.com/v1/payments/" + dto.paymentKey() + "/cancel",
-                    entity,
-                    Map.class
-            );
+        stockFacade.rollbackStocks(order.getId());
 
-            if(response.getStatusCode() == HttpStatus.OK) {
-                PaymentStatus previousStatus = payment.getPayStatus();
-                String pgTid = (String) response.getBody().get("paymentKey");
-
-                payment.cancelPayment(dto.cancelAmount());
-                order.changeOrderStatus(OrderStatus.CANCELLED);
-
-                stockFacade.rollbackStocks(order.getId());
-
-                publisher.publishEvent(new PaymentStatusChangedEvent(
-                        payment,
-                        previousStatus,
-                        dto.cancelReason(),
-                        PaymentStatus.CANCELLED,
-                        pgTid,
-                        response.getBody().toString()));
-            } else {
-                throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_FAILED);
-            }
-
-        } catch (Exception e) {
-            log.info("something wrong");
-            throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_FAILED);
-        }
-
+        publisher.publishEvent(new PaymentStatusChangedEvent(
+                payment,
+                previousStatus,
+                dto.cancelReason(),
+                PaymentStatus.CANCELLED,
+                pgTid,
+                response.toString()));
     }
 }

@@ -45,5 +45,13 @@ spring:
       max-file-size: 10MB
       max-request-size: 20MB
 
+resilience4j.retry:
+  instances:
+    tossConfirmRetry:
+      maxAttempts: 3                            # 최대 3번 시도
+      waitDuration: 1s                          # 재시도 간격 1초
+      retryExceptions:
+        - org.springframework.web.client.ResourceAccessException
+
 toss:
   secretKey: ${TOSS_SECRET_KEY:dummy}

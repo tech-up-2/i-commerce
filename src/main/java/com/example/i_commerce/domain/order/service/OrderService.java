@@ -50,7 +50,6 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
     private final DeliveryAddressService deliveryAddressService;
     private final OrderProductRepository orderProductRepository;
-    private final StockFacade stockFacade;
 
     @Transactional
     public ApiResponse<CreateOrderResponse> createOrder(Long memberId, CreateOrderRequest dto) {
@@ -102,16 +101,6 @@ public class OrderService {
         orderProducts.forEach(orderProduct -> orderProduct.assignOrder(order));
 
         orderRepository.save(order);
-
-        List<StockDeductCommand> stockDeductCommands = dto.items().stream()
-                .map(orderItemDto ->
-                        new StockDeductCommand(
-                                orderItemDto.productId(),
-                                orderItemDto.quantity(),
-                                order.getId()))
-                .toList();
-
-        stockFacade.deductStock(stockDeductCommands);
 
         Payment payment = paymentRepository.save(Payment.builder()
                 .order(order)
