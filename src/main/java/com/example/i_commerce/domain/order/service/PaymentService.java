@@ -1,9 +1,8 @@
 package com.example.i_commerce.domain.order.service;
 
-import com.example.i_commerce.domain.order.entity.Delivery;
+import com.example.i_commerce.domain.order.client.TossPaymentClient;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
-import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.event.dto.DeliveryCancelRequestEvent;
@@ -18,26 +17,15 @@ import com.example.i_commerce.domain.order.service.dto.PaymentDetailResponse;
 import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.domain.product.facade.dto.StockDeductCommand;
 import com.example.i_commerce.global.exception.AppException;
-import jakarta.annotation.PostConstruct;
-import jakarta.transaction.SystemException;
-import java.util.Base64;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 @Service
 @Slf4j
