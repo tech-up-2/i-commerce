@@ -13,6 +13,8 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Date;
@@ -93,8 +95,18 @@ public class JwtTokenUtil {
     public Claims getClaims(String token) {
         return Jwts.parser()
             .verifyWith(getSigningKey())
+            .requireIssuer("i-commerce")
             .build()
             .parseSignedClaims(token)
             .getPayload();
+    }
+
+    public LocalDateTime getExpiration(String token) {
+        Claims claims = getClaims(token);
+
+        return claims.getExpiration()
+            .toInstant()
+            .atZone(ZoneId.of("Asia/Seoul"))
+            .toLocalDateTime();
     }
 }

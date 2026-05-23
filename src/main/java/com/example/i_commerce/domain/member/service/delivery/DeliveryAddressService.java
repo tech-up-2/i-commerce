@@ -150,6 +150,8 @@ public class DeliveryAddressService {
             .orElseThrow(() -> new AppException(MemberErrorCode.DELIVERY_ADDRESS_NOT_FOUND));
 
         address.delete();
+
+        //배송지 삭제 후 남은 배송지 중에서 기본배송지로 설정하는 코드 필요
     }
 
     //주문시 사용

@@ -18,6 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenUtil jwtTokenUtil;
+    private final BlacklistedTokenService blacklistedTokenService;
 
     @Override
     protected void doFilterInternal(
@@ -39,6 +40,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authorization.substring(7);
+
+        if (blacklistedTokenService.isBlacklisted(token)) {
+            SecurityContextHolder.clearContext();
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         try {
             TokenPayload payload = jwtTokenUtil.parseToken(token);

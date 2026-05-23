@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.Seller;
+import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.repository.SellerRepository;
@@ -14,6 +15,7 @@ import com.example.i_commerce.domain.member.service.seller.dto.SellerRequest;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerResponse;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
+import com.example.i_commerce.domain.testtools.MemberFixture;
 import com.example.i_commerce.global.exception.AppException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +55,7 @@ public class SellerServiceTest {
     void setUp() {
         member = memberRepository.save(
             MemberFixture.createMember(
+                MemberStatus.ACTIVE,
                 passwordEncoder,
                 emailHashEncoder,
                 dataEncryptor

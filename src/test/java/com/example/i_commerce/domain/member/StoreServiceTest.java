@@ -7,6 +7,7 @@ import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.Store;
 import com.example.i_commerce.domain.member.entity.StoreAddress;
 import com.example.i_commerce.domain.member.entity.enums.AddressType;
+import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.StoreStatus;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.repository.SellerRepository;
@@ -21,6 +22,7 @@ import com.example.i_commerce.domain.member.service.store.dto.StoreResponse;
 import com.example.i_commerce.domain.member.service.store.dto.StoreUpdateRequest;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
+import com.example.i_commerce.domain.testtools.MemberFixture;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +76,8 @@ class StoreServiceTest {
     @BeforeEach
     void setUpCommon() {
         member = memberRepository.save(
-            MemberFixture.createMember(passwordEncoder, emailHashEncoder, dataEncryptor)
+            MemberFixture.createMember(MemberStatus.ACTIVE,
+                passwordEncoder, emailHashEncoder, dataEncryptor)
         );
 
         Seller seller = Seller.builder()

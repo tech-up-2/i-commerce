@@ -2,15 +2,12 @@ package com.example.i_commerce.domain.product.application.service;
 
 
 import com.example.i_commerce.domain.product.controller.request.CreateOptionRequest;
-import com.example.i_commerce.domain.product.controller.response.OptionGroupResponse;
+import com.example.i_commerce.domain.product.controller.response.OptionResponse;
 import com.example.i_commerce.domain.product.entity.Option;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.OptionRepository;
 import com.example.i_commerce.global.exception.AppException;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,36 +20,29 @@ public class OptionService {
 
     @Transactional
     public void createOption(CreateOptionRequest request) {
-        if(optionRepository.existsByType(request.type())) {
-            throw new AppException(ProductErrorCode.DUPLICATE_OPTION_TYPE);
+        if(optionRepository.existsByName(request.name())) {
+            throw new AppException(ProductErrorCode.DUPLICATE_OPTION_NAME);
         }
 
-        List<Option> options = request.values().stream()
-            .map(value -> Option.of(
-                request.type(),
-                value,
-                request.inputType())
-            ).toList();
-
-        optionRepository.saveAll(options);
+        optionRepository.save(Option.of(request.name(), request.inputType()));
     }
 
     @Transactional(readOnly = true)
-    public List<OptionGroupResponse> getAllOptionsGroupedByType() {
-        List<Option> options = optionRepository.findAllOrderedByTypeAndValue();
+    public List<OptionResponse> getAllOptions() {
+        List<Option> options = optionRepository.findAllOrderedByName();
 
-        Map<String, List<Option>> groupedOptions = options.stream()
-            .collect(Collectors.groupingBy(
-                Option::getType,
-                LinkedHashMap::new,
-                Collectors.toList()
-            ));
+        return options.stream().map(o -> OptionResponse.of(
+            o.getId(), o.getName(), o.getInputType()
+        )).toList();
 
-        return groupedOptions.entrySet().stream()
-            .map(entry ->
-                OptionGroupResponse.from(entry.getKey(), entry.getValue())
-            )
-            .toList();
+    }
+
+    @Transactional
+    public void deleteOption(Long optionId) {
+        Option option = optionRepository.findById(optionId)
+            .orElseThrow(() -> new AppException(ProductErrorCode.OPTION_NOT_FOUND));
+
+        optionRepository.delete(option);
     }
 
 }

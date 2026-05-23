@@ -1,7 +1,5 @@
 package com.example.i_commerce.domain.order.controller;
 
-import com.example.i_commerce.domain.order.entity.Order;
-import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.order.service.PaymentService;
 import com.example.i_commerce.domain.order.service.dto.PaymentDetailResponse;

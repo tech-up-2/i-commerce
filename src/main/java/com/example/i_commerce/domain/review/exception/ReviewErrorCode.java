@@ -20,6 +20,7 @@ public enum ReviewErrorCode implements ErrorCode {
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REV-40907", "해당 리뷰를 찾을 수 없습니다."),
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "REV-40908", "해당 신고를 찾을 수 없습니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "REV-40912", "해당 답글을 찾을 수 없습니다."),
+    NOT_ACTUAL_BUYER(HttpStatus.FORBIDDEN, "REV-40914", "주문 확정이 된 고객만 리뷰를 쓸 수 있습니다."),
     NOT_AUTHORIZED_ADMIN(HttpStatus.UNAUTHORIZED, "REV-40909", "해당 작업을 수행할 권한이 있는 관리자가 아닙니다.")
     ;
 
