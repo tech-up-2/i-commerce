@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.order.service;
+package com.example.i_commerce.domain.order.client;
 
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
@@ -52,7 +52,6 @@ public class TossPaymentClient {
         } catch (HttpStatusCodeException e) {
             throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
         }
-
     }
 
     public Map<String, Object> requestCanceled(PaymentCancelRequest dto) {
@@ -72,7 +71,7 @@ public class TossPaymentClient {
     }
 
     public Map<String, Object> checkPaymentStatus(PaymentConfirmRequest dto, ResourceAccessException e) {
-        String url = BASE_URL + "/orders/" + dto.tossOrderId();
+        String url = BASE_URL + "/payments/" + dto.paymentKey();
 
         HttpHeaders headers = getCommonHeaders();
         HttpEntity<Void> entity = new HttpEntity<>(headers);

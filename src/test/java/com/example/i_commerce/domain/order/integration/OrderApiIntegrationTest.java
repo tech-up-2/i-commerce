@@ -205,9 +205,9 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
         given(restTemplate.postForEntity(anyString(), any(), eq(Map.class)))
                 .willReturn(responseEntity);
 
-        Long firstPaymentId =  dataNode.path("paymentId").asLong();
+        Long orderId =  dataNode.path("orderId").asLong();
 
-        PaymentDetailResponse paymentDetailResponse = paymentService.getPaymentDetails(testPrincipal.getId(), firstPaymentId);
+        PaymentDetailResponse paymentDetailResponse = paymentService.getPaymentDetails(testPrincipal.getId(), orderId);
         // 사이 프론트 생략
         PaymentConfirmRequest paymentConfirmRequest = new PaymentConfirmRequest(paymentKey, paymentDetailResponse.tossOrderId(), paymentDetailResponse.amount());
 
@@ -237,7 +237,7 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
         root = objectMapper.readTree(responseBody);
         dataNode = root.path("data");
 
-        long orderId = dataNode.get(0).path("orderId").asLong();
+        orderId = dataNode.get(0).path("orderId").asLong();
 
         // 상세 내역 조회
         mvcResult =  mockMvc.perform(get("/api/v1/orders/" + orderId)
