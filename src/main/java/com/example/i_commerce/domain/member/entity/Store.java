@@ -48,10 +48,6 @@ public class Store extends BaseEntity {
     @Builder.Default
     private StoreStatus storeStatus = StoreStatus.CLOSE;
 
-//    @Builder.Default
-//    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<StoreAddress> storeAddresses = new ArrayList<>();
-
     public void update(StoreUpdateRequest request) {
         this.storeName = request.storeName();
         this.phoneNumber = request.phoneNumber();

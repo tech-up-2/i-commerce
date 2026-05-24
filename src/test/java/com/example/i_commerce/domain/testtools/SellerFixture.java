@@ -5,36 +5,43 @@ import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import java.time.LocalDateTime;
+import java.util.Random;
 import java.util.UUID;
 
 public class SellerFixture {
 
     public static Seller createSeller(
-        Member member, SellerStatus status,DataEncryptor dataEncryptor) {
+        Member member,
+        SellerStatus status,
+        boolean approvedAt,
+        DataEncryptor dataEncryptor
+    ) {
         String businessName = status.name().toLowerCase() + "-" + UUID.randomUUID() + "_Store";
 
         LocalDateTime localDateTime;
 
-        if(status.equals(SellerStatus.APPROVED) || ){
+        if (approvedAt) {
             localDateTime = LocalDateTime.now();
-        } else{
+        } else {
             localDateTime = null;
         }
 
         return Seller.builder()
             .member(member)
-            .businessName("Pendding_Store")
+            .businessName(businessName)
             .businessNumber("1235467890")
             .mailOrderRegistrationNumber("2025-서울용산-01075")
-            .ownerName("홍길동")
+            .ownerName(dataEncryptor.decrypt(member.getName()))
             .phoneNumber("021234567")
             .sellerStatus(status)
             .approvedAt(localDateTime)
-            .bankName(dataEncryptor.encrypt("한국은행"))
+            .bankName(dataEncryptor.encrypt(randomBankName() + "은행"))
             .bankAccount(dataEncryptor.encrypt("1234567890"))
-            .depositorName(dataEncryptor.encrypt("홍길동"))
+            .depositorName(dataEncryptor.encrypt(dataEncryptor.decrypt(member.getName())))
             .build();
     }
 
-
+    private static BankName randomBankName() {
+        return BankName.values()[new Random().nextInt(BankName.values().length)];
+    }
 }

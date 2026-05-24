@@ -4,18 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.i_commerce.domain.member.entity.DeliveryAddress;
-import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.DeliveryAddressRepository;
-import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.service.delivery.DeliveryAddressService;
 import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressRequest;
 import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressResponse;
-import com.example.i_commerce.domain.member.tools.DataEncryptor;
-import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
-import com.example.i_commerce.domain.testtools.MemberFixture;
+import com.example.i_commerce.domain.testtools.IntegrationTestSupport;
 import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,14 +19,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
 @TestPropertySource(locations = "file:.env")
-class DeliveryAddressServiceTest {
+class DeliveryAddressServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private DeliveryAddressService deliveryAddressService;
@@ -38,30 +33,11 @@ class DeliveryAddressServiceTest {
     @Autowired
     private DeliveryAddressRepository deliveryAddressRepository;
 
-    @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private EmailHashEncoder emailHashEncoder;
-
-    @Autowired
-    private DataEncryptor dataEncryptor;
-
-    private Member member;
+    private CustomUserPrincipal member;
 
     @BeforeEach
     void setUp() {
-        member = memberRepository.save(
-            MemberFixture.createMember(
-                MemberStatus.ACTIVE,
-                passwordEncoder,
-                emailHashEncoder,
-                dataEncryptor
-            )
-        );
+        member = loginAsActiveMaleMember();
     }
 
     @Test
@@ -191,24 +167,7 @@ class DeliveryAddressServiceTest {
 
         // given
         for (int i = 0; i < 5; i++) {
-
-            DeliveryAddressRequest request = new DeliveryAddressRequest(
-                "주소" + i,
-                "홍길동",
-                "01012345678",
-                "12345",
-                "서울시",
-                null,
-                "101호",
-                null,
-                false,
-                null
-            );
-
-            deliveryAddressService.createNewAddress(
-                request,
-                member.getId()
-            );
+            DeliveryAddress address = createNormalDeliveryAddress(member.getId());
         }
 
         DeliveryAddressRequest overflowRequest =
@@ -243,34 +202,17 @@ class DeliveryAddressServiceTest {
     void deleteDeliveryAddress_success() {
 
         // given
-        DeliveryAddressRequest request = new DeliveryAddressRequest(
-            "집",
-            "홍길동",
-            "01012345678",
-            "12345",
-            "서울시",
-            null,
-            "101호",
-            null,
-            true,
-            null
-        );
-
-        DeliveryAddressResponse response =
-            deliveryAddressService.createNewAddress(
-                request,
-                member.getId()
-            );
+        DeliveryAddress address = createDefaultDeliveryAddress(member.getId());
 
         // when
         deliveryAddressService.deleteAddress(
-            response.id(),
+            address.getId(),
             member.getId()
         );
 
         // then
         Optional<DeliveryAddress> deletedAddress =
-            deliveryAddressRepository.findById(response.id());
+            deliveryAddressRepository.findById(address.getId());
 
         assertThat(deletedAddress).isPresent();
         assertThat(deletedAddress.get().isDeleted()).isTrue();
