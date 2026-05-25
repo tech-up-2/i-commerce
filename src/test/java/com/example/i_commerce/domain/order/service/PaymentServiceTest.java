@@ -3,16 +3,19 @@ package com.example.i_commerce.domain.order.service;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 import com.example.i_commerce.domain.order.client.TossPaymentClient;
+import com.example.i_commerce.domain.order.entity.Delivery;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
+import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
@@ -22,9 +25,11 @@ import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -37,7 +42,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.ResourceAccessException;
 
 @ExtendWith(MockitoExtension.class)
 public class PaymentServiceTest {
@@ -56,6 +60,9 @@ public class PaymentServiceTest {
 
     @Mock
     TossPaymentClient tossPaymentClient;
+
+    @Mock
+    AutoPaymentCancelService autoPaymentCancelService;
 
     @InjectMocks
     PaymentService paymentService;
@@ -155,7 +162,48 @@ public class PaymentServiceTest {
         assertThatThrownBy(()-> paymentService.confirmPayment(dto))
                 .isInstanceOf(AppException.class);
 
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.UNKNOWN_HOLD);
         assertThat(payment.getPayStatus()).isEqualTo(PaymentStatus.UNKNOWN_HOLD);
+    }
+
+    @Test
+    @DisplayName("결제 승인 실패: 외부 API에러로 인해 실패가 발생한 후 재고를 선점하는 과정에서 에러가 발생하면 주문/결제가 취소된다.")
+    void confirmPayment_Cancel_FiledTossPaymentsAndFailedDeductStock() {
+        PaymentConfirmRequest dto = new PaymentConfirmRequest("PAYMENT_1", "toss_1_123", 10000);
+        given(paymentRepository.findByTossOrderIdWithOrder("toss_1_123")).willReturn(Optional.of(payment));
+        given(tossPaymentClient.requestConfirm(dto)).willThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT));
+        doThrow(new AppException(ProductErrorCode.INSUFFICIENT_STOCK))
+                .when(stockFacade).deductStock(anyList());
+
+        assertThatThrownBy(()-> paymentService.confirmPayment(dto))
+                .isInstanceOf(AppException.class);
+
+        verify(tossPaymentClient).requestCanceled(any(PaymentCancelRequest.class));
+        assertThat(payment.getPayStatus()).isEqualTo(PaymentStatus.FAILED);
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("결제 승인 실패: 재고 부족으로 인해 결체 취소가 발생한다.")
+    void confirmPayment_Fail_OutOFStock() {
+        PaymentConfirmRequest dto = new PaymentConfirmRequest("PAYMENT_1", "toss_1_123", 10000);
+        ReflectionTestUtils.setField(payment, "pgTid", null);
+        ReflectionTestUtils.setField(payment, "cancelableAmount", 0);
+        given(paymentRepository.findByTossOrderIdWithOrder("toss_1_123")).willReturn(Optional.of(payment));
+
+
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("paymentKey", "toss_1_123");
+
+        given(tossPaymentClient.requestConfirm(any()))
+                .willReturn(responseBody);
+        doThrow(new AppException(ProductErrorCode.INSUFFICIENT_STOCK))
+                .when(stockFacade).deductStock(anyList());
+
+        paymentService.confirmPayment(dto);
+
+        verify(autoPaymentCancelService).autoCancelPayment(any(PaymentCancelRequest.class));
+        verify(publisher).publishEvent(any(PaymentStatusChangedEvent.class));
     }
 
     @Test
@@ -221,6 +269,23 @@ public class PaymentServiceTest {
     }
 
     @Test
+    @DisplayName("결제 취소 실패: 배송 상태가 PREPARING 상태가 아닌 경우 결제가 실패하고 예외가 발생한다.")
+    void cancelPayment_Fail_InvalidDeliveryStatus() {
+        // given
+        PaymentCancelRequest dto = new PaymentCancelRequest(1L, 10000, "toss_1_123", "단순 변심"); // 잘못된 paymentKey
+        Delivery delivery = Delivery.builder()
+                .deliveryStatus(DeliveryStatus.SHIPPING) // 💡 이미 배송 중 세팅
+                .build();
+        ReflectionTestUtils.setField(order, "deliveries", List.of(delivery));
+        ReflectionTestUtils.setField(payment, "cancelableAmount", 10000);
+
+        given(paymentRepository.findById(1L)).willReturn(Optional.of(payment));
+
+        AppException exception = assertThrows(AppException.class, () -> paymentService.cancelPayment(dto));
+        assertThat(exception.getErrorCode()).isEqualTo(PaymentErrorCode.ALREADY_SHIPPED);
+    }
+
+    @Test
     @DisplayName("결제 취소 실패: 외부 API에러로 인해 실패가 발생한다.")
     void cancelPayment_Fail_FiledTossPayments() {
         PaymentCancelRequest dto = new PaymentCancelRequest(1L, 10000, "toss_1_123", "단순 변심");
@@ -236,5 +301,6 @@ public class PaymentServiceTest {
                 .isInstanceOf(AppException.class);
 
         assertThat(payment.getPayStatus()).isEqualTo(PaymentStatus.CANCEL_UNKNOWN_HOLD);
+        verify(tossPaymentClient).requestCanceled(any(PaymentCancelRequest.class));
     }
 }
