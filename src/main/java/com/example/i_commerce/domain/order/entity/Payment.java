@@ -18,6 +18,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -57,12 +58,29 @@ public class Payment extends BaseEntity {
     @Column(name = "pg_tid", length = 100)
     private String pgTid; // PG사 거래 고유 번호
 
+    private int cancelAmount;
+
+    private String cancelReason;
+
     @Builder.Default
     @OneToMany(mappedBy = "payment", cascade = CascadeType.ALL)
     private List<PaymentHistory> paymentHistories = new ArrayList<>();
 
+
     public void changePayStatus(PaymentStatus status) {
         this.payStatus = status;
+    }
+
+    public void prepareCancellation(int cancelAmount, String cancelReason) {
+        this.cancelAmount = cancelAmount;
+        this.cancelReason = cancelReason;
+        this.payStatus = PaymentStatus.CANCEL_UNKNOWN_HOLD;
+    }
+
+    public void failByOutOfStock(String pgTid) {
+        this.pgTid = pgTid;               // ➔ 비록 롤백되어 우리 DB엔 없었지만, 토스 쪽 취소를 위해 발급받았던 키를 영구 기록
+        this.cancelableAmount = 0;       // ➔ 출금되자마자 즉시 환불되었으므로 취소 가능 금액은 0원
+        this.payStatus = PaymentStatus.FAILED; // ➔ 결제 최종 실패 처리
     }
 
     public void completePayment(String pgTid) {

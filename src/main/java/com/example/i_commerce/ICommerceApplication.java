@@ -6,9 +6,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableConfigurationProperties(BootstrapAdminProperties.class)//최초관리자
 @EnableJpaAuditing //엔티티 객체 생성, 수정일자 관리
+@EnableScheduling
 @SpringBootApplication
 public class ICommerceApplication {
 
