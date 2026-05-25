@@ -65,13 +65,17 @@ public class TossPaymentClient {
             return executePost(url, params);
         } catch (ResourceAccessException e) {
             throw new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT);
-        }catch (HttpStatusCodeException e) {
+        } catch (HttpStatusCodeException e) {
             throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_FAILED);
         }
     }
 
     public Map<String, Object> checkPaymentStatus(PaymentConfirmRequest dto, ResourceAccessException e) {
-        String url = BASE_URL + "/payments/" + dto.paymentKey();
+        return this.checkPaymentStatus(dto.paymentKey());
+    }
+
+    public Map<String, Object> checkPaymentStatus(String paymentKey) {
+        String url = BASE_URL + "/payments/" + paymentKey;
 
         HttpHeaders headers = getCommonHeaders();
         HttpEntity<Void> entity = new HttpEntity<>(headers);

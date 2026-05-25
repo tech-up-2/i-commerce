@@ -3,6 +3,7 @@ package com.example.i_commerce.domain.order.service;
 import com.example.i_commerce.domain.order.client.TossPaymentClient;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
+import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.event.dto.DeliveryCancelRequestEvent;
@@ -37,6 +38,7 @@ public class PaymentService {
     private final ApplicationEventPublisher publisher;
     private final StockFacade stockFacade;
     private final TossPaymentClient tossPaymentClient;
+    private final AutoPaymentCancelService paymentCancelService;
 
 
     @Transactional
@@ -104,27 +106,44 @@ public class PaymentService {
                         ))
                 .toList();
 
-        stockFacade.deductStock(stockDeductCommands);
-
         try {
             Map<String, Object> response = tossPaymentClient.requestConfirm(dto);
-
-            PaymentStatus previousStatus = payment.getPayStatus();
             String pgTid = (String) response.get("paymentKey");
+            PaymentStatus previousStatus = payment.getPayStatus();
 
-            payment.completePayment(pgTid);
-            payment.getOrder().changeOrderStatus(OrderStatus.CONFIRMED);
+            try{
+                stockFacade.deductStock(stockDeductCommands);
 
-            publisher.publishEvent(new PaymentApprovedEvent(payment.getOrder().getId()));
+                payment.completePayment(pgTid);
+                payment.getOrder().changeOrderStatus(OrderStatus.CONFIRMED);
 
-            publisher.publishEvent(new PaymentStatusChangedEvent(
-                    payment,
-                    previousStatus,
-                    "결제 완료",
-                    PaymentStatus.PAID,
-                    pgTid,
-                    response.toString()));
+                publisher.publishEvent(new PaymentApprovedEvent(payment.getOrder().getId()));
 
+                publisher.publishEvent(new PaymentStatusChangedEvent(
+                        payment,
+                        previousStatus,
+                        "결제 완료",
+                        PaymentStatus.PAID,
+                        pgTid,
+                        response.toString()));
+            } catch (AppException e) {
+                paymentCancelService.autoCancelPayment(new PaymentCancelRequest(
+                        payment.getId(),
+                        payment.getAmount(),
+                        pgTid,
+                        "재고 부족으로 인한 자동 취소"
+                ));
+
+                publisher.publishEvent(new PaymentStatusChangedEvent(
+                        payment,
+                        previousStatus,
+                        "결제 완료",
+                        PaymentStatus.FAILED,
+                        pgTid,
+                        response.toString()));
+
+                throw e;
+            }
         } catch (AppException e) {
 
             if(e.getErrorCode() == PaymentErrorCode.PAYMENT_NOT_FOUND ||
@@ -134,6 +153,20 @@ public class PaymentService {
             }
 
             if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
+                try {
+                    stockFacade.deductStock(stockDeductCommands);
+                } catch (AppException ex) {
+                    log.error("[비상] 타임아웃 대피 중 재고 부족 발생! 돈이 나갔더라도 물건을 줄 수 없으므로 강제 환불 처리합니다.");
+
+                    try {
+                        Map<String, Object> response = tossPaymentClient.requestCanceled(new PaymentCancelRequest(payment.getId(), order.getTotalPayAmount(), dto.paymentKey(), "타임아웃 대피 중 재고 부족으로 인한 망취소"));
+                    } catch (Exception ignored) {
+                    }
+
+                    payment.changePayStatus(PaymentStatus.FAILED);
+                    order.changeOrderStatus(OrderStatus.CANCELLED);
+                    throw ex;
+                }
                 payment.changePayStatus(PaymentStatus.UNKNOWN_HOLD);
                 order.changeOrderStatus(OrderStatus.UNKNOWN_HOLD);
                 throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
@@ -159,9 +192,16 @@ public class PaymentService {
             throw new AppException(PaymentErrorCode.INVALID_CANCEL_AMOUNT);
         }
 
+        Order order = payment.getOrder();
+
+        order.getDeliveries().forEach(delivery -> {
+            if(delivery.getDeliveryStatus() != DeliveryStatus.PREPARING) {
+                throw new AppException(PaymentErrorCode.ALREADY_SHIPPED);
+            }
+        });
+
         publisher.publishEvent(new DeliveryCancelRequestEvent(payment.getOrder().getId()));
 
-        Order order = payment.getOrder();
 
         Map<String, Object> response;
         try {
@@ -169,10 +209,11 @@ public class PaymentService {
 
         } catch (AppException e) {
             if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
-                log.error("💥 [취소 비상] 결제 취소 중 타임아웃 발생. 토스 장부 확인 불가.");
+                log.error("[취소 비상] 결제 취소 중 타임아웃 발생. 토스 장부 확인 불가.");
 
-                payment.changePayStatus(PaymentStatus.CANCEL_UNKNOWN_HOLD);
+                payment.prepareCancellation(dto.cancelAmount(), dto.cancelReason());
                 order.changeOrderStatus(OrderStatus.CANCEL_REQUESTED);
+                order.getDeliveries().forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.DELIVERY_HOLD));
 
                 throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
             }
@@ -195,4 +236,5 @@ public class PaymentService {
                 pgTid,
                 response.toString()));
     }
+
 }
