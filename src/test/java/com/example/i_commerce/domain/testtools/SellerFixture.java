@@ -5,10 +5,12 @@ import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import java.time.LocalDateTime;
-import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SellerFixture {
+
+    private static final BankName[] BANKS = BankName.values();
 
     public static Seller createSeller(
         Member member,
@@ -42,6 +44,6 @@ public class SellerFixture {
     }
 
     private static BankName randomBankName() {
-        return BankName.values()[new Random().nextInt(BankName.values().length)];
+        return BANKS[ThreadLocalRandom.current().nextInt(BANKS.length)];
     }
 }

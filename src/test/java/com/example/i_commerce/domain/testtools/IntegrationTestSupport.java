@@ -298,8 +298,7 @@ public class IntegrationTestSupport {
 
     private Store createStore(Long sellerId, StoreStatus storeStatus) {
         Store store = StoreFixture.createStore(sellerId, storeStatus);
-        Store savedStore = storeRepository.save(store);
-        return savedStore;
+        return storeRepository.save(store);
     }
 
     private CustomUserPrincipal loginAsAdmin(AdminRole adminRole, AdminStatus adminStatus) {
