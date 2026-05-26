@@ -20,6 +20,7 @@ public enum ProductErrorCode implements ErrorCode {
 
     // 403 Forbidden
     GUEST_PAGE_LIMIT_EXCEEDED(HttpStatus.FORBIDDEN, "PRD-40301", "비로그인 사용자는 더 이상 페이지를 조회할 수 없습니다."),
+    PRODUCT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "PRD-40302", "해당 상품에 대한 접근 권한이 없습니다."),
 
 
     // 404 NotFound
