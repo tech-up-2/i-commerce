@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.member.controller;
 
+import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
 import com.example.i_commerce.domain.member.service.seller.SellerService;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerInfoResponse;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerRequest;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -56,5 +58,16 @@ public class SellerController {
         @RequestBody @Valid SellerRequest dto
     ) {
         return ApiResponse.success(sellerService.updateSeller(principal.getId(), dto));
+    }
+
+    @Operation(summary = "판매자 탈퇴", description = "판매자에서 탈퇴한다.")
+    @DeleteMapping("/me")
+    @PreAuthorize("@authChecker.canUpdateSellerInfo()")
+    public ApiResponse<Void> deleteSeller(
+        @AuthenticationPrincipal CustomUserPrincipal principal,
+        @RequestBody @Valid WithDrawRequest dto
+    ) {
+        sellerService.deleteSeller(principal.getId(), dto);
+        return ApiResponse.success();
     }
 }

@@ -37,5 +37,13 @@ public class OptionService {
 
     }
 
+    @Transactional
+    public void deleteOption(Long optionId) {
+        Option option = optionRepository.findById(optionId)
+            .orElseThrow(() -> new AppException(ProductErrorCode.OPTION_NOT_FOUND));
+
+        optionRepository.delete(option);
+    }
+
 }
 

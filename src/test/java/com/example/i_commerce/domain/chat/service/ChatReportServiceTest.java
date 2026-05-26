@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import com.example.i_commerce.domain.chat.entity.ChatMessage;
-import com.example.i_commerce.domain.chat.entity.ChatReport;
 import com.example.i_commerce.domain.chat.entity.ChatRoom;
 import com.example.i_commerce.domain.chat.entity.enums.ChatReportReason;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
@@ -20,7 +19,6 @@ import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,7 +49,7 @@ public class ChatReportServiceTest {
     @BeforeEach
     public void init() {
         CustomUserPrincipal customUserPrincipal = new CustomUserPrincipal(PrincipalType.MEMBER, 1L,
-            "test1@naver.com", "1234", List.of());
+            List.of());
         SecurityContextHolder.getContext().setAuthentication(
             new UsernamePasswordAuthenticationToken(customUserPrincipal, null, List.of()));
 
@@ -86,7 +84,8 @@ public class ChatReportServiceTest {
         ChatReportRequest request = new ChatReportRequest(1L, ChatReportReason.SWEARWORD);
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
         when(chatMessageRepository.findById(1L)).thenReturn(Optional.of(chatMessage));
-        when(chatReportRepository.existsByReporterIdAndChatMessageId(1L, chatMessage.getId())).thenReturn(false);
+        when(chatReportRepository.existsByReporterIdAndChatMessageId(1L,
+            chatMessage.getId())).thenReturn(false);
 
         ApiResponse<Void> response = chatReportService.createChatReport(request);
 

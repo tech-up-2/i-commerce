@@ -82,6 +82,12 @@ public class AuthChecker {
             && has(SecurityAuthority.SELLER_APPROVED);
     }
 
+    public boolean canManageStore() {
+        return isSeller()
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && has(SecurityAuthority.SELLER_APPROVED);
+    }
+
     // 상품 관리
     public boolean canManageSellerProduct() {
         return isSeller()
@@ -142,7 +148,7 @@ public class AuthChecker {
     }
 
     // 시스템 옵션
-    public boolean canManageSystemOption() {
+    public boolean canManageOption() {
         return isAdmin()
             && has(SecurityAuthority.STATUS_ACTIVE)
             && hasAny(SecurityAuthority.ADMIN_MASTER,

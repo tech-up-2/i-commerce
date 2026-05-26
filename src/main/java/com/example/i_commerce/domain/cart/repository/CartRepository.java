@@ -16,7 +16,6 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
         FROM Cart c
         LEFT JOIN FETCH c.cartItems ci
         WHERE c.userId = :userId
-        AND ci.deletedAt IS NULL
     """)
     Optional<Cart> findByUserIdWithItems(Long userId);
 }

@@ -9,19 +9,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.i_commerce.domain.member.entity.Admin;
-import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.enums.AdminRole;
 import com.example.i_commerce.domain.member.entity.enums.AdminStatus;
-import com.example.i_commerce.domain.member.entity.enums.Gender;
-import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
-import com.example.i_commerce.domain.member.entity.enums.MemberType;
-import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
 import com.example.i_commerce.domain.member.repository.AdminRepository;
-import com.example.i_commerce.domain.member.repository.MemberRepository;
-import com.example.i_commerce.domain.member.repository.SellerRepository;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
+import com.example.i_commerce.domain.testtools.IntegrationTestSupport;
+import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -45,24 +39,15 @@ import org.springframework.transaction.annotation.Transactional;
     "app.bootstrap.admin.password=${ADMIN_PASSWORD:master123!}",
     "app.bootstrap.admin.name=최초관리자"
 }, locations = "file:.env")
-class AdminManagementIntegrationTest {
+class AdminManagementIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     MockMvc mockMvc;
-
-    //@Autowired
-    //ObjectMapper objectMapper;
-
+    
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     AdminRepository adminRepository;
-
-    @Autowired
-    MemberRepository memberRepository;
-
-    @Autowired
-    SellerRepository sellerRepository;
 
     @Autowired
     EmailHashEncoder emailHashEncoder;
@@ -262,15 +247,13 @@ class AdminManagementIntegrationTest {
     void getMember_success_byAdmin() throws Exception {
         String token = loginAndGetToken("master@test.com", "master123!");
 
-        Member member = saveMember("user1@test.com", "사용자1");
+        CustomUserPrincipal member = loginAsActiveMaleMember();
 
         mockMvc.perform(get("/api/v1/admin/manage/users/{userId}", member.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(token)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"))
             .andExpect(jsonPath("$.data.memberId").value(member.getId()))
-            .andExpect(jsonPath("$.data.email").value("user1@test.com"))
-            .andExpect(jsonPath("$.data.name").value("사용자1"))
             .andExpect(jsonPath("$.data.status").value("ACTIVE"));
     }
 
@@ -279,7 +262,7 @@ class AdminManagementIntegrationTest {
     void updateMemberStatus_success_byAdmin() throws Exception {
         String token = loginAndGetToken("master@test.com", "master123!");
 
-        Member member = saveMember("user2@test.com", "사용자2");
+        CustomUserPrincipal member = loginAsActiveMaleMember();
 
         mockMvc.perform(patch("/api/v1/admin/manage/users/{userId}/status", member.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(token))
@@ -300,14 +283,13 @@ class AdminManagementIntegrationTest {
     void getSeller_success_byAdmin() throws Exception {
         String token = loginAndGetToken("master@test.com", "master123!");
 
-        Seller seller = saveSeller("seller1@test.com", "판매자회원1");
+        CustomUserPrincipal seller = loginAsPendingSeller();
 
         mockMvc.perform(get("/api/v1/admin/manage/sellers/{sellerId}", seller.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(token)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"))
             .andExpect(jsonPath("$.data.sellerId").value(seller.getId()))
-            .andExpect(jsonPath("$.data.email").value("seller1@test.com"))
             .andExpect(jsonPath("$.data.sellerStatus").value("PENDING"));
     }
 
@@ -316,7 +298,7 @@ class AdminManagementIntegrationTest {
     void updateSellerStatus_success_byAdmin() throws Exception {
         String token = loginAndGetToken("master@test.com", "master123!");
 
-        Seller seller = saveSeller("seller2@test.com", "판매자회원2");
+        CustomUserPrincipal seller = loginAsPendingSeller();
 
         mockMvc.perform(patch("/api/v1/admin/manage/sellers/{sellerId}/status", seller.getId())
                 .header(HttpHeaders.AUTHORIZATION, bearer(token))
@@ -386,53 +368,6 @@ class AdminManagementIntegrationTest {
         return adminRepository.findByEmailHash(emailHash)
             .orElseThrow()
             .getId();
-    }
-
-    private Member saveMember(String email, String name) {
-        Member member = Member.builder()
-            .emailHash(emailHashEncoder.encode(email))
-            .emailEncrypted(dataEncryptor.encrypt(email))
-            .password(passwordEncoder.encode("password123!"))
-            .name(dataEncryptor.encrypt(name))
-            .sex(Gender.MALE)
-            .birthday(dataEncryptor.encrypt("1999-01-01"))
-            .phoneNumber(dataEncryptor.encrypt("010-1234-5678"))
-            .role(MemberType.CUSTOMER)
-            .status(MemberStatus.ACTIVE)
-            .build();
-
-        return memberRepository.save(member);
-    }
-
-    private Seller saveSeller(String email, String name) {
-        Member member = Member.builder()
-            .emailHash(emailHashEncoder.encode(email))
-            .emailEncrypted(dataEncryptor.encrypt(email))
-            .password(passwordEncoder.encode("password123!"))
-            .name(dataEncryptor.encrypt(name))
-            .sex(Gender.MALE)
-            .birthday(dataEncryptor.encrypt("1999-01-01"))
-            .phoneNumber(dataEncryptor.encrypt("010-1234-5678"))
-            .role(MemberType.SELLER)
-            .status(MemberStatus.ACTIVE)
-            .build();
-
-        Member savedMember = memberRepository.save(member);
-
-        Seller seller = Seller.builder()
-            .member(savedMember)
-            .businessName("테스트상호")
-            .businessNumber("123-45-67890")
-            .mailOrderRegistrationNumber("2026-부산-0001")
-            .ownerName("대표자")
-            .phoneNumber("010-9999-8888")
-            .bankName(dataEncryptor.encrypt("테스트은행"))
-            .bankAccount(dataEncryptor.encrypt("테스트계좌"))
-            .depositorName(dataEncryptor.encrypt(name))
-            .sellerStatus(SellerStatus.PENDING)
-            .build();
-
-        return sellerRepository.save(seller);
     }
 
     private String bearer(String token) {

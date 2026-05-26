@@ -120,4 +120,8 @@ public class Member extends BaseEntity {
     public void changeStatus(MemberStatus status) {
         this.status = status;
     }
+
+    public void isSeller() {
+        this.isSeller = true;
+    }
 }

@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,6 +39,7 @@ public class CategoryAttributeController {
     }
 
     @Operation(summary = "카테고리 제공 속성 추가", description = "특정 카테고리에서 제공할 속성을 추가합니다.")
+    @PreAuthorize("@authChecker.canManageCategory()")
     @PostMapping
     public ApiResponse<AddCategoryAttributeResponse> addCategoryAttribute(
         @PathVariable Long categoryId,
@@ -45,6 +48,18 @@ public class CategoryAttributeController {
         AddCategoryAttributeResponse res =
             categoryAttributeService.addCategoryAttribute(categoryId, request);
         return ApiResponse.success(res);
+    }
+
+
+    @Operation(summary = "카테고리 제공 속성 제거", description = "특정 카테고리에서 제공할 속성을 제거합니다.")
+    @PreAuthorize("@authChecker.canManageCategory()")
+    @DeleteMapping("/{categoryAttributeId}")
+    public ApiResponse<Void> deleteCategoryAttribute(
+        @PathVariable Long categoryId,
+        @PathVariable Long categoryAttributeId
+    ) {
+        categoryAttributeService.deleteCategoryAttribute(categoryId, categoryAttributeId);
+        return ApiResponse.success();
     }
 
 }

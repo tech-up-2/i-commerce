@@ -106,7 +106,7 @@ public class JwtTokenUtil {
 
         return claims.getExpiration()
             .toInstant()
-            .atZone(ZoneId.systemDefault())
+            .atZone(ZoneId.of("Asia/Seoul"))
             .toLocalDateTime();
     }
 }

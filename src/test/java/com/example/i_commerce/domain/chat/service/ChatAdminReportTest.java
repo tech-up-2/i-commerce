@@ -9,16 +9,10 @@ import com.example.i_commerce.domain.chat.entity.enums.ChatReportReason;
 import com.example.i_commerce.domain.chat.entity.enums.ChatReportStatus;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatReportRepository;
-import com.example.i_commerce.domain.chat.service.ChatReportService;
 import com.example.i_commerce.domain.member.entity.Admin;
-import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.enums.AdminRole;
 import com.example.i_commerce.domain.member.entity.enums.AdminStatus;
-import com.example.i_commerce.domain.member.entity.enums.Gender;
-import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
-import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.repository.AdminRepository;
-import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
@@ -37,6 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 @ExtendWith(MockitoExtension.class)
 public class ChatAdminReportTest {
+
     @InjectMocks
     private ChatReportService chatReportService;
 
@@ -55,7 +50,7 @@ public class ChatAdminReportTest {
     @BeforeEach
     public void init() {
         CustomUserPrincipal customUserPrincipal = new CustomUserPrincipal(PrincipalType.ADMIN, 1L,
-            "admin1@naver.com", "1234", List.of());
+            List.of());
         SecurityContextHolder.getContext().setAuthentication(
             new UsernamePasswordAuthenticationToken(customUserPrincipal, null, List.of()));
 
@@ -87,12 +82,14 @@ public class ChatAdminReportTest {
             .status(ChatReportStatus.PENDING)
             .build();
     }
-   @Test
+
+    @Test
     @DisplayName("관리자가 유저의 채팅의 신고를 정상적으로 처리할 수 있다.")
     public void controlReportTest() {
         when(chatReportRepository.findById(chatReport.getId())).thenReturn(Optional.of(chatReport));
 
-        ApiResponse<Void>response = chatReportService.controlReport(chatReport.getId(), ChatReportStatus.RESOLVED);
+        ApiResponse<Void> response = chatReportService.controlReport(chatReport.getId(),
+            ChatReportStatus.RESOLVED);
 
         Assertions.assertEquals("SUCCESS", response.code());
         Assertions.assertEquals(ChatReportStatus.RESOLVED, chatReport.getStatus());

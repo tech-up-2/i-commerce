@@ -12,8 +12,8 @@ import com.example.i_commerce.domain.member.service.auth.dto.SignUpResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserInfoResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserUpdateRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
-import com.example.i_commerce.domain.member.service.member.MemberService;
 import com.example.i_commerce.global.common.response.ApiResponse;
+import com.example.i_commerce.global.security.jwt.BlacklistedTokenService;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
-    private final MemberService memberService;
+    private final BlacklistedTokenService blacklistedTokenService;
 
     @Operation(summary = "회원가입", description = "일반 회원 계정을 생성한다.")
     @PostMapping("/signup")
@@ -53,7 +53,7 @@ public class AuthController {
     public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest dto) {
         LoginResponse response = authService.login(dto);
         return ApiResponse.success(response);
-    }
+    }//개선필요사항: 로그인 되어 있을 때 로그인이 안되게 해야함
 
     //로그아웃
     @PreAuthorize("isAuthenticated()")
@@ -64,7 +64,7 @@ public class AuthController {
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization
     ) {//나중에 redis를 붙여야 함.
         String token = authorization.substring(7);
-        authService.logout(token);
+        blacklistedTokenService.logout(token);
 
         return ApiResponse.success();
     }
@@ -135,11 +135,4 @@ public class AuthController {
         UserInfoResponse response = authService.updateMyInfo(principal.getId(), request);
         return ApiResponse.success(response);
     }
-
-    //복호화 테스트
-//    @GetMapping("/getget/{id}")
-//    public ApiResponse<MemberOrderInfo> testGetMemberOrderInfo(@PathVariable Long id) {
-//        MemberOrderInfo memberOrderInfo = memberService.getMemberOrderInfo(id);
-//        return ApiResponse.success(memberOrderInfo);
-//    }
 }
