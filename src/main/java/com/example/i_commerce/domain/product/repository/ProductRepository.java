@@ -12,6 +12,11 @@ import org.springframework.stereotype.Repository;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("""
+      SELECT p.id FROM Product p WHERE p.storeId = :storeId
+    """)
+    List<Long> findAllIdsByStoreId(@Param("storeId")Long storeId);
+
+    @Query("""
       SELECT p FROM Product p
       LEFT JOIN FETCH p.items i
       LEFT JOIN FETCH i.stock
