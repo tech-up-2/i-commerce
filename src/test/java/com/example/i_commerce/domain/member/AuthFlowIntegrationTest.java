@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.member;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -10,7 +11,10 @@ import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.MemberSignUpRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.UserUpdateRequest;
+import com.example.i_commerce.domain.testtools.IntegrationTestSupport;
 import com.example.i_commerce.global.common.response.ApiResponse;
+import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +40,7 @@ import tools.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @Transactional
 @TestPropertySource(locations = "file:.env")
-class AuthFlowIntegrationTest {
+class AuthFlowIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     MockMvc mockMvc;
@@ -47,18 +51,14 @@ class AuthFlowIntegrationTest {
     @Test
     @DisplayName("회원가입 성공")
     void signUp_success() throws Exception {
-        MemberSignUpRequest request = new MemberSignUpRequest(
+        MemberSignUpRequest request = createSignUpRequest(
             "signup@test.com",
-            "password123!",
-            "홍길동",
-            Gender.MALE,
-            "1999-01-01",
-            "010-1234-5678"
+            "password123!"
         );
 
         mockMvc.perform(post("/api/v1/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(toJson(request)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"))
             .andExpect(jsonPath("$.data.id").exists())
@@ -79,20 +79,31 @@ class AuthFlowIntegrationTest {
             .andExpect(status().isForbidden());
 
         mockMvc.perform(get("/api/v1/test/protected")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"));
 
         mockMvc.perform(post("/api/v1/test/seller-only")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
             .andExpect(status().isForbidden());
 
         mockMvc.perform(post("/api/v1/auth/logout")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"))
             .andExpect(jsonPath("$.message").value("API 요청에 성공했습니다"))
             .andExpect(jsonPath("$.data").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("seller 권한이 있으면 seller-only API 접근 성공")
+    void sellerOnly_success_withApprovedSellerPrincipal() throws Exception {
+        CustomUserPrincipal seller = loginAsApprovedSeller();
+
+        mockMvc.perform(post("/api/v1/test/seller-only")
+                .with(user(seller)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("SUCCESS"));
     }
 
     @Test
@@ -106,7 +117,7 @@ class AuthFlowIntegrationTest {
         String accessToken = loginAndGetToken(email, password);
 
         mockMvc.perform(get("/api/v1/auth/users/me")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"))
             .andExpect(jsonPath("$.data.id").exists())
@@ -119,7 +130,7 @@ class AuthFlowIntegrationTest {
     @Test
     @DisplayName("내 정보 조회 실패 - 인증 토큰 없음")
     void getMyInfo_fail_withoutToken() throws Exception {
-        mockMvc.perform(get("/api/v1/users/me"))
+        mockMvc.perform(get("/api/v1/auth/users/me"))
             .andExpect(status().isForbidden());
     }
 
@@ -141,9 +152,9 @@ class AuthFlowIntegrationTest {
         );
 
         mockMvc.perform(patch("/api/v1/auth/users/me")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(toJson(request)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"))
             .andExpect(jsonPath("$.data.id").exists())
@@ -163,9 +174,9 @@ class AuthFlowIntegrationTest {
             "2000-02-02"
         );
 
-        mockMvc.perform(patch("/api/v1/users/me")
+        mockMvc.perform(patch("/api/v1/auth/users/me")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(toJson(request)))
             .andExpect(status().isForbidden());
     }
 
@@ -187,14 +198,14 @@ class AuthFlowIntegrationTest {
         );
 
         mockMvc.perform(patch("/api/v1/auth/users/me")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(toJson(request)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"));
 
         mockMvc.perform(get("/api/v1/auth/users/me")
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .header(HttpHeaders.AUTHORIZATION, bearer(accessToken)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"))
             .andExpect(jsonPath("$.data.email").value(email))
@@ -204,18 +215,11 @@ class AuthFlowIntegrationTest {
     }
 
     private void signUp(String email, String password) throws Exception {
-        MemberSignUpRequest request = new MemberSignUpRequest(
-            email,
-            password,
-            "홍길동",
-            Gender.MALE,
-            "1999-01-01",
-            "010-1234-5678"
-        );
+        MemberSignUpRequest request = createSignUpRequest(email, password);
 
         mockMvc.perform(post("/api/v1/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(toJson(request)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"));
     }
@@ -225,7 +229,7 @@ class AuthFlowIntegrationTest {
 
         MvcResult result = mockMvc.perform(post("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                .content(toJson(request)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value("SUCCESS"))
             .andExpect(jsonPath("$.data.accessToken").exists())
@@ -235,6 +239,25 @@ class AuthFlowIntegrationTest {
         JsonNode root = objectMapper.readTree(responseBody);
 
         return root.path("data").path("accessToken").asString();
+    }
+
+    private MemberSignUpRequest createSignUpRequest(String email, String password) {
+        return new MemberSignUpRequest(
+            email,
+            password,
+            "홍길동",
+            Gender.MALE,
+            "1999-01-01",
+            "010-1234-5678"
+        );
+    }
+
+    private String toJson(Object value) throws JsonProcessingException {
+        return objectMapper.writeValueAsString(value);
+    }
+
+    private String bearer(String accessToken) {
+        return "Bearer " + accessToken;
     }
 
     @TestConfiguration

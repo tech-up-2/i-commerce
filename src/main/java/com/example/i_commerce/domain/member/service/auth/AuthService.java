@@ -21,9 +21,7 @@ import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
 import com.example.i_commerce.global.exception.AppException;
-import com.example.i_commerce.global.security.jwt.BlacklistedTokenRepository;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
-import com.example.i_commerce.global.security.jwt.TokenHashUtil;
 import com.example.i_commerce.global.security.jwt.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import lombok.RequiredArgsConstructor;
@@ -42,8 +40,6 @@ public class AuthService {
     private final EmailHashEncoder emailHashEncoder;
     private final JwtTokenUtil jwtTokenUtil;
     private final SellerRepository sellerRepository;
-    private final BlacklistedTokenRepository blacklistedTokenRepository;
-    private final TokenHashUtil tokenHashUtil;
 
     //회원 가입
     @Transactional
