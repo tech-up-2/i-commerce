@@ -38,8 +38,8 @@ public class ProductQueryService implements ProductQueryFacade {
     private final ProductItemRepository productItemRepository;
     private final ProductAttributeRepository productAttributeRepository;
 
-    public ProductItem getProductItemById(Long productId) {
-        return productItemRepository.findById(productId)
+    public ProductItem getProductItemById(Long productItemId) {
+        return productItemRepository.findById(productItemId)
             .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_ITEM_NOT_FOUND));
     }
 
