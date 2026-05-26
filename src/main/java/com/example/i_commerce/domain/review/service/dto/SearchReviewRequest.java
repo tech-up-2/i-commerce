@@ -17,5 +17,6 @@ public class SearchReviewRequest {
 
     private String optionName;
     private String keyword;
+    private Integer starRate;
 
 }

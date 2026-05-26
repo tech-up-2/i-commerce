@@ -69,6 +69,7 @@ public class ReviewService {
         Slice<Review> reviewSlice = reviewRepo.searchReviews(
             request.getOptionName(),
             request.getKeyword(),
+            request.getStarRate(),
             pageable
         );
 
