@@ -11,10 +11,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,9 +51,9 @@ public class Admin extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private AdminStatus adminStatus = AdminStatus.ACTIVE;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "admin")
-    private List<AdminLoginHistory> loginHistories = new ArrayList<>();
+//    @Builder.Default
+//    @OneToMany(mappedBy = "admin")
+//    private List<AdminLoginHistory> loginHistories = new ArrayList<>();
 
     public void changeRole(AdminRole adminRole) {
         this.adminRole = adminRole;

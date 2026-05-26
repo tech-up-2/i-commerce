@@ -2,6 +2,8 @@ package com.example.i_commerce.domain.member.service.auth;
 
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.Seller;
+import com.example.i_commerce.domain.member.entity.enums.LoginFailReason;
+import com.example.i_commerce.domain.member.entity.enums.LoginResult;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
@@ -18,12 +20,14 @@ import com.example.i_commerce.domain.member.service.auth.dto.SignUpResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserInfoResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserUpdateRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
+import com.example.i_commerce.domain.member.service.loginHistory.LoginLogService;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
 import com.example.i_commerce.global.security.jwt.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,6 +44,7 @@ public class AuthService {
     private final EmailHashEncoder emailHashEncoder;
     private final JwtTokenUtil jwtTokenUtil;
     private final SellerRepository sellerRepository;
+    private final LoginLogService loginLogService;
 
     //회원 가입
     @Transactional
@@ -75,9 +80,16 @@ public class AuthService {
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest dto) {
         Member member = memberRepository.findByEmailHash(emailHashEncoder.encode(dto.email()))
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+            .orElseGet(() -> {
+                loginLogService.writeMemberLoginHistory(null,
+                    LoginResult.FAILURE, null, LocalDateTime.now(),
+                    LoginFailReason.INVALID_CREDENTIALS);
+                throw new AppException(MemberErrorCode.USER_NOT_FOUND);
+            });
 
         if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
+            loginLogService.writeMemberLoginHistory(member.getId(), LoginResult.FAILURE, null,
+                LocalDateTime.now(), LoginFailReason.PASSWORD_MISMATCH);
             throw new AppException(MemberErrorCode.INVALID_PASSWORD);
         }
 

@@ -35,9 +35,10 @@ public class UserLoginHistory extends BaseEntity {
 //    @JoinColumn(name = "user_id", nullable = false)
 //    private Member member;
 
-    @Column(nullable = false, name = "user_id")
+    @Column(nullable = true, name = "user_id")
     private Long memberId;
 
+    //로그인 성공여부
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LoginResult loginResult;
@@ -48,7 +49,8 @@ public class UserLoginHistory extends BaseEntity {
     @Column(nullable = true)
     private LocalDateTime loginAt;
 
+    //로그인 실패 사유
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LoginFailReason failReason;
 }

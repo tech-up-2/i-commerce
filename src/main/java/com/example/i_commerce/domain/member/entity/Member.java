@@ -84,9 +84,9 @@ public class Member extends BaseEntity {
 //    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private List<UserLoginHistory> loginHistories = new ArrayList<>();
 
-    @Builder.Default
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DeliveryAddress> deliveryAddresses = new ArrayList<>();
+//    @Builder.Default
+//    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<DeliveryAddress> deliveryAddresses = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
