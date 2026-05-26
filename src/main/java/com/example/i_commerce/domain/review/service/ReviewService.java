@@ -4,8 +4,10 @@ import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
+import com.example.i_commerce.domain.review.repository.StarRateCountProjection;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
+import com.example.i_commerce.domain.review.service.dto.ReviewStatsResponse;
 import com.example.i_commerce.domain.review.service.dto.SearchReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
@@ -83,6 +85,38 @@ public class ReviewService {
 
         return SliceResponse.of(reviewSlice, ReviewListResponse::from);
     }
+
+    @Transactional(readOnly = true)
+    public ReviewStatsResponse getProductReviewStats(Long productId) {
+
+        List<StarRateCountProjection> projections = reviewRepo.getStarRateStats(productId);
+
+        long totalReviewCount = 0;
+        long totalScore = 0;
+        List<ReviewStatsResponse.StarRateDetail> starDetails = new ArrayList<>();
+
+        for (StarRateCountProjection proj : projections) {
+            long count = proj.getCount();
+            int star = proj.getStarRate();
+
+            totalReviewCount += count;
+            totalScore += (count * star);
+
+            starDetails.add(new ReviewStatsResponse.StarRateDetail(star, count));
+        }
+
+        double averageStarRate = 0.0;
+        if (totalReviewCount > 0) {
+            averageStarRate = Math.round((double) totalScore / totalReviewCount * 10) / 10.0;
+        }
+
+        return ReviewStatsResponse.builder()
+            .starDetails(starDetails)
+            .averageStarRate(averageStarRate)
+            .totalReviewCount(totalReviewCount)
+            .build();
+    }
+
 
     @Transactional
     public ReviewResponse viewDetailReview(Long reviewId) {

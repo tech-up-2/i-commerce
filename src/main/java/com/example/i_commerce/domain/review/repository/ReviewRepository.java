@@ -66,5 +66,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         Pageable pageable
     );
 
+    @Query("SELECT r.starRate AS starRate, COUNT(r) AS count " +
+        "FROM Review r " +
+        "WHERE r.productId = :productId " +
+        "GROUP BY r.starRate")
+    List<StarRateCountProjection> getStarRateStats(@Param("productId") Long productId);
+
 }
 

@@ -6,6 +6,7 @@ import com.example.i_commerce.domain.review.service.ReviewService;
 import com.example.i_commerce.domain.review.service.dto.CreateReportRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
+import com.example.i_commerce.domain.review.service.dto.ReviewStatsResponse;
 import com.example.i_commerce.domain.review.service.dto.SearchReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
@@ -15,7 +16,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -71,6 +71,15 @@ public class ReviewController {
         @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         SliceResponse<ReviewResponse> response = reviewService.searchReviews(request, pageable);
+        return ApiResponse.success(response);
+    }
+
+    @Operation(summary = "상품 별점 통계 조회", description = "특정 상품의 평균 별점 및 1~5점 별점별 리뷰 개수를 조회합니다.")
+    @GetMapping("/products/{productId}/stats")
+    public ApiResponse<ReviewStatsResponse> getReviewStats(
+        @PathVariable("productId") Long productId
+    ) {
+        ReviewStatsResponse response = reviewService.getProductReviewStats(productId);
         return ApiResponse.success(response);
     }
 
