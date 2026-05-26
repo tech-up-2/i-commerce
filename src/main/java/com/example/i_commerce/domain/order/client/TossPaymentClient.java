@@ -75,7 +75,7 @@ public class TossPaymentClient {
     }
 
     public Map<String, Object> checkPaymentStatus(String paymentKey) {
-        String url = BASE_URL + "/payments/" + paymentKey;
+        String url = BASE_URL + "/" + paymentKey;
 
         HttpHeaders headers = getCommonHeaders();
         HttpEntity<Void> entity = new HttpEntity<>(headers);
