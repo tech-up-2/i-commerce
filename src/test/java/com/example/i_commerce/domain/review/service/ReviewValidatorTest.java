@@ -29,7 +29,7 @@ class ReviewValidatorTest {
     @DisplayName("리뷰 내용에 금칙어가 포함되어 있지 않으면 정상적으로 통과한다")
     void validateContent_success() {
         //given
-        given(reviewForbiddenWordRepository.findAllWords())
+        given(reviewForbiddenWordRepository.findAllForbiddenWords())
             .willReturn(List.of("바보", "멍청이"));
 
         String cleanContent = "이 상품 정말 품질도 좋고 배송도 빠르네요! 추천합니다.";
@@ -41,7 +41,7 @@ class ReviewValidatorTest {
     @DisplayName("리뷰 내용에 금칙어가 포함되어 있으면 AppException(FORBIDDEN_WORD_INCLUDED)이 발생한다")
     void validateContent_throwsException_whenForbiddenWordIncluded() {
         // given
-        given(reviewForbiddenWordRepository.findAllWords())
+        given(reviewForbiddenWordRepository.findAllForbiddenWords())
             .willReturn(List.of("바보", "광고"));
 
         String badContent = "이 제품 완전 바보 같아요. 사지 마세요.";

@@ -18,7 +18,7 @@ public class ReviewValidator {
             return;
         }
 
-        List<String> forbiddenWords = reviewForbiddenWordRepository.findAllWords();
+        List<String> forbiddenWords = reviewForbiddenWordRepository.findAllForbiddenWords();
 
         for (String word : forbiddenWords) {
             if (content.contains(word)) {
