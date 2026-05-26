@@ -80,8 +80,8 @@ public class ProductServiceTest {
             Map<Long, Attribute> attributeMap = Map.of(1L, colorAttribute());
 
             given(store.getSellerId()).willReturn(sellerId);
-            given(storeService.findStoreById(request.storeId()))
-                .willReturn(store);
+            given(storeService.isStoreManager(sellerId, store.getSellerId()))
+                .willReturn(true);
             given(categoryRepository.findById(request.categoryId()))
                 .willReturn(Optional.of(category));
             given(attributeValidator.validateAndFetchAttributes(request))
@@ -122,8 +122,8 @@ public class ProductServiceTest {
             Map<Long, Attribute> attributeMap = Map.of(1L, colorAttribute());
 
             given(store.getSellerId()).willReturn(sellerId);
-            given(storeService.findStoreById(request.storeId()))
-                .willReturn(store);
+            given(storeService.isStoreManager(sellerId, store.getSellerId()))
+                .willReturn(true);
             given(categoryRepository.findById(request.categoryId()))
                 .willReturn(Optional.of(category));
             given(attributeValidator.validateAndFetchAttributes(request))
@@ -171,8 +171,8 @@ public class ProductServiceTest {
             );
 
             given(store.getSellerId()).willReturn(sellerId);
-            given(storeService.findStoreById(request.storeId()))
-                .willReturn(store);
+            given(storeService.isStoreManager(sellerId, store.getSellerId()))
+                .willReturn(true);
             given(categoryRepository.findById(request.categoryId()))
                 .willReturn(Optional.of(category));
             given(attributeValidator.validateAndFetchAttributes(request))

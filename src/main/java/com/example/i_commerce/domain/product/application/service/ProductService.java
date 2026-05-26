@@ -46,8 +46,7 @@ public class ProductService {
     @Transactional
     public CreatedProductResponse createProduct(Long userId, CreateProductRequest request) {
 
-        Long sellerId = storeService.findStoreById(request.storeId()).getSellerId();
-        if(!Objects.equals(userId, sellerId)) {
+        if(!storeService.isStoreManager(userId, request.storeId())) {
             throw new AppException(ProductErrorCode.PRODUCT_ACCESS_DENIED);
         }
 

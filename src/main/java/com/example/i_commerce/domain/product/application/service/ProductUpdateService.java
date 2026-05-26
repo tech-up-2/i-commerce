@@ -9,7 +9,6 @@ import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.global.exception.AppException;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +29,9 @@ public class ProductUpdateService {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_NOT_FOUND));
 
-        validateProductOwnership(product.getStoreId(), userId);
+        if(!storeService.isStoreManager(userId, product.getStoreId())) {
+            throw new AppException(ProductErrorCode.PRODUCT_ACCESS_DENIED);
+        }
 
         product.updateBasicInfo(request.name(),request.description());
     }
@@ -45,17 +46,12 @@ public class ProductUpdateService {
             : productRepository.findById(productId)
         ).orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_NOT_FOUND));
 
-        validateProductOwnership(product.getStoreId(), userId);
+        if(!storeService.isStoreManager(userId, product.getStoreId())) {
+            throw new AppException(ProductErrorCode.PRODUCT_ACCESS_DENIED);
+        }
 
         product.changeStatus(request.status());
         return UpdateProductStatusResponse.from(product);
     }
 
-    private void validateProductOwnership(Long storeId, Long userId) {
-        Long sellerId = storeService.findStoreById(storeId).getSellerId();
-
-        if(!Objects.equals(userId, sellerId)) {
-            throw new AppException(ProductErrorCode.PRODUCT_ACCESS_DENIED);
-        }
-    }
 }

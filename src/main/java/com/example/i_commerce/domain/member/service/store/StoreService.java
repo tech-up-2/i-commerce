@@ -27,12 +27,6 @@ public class StoreService {
     private final SellerRepository sellerRepository;
     private final StoreAddressRepository storeAddressRepository;
 
-    @Transactional(readOnly = true)
-    public Store findStoreById(Long storeId) {
-        return storeRepository.findById(storeId)
-            .orElseThrow(() -> new AppException(MemberErrorCode.STORE_NOT_FOUND));
-    }
-
     //상점 개설
     @Transactional
     public StoreResponse createStore(Long sellerId, StoreRequest dto) {
@@ -218,5 +212,14 @@ public class StoreService {
                 address.changeDefault(false);
             }
         }
+    }
+
+    //현재 로그인된 유저가 store 관리자인지 검증
+    @Transactional(readOnly = true)
+    public boolean isStoreManager(Long userId, Long storeId) {
+        Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
+            .orElseThrow(() -> new AppException(MemberErrorCode.STORE_NOT_FOUND));
+
+        return store.getSellerId().equals(userId);
     }
 }
