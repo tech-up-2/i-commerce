@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.product.application.service;
 
 
+import com.example.i_commerce.domain.member.service.store.StoreService;
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ItemAttributeRequest;
 import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionRequest;
@@ -22,6 +23,7 @@ import com.example.i_commerce.domain.product.application.validator.ProductOption
 import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,8 @@ public class ProductService {
     private static final int FIRST_OPTION_INDEX = 0;
     private static final int SECOND_OPTION_INDEX = 1;
 
+    private final StoreService storeService;
+
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
@@ -40,7 +44,12 @@ public class ProductService {
 
 
     @Transactional
-    public CreatedProductResponse createProduct(Long sellerId, CreateProductRequest request) {
+    public CreatedProductResponse createProduct(Long userId, CreateProductRequest request) {
+
+        Long sellerId = storeService.findStoreById(request.storeId()).getSellerId();
+        if(!Objects.equals(userId, sellerId)) {
+            throw new AppException(ProductErrorCode.PRODUCT_ACCESS_DENIED);
+        }
 
         optionValidator.validateOptions(request);
         Map<Long, Attribute> attributeMap = attributeValidator.validateAndFetchAttributes(request);

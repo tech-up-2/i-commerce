@@ -27,6 +27,12 @@ public class StoreService {
     private final SellerRepository sellerRepository;
     private final StoreAddressRepository storeAddressRepository;
 
+    @Transactional(readOnly = true)
+    public Store findStoreById(Long storeId) {
+        return storeRepository.findById(storeId)
+            .orElseThrow(() -> new AppException(MemberErrorCode.STORE_NOT_FOUND));
+    }
+
     //상점 개설
     @Transactional
     public StoreResponse createStore(Long sellerId, StoreRequest dto) {
