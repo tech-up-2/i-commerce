@@ -40,6 +40,8 @@ class ReviewLikeRepositoryTest {
             .content("정말 좋아유")
             .starRate(5)
             .likeCount(2L)
+            .productId(100L)
+            .displayOptionName("블랙")
             .bestStatus(ReviewIsBestStatus.NORMAL)
             .isExcluded(false)
             .build();

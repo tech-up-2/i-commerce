@@ -48,6 +48,8 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private Long productId;
 
+    private String displayOptionName;
+
     @Column(nullable = false)
     private Long userId;
 

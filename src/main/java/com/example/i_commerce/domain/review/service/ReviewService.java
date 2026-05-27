@@ -37,17 +37,17 @@ public class ReviewService {
 
     @Transactional
     public Long createReview(Long orderProductId, Long userId, CreateReviewRequest dto, List<MultipartFile> imageFiles) {
-        validateStarRating(dto.getStarRate());
 
-        if (!reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED)) {
-            throw new AppException(ReviewErrorCode.NOT_ACTUAL_BUYER);
-        }
+        validateStarRating(dto.getStarRate());
+        reviewForbiddenWordValidator.validateContent(dto.getContent());
 
         if (reviewRepo.existsByOrderProductIdAndUserId(orderProductId, userId)) {
             throw new AppException(ReviewErrorCode.ALREADY_REVIEWED);
         }
 
-        reviewForbiddenWordValidator.validateContent(dto.getContent());
+        if (!reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED)) {
+            throw new AppException(ReviewErrorCode.NOT_ACTUAL_BUYER);
+        }
 
         Review review = Review.from(orderProductId, userId, dto);
 
@@ -81,7 +81,7 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public SliceResponse<ReviewListResponse> viewReviewList(Long productId, Pageable pageable) {
 
-        Slice<Review> reviewSlice = reviewRepo.findSliceByProductId(productId, pageable);
+        Slice<Review> reviewSlice = reviewRepo.findByProductId(productId, pageable);
 
         return SliceResponse.of(reviewSlice, ReviewListResponse::from);
     }
