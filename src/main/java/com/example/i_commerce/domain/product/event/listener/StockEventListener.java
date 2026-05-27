@@ -17,7 +17,11 @@ public class StockEventListener {
     private final StockService stockService;
 
     @EventListener
-    public void handleOrder(OrderCompletedEvent event) {
+    public void handleOrderCompleted(OrderCompletedEvent event) {
+        if(event.orderItems().isEmpty()) {
+            return;
+        }
+
         List<StockDeductCommand> commands = event.orderItems().stream()
             .map(item -> StockDeductCommand.builder()
                 .productItemId(item.productItemId())
