@@ -67,6 +67,9 @@ dependencies {
     //h2
     testImplementation 'com.h2database:h2'
 
+    //스프링 부트 기본 로컬 캐시
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+
 }
 
 tasks.named('test') {

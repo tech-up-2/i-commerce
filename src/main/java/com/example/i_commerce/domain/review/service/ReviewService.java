@@ -3,12 +3,16 @@ package com.example.i_commerce.domain.review.service;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
-import com.example.i_commerce.domain.review.repo.ReviewRepository;
+import com.example.i_commerce.domain.review.repository.ReviewRepository;
+import com.example.i_commerce.domain.review.repository.StarRateCountProjection;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
+import com.example.i_commerce.domain.review.service.dto.ReviewStatsResponse;
+import com.example.i_commerce.domain.review.service.dto.SearchReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
-import com.example.i_commerce.domain.review.validator.ReviewValidator;
+import com.example.i_commerce.domain.review.validator.ReviewForbiddenWordValidator;
+import com.example.i_commerce.global.common.response.SliceResponse;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
 import com.example.i_commerce.global.s3.service.S3ImageService;
@@ -16,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ReviewService {
 
     private final ReviewRepository reviewRepo;
-    private final ReviewValidator reviewValidator;
+    private final ReviewForbiddenWordValidator reviewForbiddenWordValidator;
     private final S3ImageService s3ImageService;
 
     @Transactional
@@ -41,7 +47,7 @@ public class ReviewService {
             throw new AppException(ReviewErrorCode.ALREADY_REVIEWED);
         }
 
-        reviewValidator.validateContent(dto.getContent());
+        reviewForbiddenWordValidator.validateContent(dto.getContent());
 
         Review review = Review.from(orderProductId, userId, dto);
 
@@ -60,17 +66,66 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReviewListResponse> viewReviewList(Long productId) {
-        List<Review> reviews = reviewRepo.findAllByProductId(productId);
+    public SliceResponse<ReviewResponse> searchReviews(SearchReviewRequest request, Pageable pageable) {
 
-        List<ReviewListResponse> responseDtoLists = new ArrayList<>();
+        Slice<Review> reviewSlice = reviewRepo.searchReviews(
+            request.getOptionName(),
+            request.getKeyword(),
+            request.getStarRate(),
+            pageable
+        );
 
-        for (Review review : reviews) {
-            ReviewListResponse responses = ReviewListResponse.from(review);
-            responseDtoLists.add(responses);
-        }
-        return responseDtoLists;
+        return SliceResponse.of(reviewSlice, ReviewResponse::from);
     }
+
+    @Transactional(readOnly = true)
+    public SliceResponse<ReviewListResponse> viewReviewList(Long productId, Pageable pageable) {
+
+        Slice<Review> reviewSlice = reviewRepo.findSliceByProductId(productId, pageable);
+
+        return SliceResponse.of(reviewSlice, ReviewListResponse::from);
+    }
+
+    @Transactional(readOnly = true)
+    public ReviewStatsResponse getProductReviewStats(Long productId) {
+
+        List<StarRateCountProjection> projections = reviewRepo.getStarRateStats(productId);
+
+        long totalReviewCount = 0;
+        long totalScore = 0;
+
+        java.util.Map<Integer, Long> starCountMap = new java.util.HashMap<>();
+        for (int i = 1; i <= 5; i++) {
+            starCountMap.put(i, 0L);
+        }
+
+        for (StarRateCountProjection proj : projections) {
+            long count = proj.getCount();
+            int star = proj.getStarRate();
+
+            totalReviewCount += count;
+            totalScore += (count * star);
+
+            starCountMap.put(star, count);
+        }
+
+        List<ReviewStatsResponse.StarRateDetail> starDetails = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            starDetails.add(new ReviewStatsResponse.StarRateDetail(i, starCountMap.get(i)));
+        }
+
+        double averageStarRate = 0.0;
+        if (totalReviewCount > 0) {
+            averageStarRate = Math.round((double) totalScore / totalReviewCount * 10) / 10.0;
+        }
+
+        return ReviewStatsResponse.builder()
+            .starDetails(starDetails)
+            .averageStarRate(averageStarRate)
+            .totalReviewCount(totalReviewCount)
+            .build();
+    }
+
 
     @Transactional
     public ReviewResponse viewDetailReview(Long reviewId) {
@@ -87,7 +142,7 @@ public class ReviewService {
         Review review = getReviewOrThrow(reviewId);
 
         validateAuthor(review, userId);
-        reviewValidator.validateContent(dto.getContent());
+        reviewForbiddenWordValidator.validateContent(dto.getContent());
 
         review.update(dto.getContent(), dto.getStarRate(), dto.getImageUrls());
 

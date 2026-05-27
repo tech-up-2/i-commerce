@@ -12,9 +12,9 @@ import static org.mockito.Mockito.verify;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
-import com.example.i_commerce.domain.review.repo.ReviewRepository;
+import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
-import com.example.i_commerce.domain.review.validator.ReviewValidator;
+import com.example.i_commerce.domain.review.validator.ReviewForbiddenWordValidator;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.s3.service.S3ImageService;
 import java.util.List;
@@ -36,7 +36,7 @@ public class ReviewServiceTest {
     private ReviewService reviewService;
 
     @Mock
-    private ReviewValidator reviewValidator;
+    private ReviewForbiddenWordValidator reviewForbiddenWordValidator;
 
     @Mock
     private S3ImageService s3ImageService;

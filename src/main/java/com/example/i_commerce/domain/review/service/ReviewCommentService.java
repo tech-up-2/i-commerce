@@ -3,16 +3,14 @@ package com.example.i_commerce.domain.review.service;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewComment;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
-import com.example.i_commerce.domain.review.repo.ReviewCommentRepository;
-import com.example.i_commerce.domain.review.repo.ReviewRepository;
+import com.example.i_commerce.domain.review.repository.ReviewCommentRepository;
+import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.service.dto.CreateCommentRequest;
-import com.example.i_commerce.domain.review.service.dto.ReviewCommentManagementResponse;
 import com.example.i_commerce.domain.review.service.dto.SellerReviewManagementResponse;
 import com.example.i_commerce.domain.review.service.dto.UpdateCommentRequest;
-import com.example.i_commerce.domain.review.validator.ReviewValidator;
+import com.example.i_commerce.domain.review.validator.ReviewForbiddenWordValidator;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +25,7 @@ public class ReviewCommentService {
 
     private final ReviewRepository reviewRepo;
     private final ReviewCommentRepository reviewCommentRepo;
-    private final ReviewValidator reviewValidator;
+    private final ReviewForbiddenWordValidator reviewForbiddenWordValidator;
 
     @Transactional
     public void createComment(Long reviewId, Long sellerId, CreateCommentRequest request) {
@@ -44,7 +42,7 @@ public class ReviewCommentService {
         }
 
 
-        reviewValidator.validateContent(request.getContent());
+        reviewForbiddenWordValidator.validateContent(request.getContent());
         ReviewComment comment = ReviewComment.of(review, sellerId, request);
 
         reviewCommentRepo.save(comment);
@@ -61,7 +59,7 @@ public class ReviewCommentService {
             throw new AppException(CommonErrorCode.INVALID_PERMISSION);
         }
 
-        reviewValidator.validateContent(request.getContent());
+        reviewForbiddenWordValidator.validateContent(request.getContent());
         comment.update(request.getContent());
 
         return commentId;
