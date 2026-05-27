@@ -90,12 +90,13 @@ public class PaymentRecoveryScheduler {
             stockFacade.rollbackStocks(order.getId());
         } else if("DONE".equals(status)){
             PaymentCancelRequest dto = new PaymentCancelRequest(
-                    payment.getId(),
+                    payment.getTossOrderId(),
                     payment.getCancelAmount(),
                     payment.getPgTid(),
                     payment.getCancelReason()
             );
             try {
+                // TODO: 트랜잭션 분리
                 tossPaymentClient.requestCanceled(dto);
                 payment.changePayStatus(PaymentStatus.CANCELLED);
                 order.changeOrderStatus(OrderStatus.CANCELLED);

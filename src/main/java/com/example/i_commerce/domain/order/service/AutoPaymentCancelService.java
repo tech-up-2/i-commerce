@@ -30,7 +30,7 @@ public class AutoPaymentCancelService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void autoCancelPayment(PaymentCancelRequest dto) {
-        Payment payment = paymentRepository.findById(dto.paymentId())
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(dto.tossOrderId())
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         Order order = payment.getOrder();
 
