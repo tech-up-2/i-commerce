@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.product.application.service;
 
 
+import com.example.i_commerce.domain.member.service.store.StoreService;
 import com.example.i_commerce.domain.product.controller.request.UpdateProductRequest;
 import com.example.i_commerce.domain.product.controller.request.UpdateProductStatusRequest;
 import com.example.i_commerce.domain.product.controller.response.UpdateProductStatusResponse;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ProductUpdateService {
 
+    private final StoreService storeService;
     private final ProductRepository productRepository;
 
     public void updateBasicInfo(
@@ -26,6 +28,10 @@ public class ProductUpdateService {
     ) {
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_NOT_FOUND));
+
+        if(!storeService.isStoreManager(userId, product.getStoreId())) {
+            throw new AppException(ProductErrorCode.PRODUCT_ACCESS_DENIED);
+        }
 
         product.updateBasicInfo(request.name(),request.description());
     }
@@ -40,7 +46,12 @@ public class ProductUpdateService {
             : productRepository.findById(productId)
         ).orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_NOT_FOUND));
 
+        if(!storeService.isStoreManager(userId, product.getStoreId())) {
+            throw new AppException(ProductErrorCode.PRODUCT_ACCESS_DENIED);
+        }
+
         product.changeStatus(request.status());
         return UpdateProductStatusResponse.from(product);
     }
+
 }

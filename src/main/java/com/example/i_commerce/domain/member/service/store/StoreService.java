@@ -213,4 +213,13 @@ public class StoreService {
             }
         }
     }
+
+    //현재 로그인된 유저가 store 관리자인지 검증
+    @Transactional(readOnly = true)
+    public boolean isStoreManager(Long userId, Long storeId) {
+        Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
+            .orElseThrow(() -> new AppException(MemberErrorCode.STORE_NOT_FOUND));
+
+        return store.getSellerId().equals(userId);
+    }
 }
