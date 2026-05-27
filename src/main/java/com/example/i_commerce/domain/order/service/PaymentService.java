@@ -12,6 +12,8 @@ import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
+import com.example.i_commerce.domain.order.service.dto.PaymentCancelPreparedDto;
+import com.example.i_commerce.domain.order.service.dto.PaymentConfirmPrepareDto;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentDetailResponse;
@@ -54,7 +56,7 @@ public class PaymentService {
         }
 
         List<Payment> readyPayments = order.getPayments().stream()
-                .filter(payment -> payment.getPayStatus() == PaymentStatus.READY)
+                .filter(payment -> Objects.equals(payment.getPayStatus(), PaymentStatus.READY))
                 .sorted(Comparator.comparing(Payment::getId).reversed())
                 .toList();
 
@@ -84,100 +86,73 @@ public class PaymentService {
         return PaymentDetailResponse.of(payment, order, firstProductName);
     }
 
-    @Transactional
-    public void confirmPayment(PaymentConfirmRequest dto) {
+    //-----------------------------------
+    // 결제 - 에러 핸들링
+    //-----------------------------------
+
+    @Transactional(readOnly = true)
+    public PaymentConfirmPrepareDto validateAndPrepareConfirm(PaymentConfirmRequest dto) {
         Payment payment = paymentRepository.findByTossOrderIdWithOrder(dto.tossOrderId())
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
-        if(payment.getPayStatus() != PaymentStatus.READY) {
+        if (payment.getPayStatus() != PaymentStatus.READY) {
             throw new AppException(PaymentErrorCode.INVALID_PAYMENT_STATUS);
         }
-
         if (!payment.getAmount().equals(dto.amount())) {
             throw new AppException(PaymentErrorCode.INVALID_PAYMENT_AMOUNT);
         }
+
         Order order = payment.getOrder();
-        List<StockDeductCommand> stockDeductCommands = order.getOrderProducts().stream()
-                .map(orderProduct ->
-                        new StockDeductCommand(
-                                orderProduct.getProductSkuId(),
-                                orderProduct.getCount(),
-                                order.getId()
-                        ))
+        List<StockDeductCommand> commands = order.getOrderProducts().stream()
+                .map(op -> new StockDeductCommand(op.getProductSkuId(), op.getCount(), order.getId()))
                 .toList();
 
-        try {
-            Map<String, Object> response = tossPaymentClient.requestConfirm(dto);
-            String pgTid = (String) response.get("paymentKey");
-            PaymentStatus previousStatus = payment.getPayStatus();
-
-            try{
-                stockFacade.deductStock(stockDeductCommands);
-
-                payment.completePayment(pgTid);
-                payment.getOrder().changeOrderStatus(OrderStatus.CONFIRMED);
-
-                publisher.publishEvent(new PaymentApprovedEvent(payment.getOrder().getId()));
-
-                publisher.publishEvent(new PaymentStatusChangedEvent(
-                        payment,
-                        previousStatus,
-                        "결제 완료",
-                        PaymentStatus.PAID,
-                        pgTid,
-                        response.toString()));
-            } catch (AppException e) {
-                paymentCancelService.autoCancelPayment(new PaymentCancelRequest(
-                        payment.getId(),
-                        payment.getAmount(),
-                        pgTid,
-                        "재고 부족으로 인한 자동 취소"
-                ));
-
-                publisher.publishEvent(new PaymentStatusChangedEvent(
-                        payment,
-                        previousStatus,
-                        "결제 완료",
-                        PaymentStatus.FAILED,
-                        pgTid,
-                        response.toString()));
-
-                throw e;
-            }
-        } catch (AppException e) {
-
-            if(e.getErrorCode() == PaymentErrorCode.PAYMENT_NOT_FOUND ||
-                    e.getErrorCode() == PaymentErrorCode.PAYMENT_CONFIRM_FAILED) {
-                payment.changePayStatus(PaymentStatus.FAILED);
-                throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
-            }
-
-            if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
-                try {
-                    stockFacade.deductStock(stockDeductCommands);
-                } catch (AppException ex) {
-                    log.error("[비상] 타임아웃 대피 중 재고 부족 발생! 돈이 나갔더라도 물건을 줄 수 없으므로 강제 환불 처리합니다.");
-
-                    try {
-                        Map<String, Object> response = tossPaymentClient.requestCanceled(new PaymentCancelRequest(payment.getId(), order.getTotalPayAmount(), dto.paymentKey(), "타임아웃 대피 중 재고 부족으로 인한 망취소"));
-                    } catch (Exception ignored) {
-                    }
-
-                    payment.changePayStatus(PaymentStatus.FAILED);
-                    order.changeOrderStatus(OrderStatus.CANCELLED);
-                    throw ex;
-                }
-                payment.changePayStatus(PaymentStatus.UNKNOWN_HOLD);
-                order.changeOrderStatus(OrderStatus.UNKNOWN_HOLD);
-                throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
-            }
-        }
+        return PaymentConfirmPrepareDto.of(payment, commands);
     }
 
     @Transactional
-    public void cancelPayment(PaymentCancelRequest dto) {
+    public void completePaymentSuccess(String tossOrderId, String pgTid, PaymentStatus previousStatus, String responseStr) {
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId).orElseThrow();
+        payment.completePayment(pgTid);
+        payment.getOrder().changeOrderStatus(OrderStatus.CONFIRMED);
 
-        Payment payment = paymentRepository.findById(dto.paymentId())
+        publisher.publishEvent(new PaymentApprovedEvent(payment.getOrder().getId()));
+        publisher.publishEvent(new PaymentStatusChangedEvent(payment, previousStatus, "결제 완료", PaymentStatus.PAID, pgTid, responseStr));
+    }
+
+    @Transactional
+    public void completePaymentCancel(Long paymentId, PaymentStatus previousStatus, String pgTid, String responseStr) {
+        Payment payment = paymentRepository.findById(paymentId).orElseThrow();
+        publisher.publishEvent(new PaymentStatusChangedEvent(payment, previousStatus, "재고 부족으로 인한 자동 취소", PaymentStatus.FAILED, pgTid, responseStr));
+    }
+
+    @Transactional
+    public void changeStatusToFailed(Long paymentId) {
+        Payment payment = paymentRepository.findById(paymentId).orElseThrow();
+        payment.changePayStatus(PaymentStatus.FAILED);
+    }
+
+    @Transactional
+    public void handleTimeoutSuccess(String tossOrderId) {
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId).orElseThrow();
+        payment.changePayStatus(PaymentStatus.UNKNOWN_HOLD);
+        payment.getOrder().changeOrderStatus(OrderStatus.UNKNOWN_HOLD);
+    }
+
+    @Transactional
+    public void handleTimeoutFailed(String tossOrderId) {
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId).orElseThrow();
+        payment.changePayStatus(PaymentStatus.FAILED);
+        payment.getOrder().changeOrderStatus(OrderStatus.CANCELLED);
+    }
+
+    //-----------------------------------
+    // 결제 취소 - 에러 핸들링
+    //-----------------------------------
+
+    @Transactional(readOnly = true)
+    public PaymentCancelPreparedDto validateAndPrepareCancel(PaymentCancelRequest dto) {
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(dto.tossOrderId())
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
         if(!Objects.equals(dto.paymentKey(), payment.getPgTid())) {
@@ -200,41 +175,36 @@ public class PaymentService {
             }
         });
 
+        //TODO: 낙관적 락 개선
         publisher.publishEvent(new DeliveryCancelRequestEvent(payment.getOrder().getId()));
 
+        return null;
+    }
 
-        Map<String, Object> response;
-        try {
-            response = tossPaymentClient.requestCanceled(dto);
+    @Transactional
+    public void completeCancelSuccess(PaymentCancelRequest dto, String pgTid, String responseStr) {
 
-        } catch (AppException e) {
-            if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
-                log.error("[취소 비상] 결제 취소 중 타임아웃 발생. 토스 장부 확인 불가.");
-
-                payment.prepareCancellation(dto.cancelAmount(), dto.cancelReason());
-                order.changeOrderStatus(OrderStatus.CANCEL_REQUESTED);
-                order.getDeliveries().forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.DELIVERY_HOLD));
-
-                throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
-            }
-            throw e;
-        }
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(dto.tossOrderId()).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Order order = payment.getOrder();
 
         PaymentStatus previousStatus = payment.getPayStatus();
-        String pgTid = (String) response.get("paymentKey");
 
         payment.cancelPayment(dto.cancelAmount());
         order.changeOrderStatus(OrderStatus.CANCELLED);
 
-        stockFacade.rollbackStocks(order.getId());
-
         publisher.publishEvent(new PaymentStatusChangedEvent(
-                payment,
-                previousStatus,
-                dto.cancelReason(),
-                PaymentStatus.CANCELLED,
-                pgTid,
-                response.toString()));
+                payment, previousStatus, dto.cancelReason(),
+                PaymentStatus.CANCELLED, pgTid, responseStr ));
+    }
+
+    @Transactional
+    public void handleCancelTimeout(String tossOrderId, int cancelAmount, String cancelReason) {
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Order order = payment.getOrder();
+
+        payment.prepareCancellation(cancelAmount, cancelReason);
+        order.changeOrderStatus(OrderStatus.CANCEL_REQUESTED);
+        order.getDeliveries().forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.DELIVERY_HOLD));
     }
 
 }
