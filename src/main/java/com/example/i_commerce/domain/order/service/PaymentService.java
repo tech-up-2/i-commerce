@@ -38,10 +38,6 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final ApplicationEventPublisher publisher;
-    private final StockFacade stockFacade;
-    private final TossPaymentClient tossPaymentClient;
-    private final AutoPaymentCancelService paymentCancelService;
-
 
     @Transactional
     public PaymentDetailResponse getPaymentDetails(Long userId, Long orderId) {
@@ -178,7 +174,7 @@ public class PaymentService {
         //TODO: 낙관적 락 개선
         publisher.publishEvent(new DeliveryCancelRequestEvent(payment.getOrder().getId()));
 
-        return null;
+        return new PaymentCancelPreparedDto(dto.tossOrderId(), order.getId());
     }
 
     @Transactional

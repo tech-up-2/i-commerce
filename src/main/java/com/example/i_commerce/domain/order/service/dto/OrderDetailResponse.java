@@ -61,8 +61,8 @@ public record OrderDetailResponse(
         @Builder
         public record PaymentInfo(
 
-                @Schema(description = "결제 고유 ID", example = "1")
-                Long paymentId,
+                @Schema(description = "토스 order ID", example = "1")
+                String tossOrderId,
 
                 @Schema(description = "총 결제 금액", example = "139600")
                 Integer totalAmount,
@@ -82,7 +82,7 @@ public record OrderDetailResponse(
         ) {
                 public static PaymentInfo of(Payment payment) {
                         return PaymentInfo.builder()
-                                .paymentId(payment.getId())
+                                .tossOrderId(payment.getTossOrderId())
                                 .totalAmount(payment.getAmount())
                                 .paymentKey(payment.getPgTid())
                                 .cancelableAmount(payment.getCancelableAmount())
