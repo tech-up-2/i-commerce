@@ -45,8 +45,8 @@ public class ProductQueryService implements ProductQueryFacade {
             .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_ITEM_NOT_FOUND));
     }
 
-    public List<Long> getProductIdsByStoreId(Long storeId) {
-        return productRepository.findAllIdsByStoreId(storeId);
+    public List<Long> getProductIdsByStoreIds(List<Long> storeIds) {
+        return productRepository.findAllIdsByStoreIds(storeIds);
     }
 
     @Override
