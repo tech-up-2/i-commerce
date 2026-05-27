@@ -12,9 +12,9 @@ import org.springframework.stereotype.Repository;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("""
-      SELECT p.id FROM Product p WHERE p.storeId = :storeId
+      SELECT p.id FROM Product p WHERE p.storeId IN :storeIds
     """)
-    List<Long> findAllIdsByStoreId(@Param("storeId")Long storeId);
+    List<Long> findAllIdsByStoreIds(@Param("storeId") List<Long> storeIds);
 
     @Query("""
       SELECT p FROM Product p

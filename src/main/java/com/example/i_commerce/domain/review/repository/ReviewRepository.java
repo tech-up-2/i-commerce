@@ -19,28 +19,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     List<Review> findAllByOrderProductIdAndDeletedAtIsNull(Long orderProductId);
 
-    @Query("SELECT COUNT(r) > 0 FROM Review r " +
-        "JOIN OrderProduct op ON r.orderProductId = op.id " +
-        "JOIN ProductItem pi ON op.productSkuId = pi.id " +
-        "JOIN pi.product p " +
-        "JOIN Store s ON p.storeId = s.id " +
-        "WHERE r.id = :reviewId AND s.sellerId = :sellerId")
-    boolean existsByIdAndSellerId(@Param("reviewId") Long reviewId, @Param("sellerId") Long sellerId);
+    @Query("SELECT p.storeId FROM Product p WHERE p.id = :productId")
+    Long findStoreIdByProductId(@Param("productId") Long productId);
 
-    @Query("SELECT r FROM Review r " +
-        "JOIN OrderProduct op ON r.orderProductId = op.id " +
-        "JOIN ProductItem pi ON op.productSkuId = pi.id " +
-        "WHERE pi.product.id = :productId")
-    Slice<Review> findSliceByProductId(@Param("productId") Long productId, Pageable pageable);
-
-    @Query("SELECT r FROM Review r " +
-        "JOIN OrderProduct op ON r.orderProductId = op.id " +
-        "JOIN ProductItem pi ON op.productSkuId = pi.id " +
-        "JOIN pi.product p " +
-        "JOIN Store s ON p.storeId = s.id " +
-        "WHERE s.sellerId = :sellerId " +
-        "ORDER BY r.createdAt DESC")
-    List<SellerReviewManagementResponse> findAllBySellerId(@Param("sellerId") Long sellerId);
+    Slice<Review> findByProductId(@Param("productId") Long productId, Pageable pageable);
 
     @Query("SELECT COUNT(op) > 0 FROM OrderProduct op " +
         "JOIN op.order o " +
@@ -54,9 +36,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     );
 
     @Query("SELECT r FROM Review r " +
-        "JOIN OrderProduct op ON r.orderProductId = op.id " +
-        "JOIN ProductItem pi ON op.productSkuId = pi.id " +
-        "WHERE (:displayOptionName IS NULL OR pi.displayOptionName = :displayOptionName) " +
+        "WHERE (:displayOptionName IS NULL OR r.displayOptionName = :displayOptionName) " +
         "AND (:keyword IS NULL OR r.content LIKE CONCAT('%',:keyword, '%')) " +
         "AND (:starRate IS NULL OR r.starRate = :starRate)")
     Slice<Review> searchReviews(
@@ -72,5 +52,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         "GROUP BY r.starRate")
     List<StarRateCountProjection> getStarRateStats(@Param("productId") Long productId);
 
+    Slice<Review> findAllByProductIdIn(List<Long> productIds, Pageable pageable);
 }
 

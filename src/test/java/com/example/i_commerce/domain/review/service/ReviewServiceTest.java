@@ -77,6 +77,8 @@ public class ReviewServiceTest {
         CreateReviewRequest request = new CreateReviewRequest("내 돈 내 산 리뷰", 5);
         List<MultipartFile> imageFiles = List.of();
 
+        given(reviewRepo.existsByOrderProductIdAndUserId(orderProductId, userId)).willReturn(false);
+
         given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
             .willReturn(false);
 
@@ -86,7 +88,6 @@ public class ReviewServiceTest {
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.NOT_ACTUAL_BUYER);
 
         verify(reviewRepo, never()).save(any(Review.class));
-        verify(reviewRepo, never()).existsByOrderProductIdAndUserId(anyLong(), anyLong());
     }
 
     @Test
@@ -99,10 +100,7 @@ public class ReviewServiceTest {
         CreateReviewRequest request = new CreateReviewRequest("리뷰 또 쓰고 싶다", 5);
         List<MultipartFile> imageFiles = List.of();
 
-        given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
-            .willReturn(true);
-
-        given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(true);
+        given(reviewRepo.existsByOrderProductIdAndUserId(orderProductId, userId)).willReturn(true);
 
         //when&then
         assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request, imageFiles))
@@ -110,7 +108,6 @@ public class ReviewServiceTest {
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.ALREADY_REVIEWED);
 
         verify(reviewRepo, never()).save(any(Review.class));
-
     }
 
     @Test
