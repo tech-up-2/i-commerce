@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ReviewValidator {
+public class ReviewForbiddenWordValidator {
 
     private final ReviewForbiddenWordRepository reviewForbiddenWordRepository;
 

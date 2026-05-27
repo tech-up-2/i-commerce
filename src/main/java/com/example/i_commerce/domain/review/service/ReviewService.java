@@ -11,7 +11,7 @@ import com.example.i_commerce.domain.review.service.dto.ReviewStatsResponse;
 import com.example.i_commerce.domain.review.service.dto.SearchReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
-import com.example.i_commerce.domain.review.validator.ReviewValidator;
+import com.example.i_commerce.domain.review.validator.ReviewForbiddenWordValidator;
 import com.example.i_commerce.global.common.response.SliceResponse;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
@@ -32,7 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ReviewService {
 
     private final ReviewRepository reviewRepo;
-    private final ReviewValidator reviewValidator;
+    private final ReviewForbiddenWordValidator reviewForbiddenWordValidator;
     private final S3ImageService s3ImageService;
 
     @Transactional
@@ -47,7 +47,7 @@ public class ReviewService {
             throw new AppException(ReviewErrorCode.ALREADY_REVIEWED);
         }
 
-        reviewValidator.validateContent(dto.getContent());
+        reviewForbiddenWordValidator.validateContent(dto.getContent());
 
         Review review = Review.from(orderProductId, userId, dto);
 
@@ -133,7 +133,7 @@ public class ReviewService {
         Review review = getReviewOrThrow(reviewId);
 
         validateAuthor(review, userId);
-        reviewValidator.validateContent(dto.getContent());
+        reviewForbiddenWordValidator.validateContent(dto.getContent());
 
         review.update(dto.getContent(), dto.getStarRate(), dto.getImageUrls());
 
