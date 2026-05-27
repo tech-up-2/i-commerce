@@ -93,7 +93,11 @@ public class ReviewService {
 
         long totalReviewCount = 0;
         long totalScore = 0;
-        List<ReviewStatsResponse.StarRateDetail> starDetails = new ArrayList<>();
+
+        java.util.Map<Integer, Long> starCountMap = new java.util.HashMap<>();
+        for (int i = 1; i <= 5; i++) {
+            starCountMap.put(i, 0L);
+        }
 
         for (StarRateCountProjection proj : projections) {
             long count = proj.getCount();
@@ -102,7 +106,12 @@ public class ReviewService {
             totalReviewCount += count;
             totalScore += (count * star);
 
-            starDetails.add(new ReviewStatsResponse.StarRateDetail(star, count));
+            starCountMap.put(star, count);
+        }
+
+        List<ReviewStatsResponse.StarRateDetail> starDetails = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            starDetails.add(new ReviewStatsResponse.StarRateDetail(i, starCountMap.get(i)));
         }
 
         double averageStarRate = 0.0;

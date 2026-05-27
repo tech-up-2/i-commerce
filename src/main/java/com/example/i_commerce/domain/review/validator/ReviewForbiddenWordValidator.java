@@ -18,10 +18,11 @@ public class ReviewForbiddenWordValidator {
             return;
         }
 
+        String lowerContent = content.toLowerCase();
         List<String> forbiddenWords = reviewForbiddenWordRepository.findAllForbiddenWords();
 
         for (String word : forbiddenWords) {
-            if (content.contains(word)) {
+            if (lowerContent.contains(word.toLowerCase())) {
                 throw new AppException(ReviewErrorCode.FORBIDDEN_WORD_INCLUDED);
             }
         }

@@ -57,7 +57,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         "JOIN OrderProduct op ON r.orderProductId = op.id " +
         "JOIN ProductItem pi ON op.productSkuId = pi.id " +
         "WHERE (:displayOptionName IS NULL OR pi.displayOptionName = :displayOptionName) " +
-        "AND (:keyword IS NULL OR r.content LIKE CONCAT('%', CAST(:keyword AS string), '%')) " +
+        "AND (:keyword IS NULL OR r.content LIKE CONCAT('%',:keyword, '%')) " +
         "AND (:starRate IS NULL OR r.starRate = :starRate)")
     Slice<Review> searchReviews(
         @Param("displayOptionName") String displayOptionName,
