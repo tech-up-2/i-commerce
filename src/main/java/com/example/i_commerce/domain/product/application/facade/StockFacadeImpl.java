@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.product.application.facade;
 
 import com.example.i_commerce.domain.product.facade.StockFacade;
-import com.example.i_commerce.domain.product.facade.dto.StockDeductCommand;
+import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.domain.product.application.service.StockService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

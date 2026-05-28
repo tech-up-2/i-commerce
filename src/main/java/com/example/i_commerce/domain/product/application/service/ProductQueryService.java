@@ -49,6 +49,12 @@ public class ProductQueryService implements ProductQueryFacade {
         return productRepository.findAllIdsByStoreIds(storeIds);
     }
 
+    public Long getStoreIdByProductId(Long productId) {
+        return productRepository.findById(productId)
+            .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_NOT_FOUND))
+            .getStoreId();
+    }
+  
     @Override
     public List<ProductItemInfoResponse> getProductItemInfos(Set<Long> productItemIds) {
         if (productItemIds.isEmpty()) {
