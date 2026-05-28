@@ -7,10 +7,11 @@ import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import java.util.List;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 public class ChatMemberFixture {
     public static CustomUserPrincipal createPrincipal() {
-        return new CustomUserPrincipal(PrincipalType.MEMBER, 1L, "test1@naver.com", "1234", List.of());
+        return new CustomUserPrincipal(PrincipalType.MEMBER, 1L, List.of(new SimpleGrantedAuthority("ROLE_MEMBER")));
     }
     public static Member createMember(Long id,String email) {
 

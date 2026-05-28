@@ -10,7 +10,6 @@ import com.example.i_commerce.domain.chat.service.fixture.ChatMemberFixture;
 import com.example.i_commerce.domain.chat.service.fixture.ChatRoomFixture;
 import com.example.i_commerce.domain.chat.util.ChatRoleChecker;
 import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
-import com.example.i_commerce.domain.member.MemberFixture;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
