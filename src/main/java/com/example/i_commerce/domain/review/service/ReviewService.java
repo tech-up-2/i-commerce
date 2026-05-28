@@ -170,12 +170,8 @@ public class ReviewService {
 
     @Transactional
     public List<ReviewListResponse> getBestReviewCandidates(Long productId) {
-
         List<Review> reviews = reviewRepo.findAllByProductIdAndDeletedAtIsNull(productId);
-
-        for (Review r : reviews) {
-            r.updateBestStatus(false);
-        }
+        reviews.removeIf(Review::isExcluded);
 
         reviews.sort((r1, r2) -> Double.compare(r2.calculateRecommendationScore(),
             r1.calculateRecommendationScore()));
@@ -186,10 +182,7 @@ public class ReviewService {
         for (int i = 0; i < limit; i++) {
             Review review = reviews.get(i);
 
-            review.updateBestStatus(true);
-
-            responses.add(ReviewListResponse.from(review));
-
+            responses.add(ReviewListResponse.ofCandidate(review));
         }
         return responses;
     }
