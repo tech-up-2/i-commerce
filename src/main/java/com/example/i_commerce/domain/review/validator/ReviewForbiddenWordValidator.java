@@ -1,6 +1,6 @@
 package com.example.i_commerce.domain.review.validator;
 
-import com.example.i_commerce.domain.review.repo.ReviewForbiddenWordRepository;
+import com.example.i_commerce.domain.review.repository.ReviewForbiddenWordRepository;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import java.util.List;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ReviewValidator {
+public class ReviewForbiddenWordValidator {
 
     private final ReviewForbiddenWordRepository reviewForbiddenWordRepository;
 
@@ -18,10 +18,11 @@ public class ReviewValidator {
             return;
         }
 
-        List<String> forbiddenWords = reviewForbiddenWordRepository.findAllWords();
+        String lowerContent = content.toLowerCase();
+        List<String> forbiddenWords = reviewForbiddenWordRepository.findAllForbiddenWords();
 
         for (String word : forbiddenWords) {
-            if (content.contains(word)) {
+            if (lowerContent.contains(word.toLowerCase())) {
                 throw new AppException(ReviewErrorCode.FORBIDDEN_WORD_INCLUDED);
             }
         }
