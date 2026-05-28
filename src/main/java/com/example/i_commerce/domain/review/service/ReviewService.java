@@ -1,6 +1,8 @@
 package com.example.i_commerce.domain.review.service;
 
+import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
+import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
@@ -34,6 +36,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepo;
     private final ReviewForbiddenWordValidator reviewForbiddenWordValidator;
     private final S3ImageService s3ImageService;
+    private final OrderService orderService;
 
     @Transactional
     public Long createReview(Long orderProductId, Long userId, CreateReviewRequest dto, List<MultipartFile> imageFiles) {
@@ -41,16 +44,23 @@ public class ReviewService {
         validateStarRating(dto.getStarRate());
         reviewForbiddenWordValidator.validateContent(dto.getContent());
 
-        if (reviewRepo.existsByOrderProductIdAndUserId(orderProductId, userId)) {
+        if (reviewRepo.existsByOrderProductId(orderProductId)) {
             throw new AppException(ReviewErrorCode.ALREADY_REVIEWED);
         }
 
-        if (!reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED)) {
+        OrderProduct orderProduct = orderService.findOrderProductById(orderProductId);
+
+        if (!orderProduct.getOrder().getUserId().equals(userId)) {
             throw new AppException(ReviewErrorCode.NOT_ACTUAL_BUYER);
         }
 
-        Review review = Review.from(orderProductId, userId, dto);
+        if (orderProduct.getOrder().getOrderStatus() != OrderStatus.COMPLETED) {
+            throw new AppException(ReviewErrorCode.REVIEW_NOT_ALLOWED_STATE);
+        }
 
+        Long productId = orderProduct.getProductSkuId();
+
+        Review review = Review.from(orderProductId, productId, userId, dto);
         Review savedReview = reviewRepo.save(review);
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
@@ -159,9 +169,9 @@ public class ReviewService {
     }
 
     @Transactional
-    public List<ReviewListResponse> getBestReviewCandidates(Long orderProductId) {
+    public List<ReviewListResponse> getBestReviewCandidates(Long productId) {
 
-        List<Review> reviews = reviewRepo.findAllByOrderProductIdAndDeletedAtIsNull(orderProductId);
+        List<Review> reviews = reviewRepo.findAllByProductIdAndDeletedAtIsNull(productId);
 
         for (Review r : reviews) {
             r.updateBestStatus(false);

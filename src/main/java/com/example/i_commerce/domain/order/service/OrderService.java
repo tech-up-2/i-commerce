@@ -29,6 +29,7 @@ import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.exception.ErrorCode;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -167,5 +168,11 @@ public class OrderService {
         if (!order.getUserId().equals(userId)) {
             throw new AppException(OrderErrorCode.ORDER_NOT_OWNED);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public OrderProduct findOrderProductById(Long orderProductId) {
+        return orderProductRepository.findById(orderProductId)
+            .orElseThrow(() -> new AppException(OrderErrorCode.ORDER_PRODUCT_NOT_FOUND));
     }
 }
