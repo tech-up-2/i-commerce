@@ -72,7 +72,6 @@ public class PaymentFacade {
             }
             throw e;
         }
-
     }
 
     public void cancelPayment(PaymentCancelRequest dto) {
@@ -95,8 +94,5 @@ public class PaymentFacade {
             }
             throw e;
         }
-
-
-
     }
 }

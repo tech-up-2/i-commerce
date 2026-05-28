@@ -108,7 +108,7 @@ public class PaymentService {
 
     @Transactional
     public void completePaymentSuccess(String tossOrderId, String pgTid, PaymentStatus previousStatus, String responseStr) {
-        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId).orElseThrow();
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         payment.completePayment(pgTid);
         payment.getOrder().changeOrderStatus(OrderStatus.CONFIRMED);
 
