@@ -56,7 +56,7 @@ public class SecurityConfig {
                 .requestMatchers("/connect/**").permitAll()
 
                 //모니터링 관련 추가
-                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/prometheus", "/actuator/info", "/actuator/metrics").permitAll()
 
                 // 나머지는 기본적으로 인증 필요
                 .anyRequest().authenticated()

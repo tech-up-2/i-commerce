@@ -39,10 +39,6 @@ public class ChatRoom extends BaseEntity {
     @Builder.Default
     private Boolean isGroupChat = false;
 
-    //    결합도 끊어서 상품Id로만 사용하도록 개선
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "product_id")
-//    private Product product;
     @Column(name = "product_id")
     private Long productId;
 
