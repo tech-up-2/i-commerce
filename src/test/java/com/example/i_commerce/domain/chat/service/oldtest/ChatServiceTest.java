@@ -1,28 +1,32 @@
 
-package com.example.i_commerce.domain.chat.service.oldtest;
+package com.example.i_commerce.domain.chat.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+import com.example.i_commerce.domain.chat.entity.ChatMessage;
 import com.example.i_commerce.domain.chat.entity.ChatParticipant;
 import com.example.i_commerce.domain.chat.entity.ChatRoom;
 import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
-import com.example.i_commerce.domain.chat.service.ChatService;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
 import com.example.i_commerce.domain.chat.util.ChatRoleChecker;
 import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
+import com.example.i_commerce.domain.chat.util.TempChatUtil;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
+import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductOptionType;
 import com.example.i_commerce.domain.product.entity.ProductStatus;
+import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
@@ -74,10 +78,11 @@ class ChatServiceTest {
         테스트 코드에서는 직접적인 HTTP 요청이 없으므로 이 값이 존재하지 않음 그러므로 사용해주기 위해 임의의 값을 채워주어야함
 */
         CustomUserPrincipal customUserPrincipal = new CustomUserPrincipal(PrincipalType.MEMBER, 1L,
-            "test1@naver.com", "1234", List.of());
-        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(customUserPrincipal, null, List.of()));
+            List.of());
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(customUserPrincipal, null, List.of()));
 
-            // 카테고리 생성
+        // 카테고리 생성
         category = Category.builder()
             .id(1L)
             .name("테스트 카테고리")
@@ -155,24 +160,30 @@ class ChatServiceTest {
 
     }
 
-//    채팅내역 조회
+    //    채팅내역 조회
     @Test
     @DisplayName("채팅에 참여중이 아닌 사람이 조회를 시도하면 오류를 발생시킵니다.")
-    void getChatHistory_NoMember(){
-        when(chatRoomRepository.findById(singlechatRoom.getId())).thenReturn(Optional.of(singlechatRoom));
+    void getChatHistory_NoMember() {
+        when(chatRoomRepository.findById(singlechatRoom.getId())).thenReturn(
+            Optional.of(singlechatRoom));
         when(chatParticipantRepository.findByChatRoom(singlechatRoom)).thenReturn(List.of());
         AppException exception = assertThrows(AppException.class, () ->
             chatService.getChatHistory(singlechatRoom.getId()));
         Assertions.assertThat(exception.getErrorCode()).isEqualTo(ChatErrorCode.NOT_A_ROOM_MEMBER);
     }
+
     @Test
     @DisplayName("채팅 내역을 정상적으로 불러옵니다")
-    void getChatHistorySuccess(){
-        when(chatRoomRepository.findById(singlechatRoom.getId())).thenReturn(Optional.of(singlechatRoom));
-        when(chatParticipantRepository.findByChatRoom(singlechatRoom)).thenReturn(List.of(chatParticipant));
-        when(chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(singlechatRoom)).thenReturn(List.of());
+    void getChatHistorySuccess() {
+        when(chatRoomRepository.findById(singlechatRoom.getId())).thenReturn(
+            Optional.of(singlechatRoom));
+        when(chatParticipantRepository.findByChatRoom(singlechatRoom)).thenReturn(
+            List.of(chatParticipant));
+        when(chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(singlechatRoom)).thenReturn(
+            List.of());
 
-        ApiResponse<List<ChatMessageSendResponse>> response = chatService.getChatHistory(singlechatRoom.getId());
+        ApiResponse<List<ChatMessageSendResponse>> response = chatService.getChatHistory(
+            singlechatRoom.getId());
         assertEquals("SUCCESS", response.code());
     }
 }

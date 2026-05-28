@@ -64,7 +64,6 @@ public class AdminService {
         TokenPayload payload = new TokenPayload(
             PrincipalType.ADMIN,
             admin.getId(),
-            email,
             admin.getAdminRole(),
             admin.getAdminStatus(),
             null

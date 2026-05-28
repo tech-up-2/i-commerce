@@ -8,8 +8,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OptionRepository extends JpaRepository<Option, Long> {
-    boolean existsByType(String type);
 
-    @Query("SELECT o FROM Option o ORDER BY o.type ASC, o.value ASC")
-    List<Option> findAllOrderedByTypeAndValue();
+    boolean existsByName(String name);
+
+    @Query("SELECT o FROM Option o ORDER BY o.name ASC")
+    List<Option> findAllOrderedByName();
+
 }

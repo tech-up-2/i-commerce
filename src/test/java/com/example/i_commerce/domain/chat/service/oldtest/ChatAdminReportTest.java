@@ -32,6 +32,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 @ExtendWith(MockitoExtension.class)
 public class ChatAdminReportTest {
+
     @InjectMocks
     private ChatReportService chatReportService;
 
@@ -50,7 +51,7 @@ public class ChatAdminReportTest {
     @BeforeEach
     public void init() {
         CustomUserPrincipal customUserPrincipal = new CustomUserPrincipal(PrincipalType.ADMIN, 1L,
-            "admin1@naver.com", "1234", List.of());
+            List.of());
         SecurityContextHolder.getContext().setAuthentication(
             new UsernamePasswordAuthenticationToken(customUserPrincipal, null, List.of()));
 
@@ -82,12 +83,14 @@ public class ChatAdminReportTest {
             .status(ChatReportStatus.PENDING)
             .build();
     }
+
     @Test
     @DisplayName("관리자가 유저의 채팅의 신고를 정상적으로 처리할 수 있다.")
     public void controlReportTest() {
         when(chatReportRepository.findById(chatReport.getId())).thenReturn(Optional.of(chatReport));
 
-        ApiResponse<Void>response = chatReportService.controlReport(chatReport.getId(), ChatReportStatus.RESOLVED);
+        ApiResponse<Void> response = chatReportService.controlReport(chatReport.getId(),
+            ChatReportStatus.RESOLVED);
 
         Assertions.assertEquals("SUCCESS", response.code());
         Assertions.assertEquals(ChatReportStatus.RESOLVED, chatReport.getStatus());

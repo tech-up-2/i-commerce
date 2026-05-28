@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.product.repository;
 
 import com.example.i_commerce.domain.product.entity.Product;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -11,10 +12,24 @@ import org.springframework.stereotype.Repository;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("""
+      SELECT p.id FROM Product p WHERE p.storeId IN :storeIds
+    """)
+    List<Long> findAllIdsByStoreIds(@Param("storeIds") List<Long> storeIds);
+
+    @Query("""
       SELECT p FROM Product p
       LEFT JOIN FETCH p.items i
       LEFT JOIN FETCH i.stock
       WHERE p.id = :id
     """)
     Optional<Product> findByIdWithItemsAndStock(@Param("id") Long id);
+
+    @Query("""
+        SELECT CASE WHEN EXISTS (
+            SELECT 1 FROM Product p
+            WHERE p.category.id IN :categoryIds
+        ) THEN true ELSE false END
+    """)
+    boolean existsByCategoryIds(@Param("categoryIds") List<Long> categoryIds);
+
 }

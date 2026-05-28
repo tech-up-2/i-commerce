@@ -43,6 +43,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 @ExtendWith(MockitoExtension.class)
 public class ChatRoomServiceTest {
+
     @InjectMocks
     private ChatRoomService chatRoomService;
     @Mock
@@ -74,8 +75,9 @@ public class ChatRoomServiceTest {
     @BeforeEach
     public void MemberInit() {
         CustomUserPrincipal customUserPrincipal = new CustomUserPrincipal(PrincipalType.MEMBER, 1L,
-            "test1@naver.com", "1234", List.of());
-        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(customUserPrincipal, null, List.of()));
+            List.of());
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(customUserPrincipal, null, List.of()));
 
         // 카테고리 생성
         category = Category.builder()
@@ -189,14 +191,15 @@ public class ChatRoomServiceTest {
 
     @Test
     @DisplayName("1:1 채팅 생성시 서로의 권한이 같으면 에러를 터트립니다.")
-    void cannotSameRole(){
+    void cannotSameRole() {
         when(memberRepository.findById(member.getId())).thenReturn(Optional.of(member));
         when((memberRepository.findById(member2.getId()))).thenReturn(Optional.of(member2));
 
         AppException exception = assertThrows(AppException.class, () ->
             chatRoomService.getOrCreatePrivateRoom(member2.getId())); //
 
-        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ChatErrorCode.CANNOT_CHAT_SAME_ROLE);
+        Assertions.assertThat(exception.getErrorCode())
+            .isEqualTo(ChatErrorCode.CANNOT_CHAT_SAME_ROLE);
     }
 
     //    그룹채팅 테스트코드
@@ -243,7 +246,7 @@ public class ChatRoomServiceTest {
         assertEquals("SUCCESS", response.code());
     }
 
-//        @Test
+    //        @Test
 //    @DisplayName("그룹 채팅방에서 퇴장합니다.")
 //    void leaveGroupRoom() {
 //        when(chatRoomRepository.findById(groupchatRoom.getId())).thenReturn(

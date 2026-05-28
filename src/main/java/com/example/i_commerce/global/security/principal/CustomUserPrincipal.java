@@ -1,8 +1,5 @@
 package com.example.i_commerce.global.security.principal;
 
-import com.example.i_commerce.domain.member.entity.Admin;
-import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.enums.AdminRole;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.global.security.SecurityAuthority;
@@ -18,21 +15,15 @@ public class CustomUserPrincipal implements UserDetails {
 
     private final PrincipalType type;
     private final Long id;
-    private final String email;
-    private final String password;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public CustomUserPrincipal(
         PrincipalType type,
         Long id,
-        String email,
-        String password,
         Collection<? extends GrantedAuthority> authorities
     ) {
         this.type = type;
         this.id = id;
-        this.email = email;
-        this.password = password;
         this.authorities = authorities;
     }
 
@@ -65,46 +56,6 @@ public class CustomUserPrincipal implements UserDetails {
         return new CustomUserPrincipal(
             payload.principalType(),
             payload.accountId(),
-            payload.email(),
-            null,
-            authorities
-        );
-    }
-
-    public static CustomUserPrincipal fromMember(Member member, Seller seller) {
-        List<GrantedAuthority> authorities = new ArrayList<>();
-
-        authorities.add(new SimpleGrantedAuthority(SecurityAuthority.ROLE_MEMBER));
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + member.getRole().getAuthority()));
-        authorities.add(new SimpleGrantedAuthority("STATUS_" + member.getStatus().name()));
-
-        if (seller != null) {
-            authorities.add(new SimpleGrantedAuthority(SecurityAuthority.ROLE_SELLER));
-            authorities.add(
-                new SimpleGrantedAuthority("SELLER_" + seller.getSellerStatus().name()));
-        }
-
-        return new CustomUserPrincipal(
-            PrincipalType.MEMBER,
-            member.getId(),
-            member.getEmailHash(),
-            member.getPassword(),
-            authorities
-        );
-    }
-
-    public static CustomUserPrincipal fromAdmin(Admin admin) {
-        List<GrantedAuthority> authorities = new ArrayList<>();
-
-        authorities.add(new SimpleGrantedAuthority(SecurityAuthority.ROLE_ADMIN));
-        authorities.add(new SimpleGrantedAuthority("STATUS_" + admin.getAdminStatus().name()));
-        authorities.add(new SimpleGrantedAuthority("ADMIN_" + admin.getAdminRole().name()));
-
-        return new CustomUserPrincipal(
-            PrincipalType.ADMIN,
-            admin.getId(),
-            admin.getEmailHash(),
-            admin.getPassword(),
             authorities
         );
     }
@@ -132,7 +83,7 @@ public class CustomUserPrincipal implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return String.valueOf(id);
     }
 
     @Override

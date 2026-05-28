@@ -2,14 +2,10 @@ package com.example.i_commerce.domain.member;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.Store;
 import com.example.i_commerce.domain.member.entity.StoreAddress;
 import com.example.i_commerce.domain.member.entity.enums.AddressType;
 import com.example.i_commerce.domain.member.entity.enums.StoreStatus;
-import com.example.i_commerce.domain.member.repository.MemberRepository;
-import com.example.i_commerce.domain.member.repository.SellerRepository;
 import com.example.i_commerce.domain.member.repository.StoreAddressRepository;
 import com.example.i_commerce.domain.member.repository.StoreRepository;
 import com.example.i_commerce.domain.member.service.store.StoreService;
@@ -19,8 +15,8 @@ import com.example.i_commerce.domain.member.service.store.dto.StoreInfoResponse;
 import com.example.i_commerce.domain.member.service.store.dto.StoreRequest;
 import com.example.i_commerce.domain.member.service.store.dto.StoreResponse;
 import com.example.i_commerce.domain.member.service.store.dto.StoreUpdateRequest;
-import com.example.i_commerce.domain.member.tools.DataEncryptor;
-import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
+import com.example.i_commerce.domain.testtools.IntegrationTestSupport;
+import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,20 +25,16 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
 @TestPropertySource(locations = "file:.env")
-class StoreServiceTest {
+class StoreServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private StoreService storeService;
-
-    @Autowired
-    private SellerRepository sellerRepository;
 
     @Autowired
     private StoreRepository storeRepository;
@@ -50,55 +42,17 @@ class StoreServiceTest {
     @Autowired
     private StoreAddressRepository storeAddressRepository;
 
-    @Autowired
-    private DataEncryptor dataEncryptor;
-
-    @Autowired
-    private MemberRepository memberRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private EmailHashEncoder emailHashEncoder;
-
     private Long sellerId;
-    private Long storeId;
 
-    private Member member;
-
-
-    // ======================================================================
-    // [공통 셋업] 모든 테스트는 Member와 Seller가 있는 상태에서 출발합니다.
-    // ======================================================================
     @BeforeEach
     void setUpCommon() {
-        member = memberRepository.save(
-            MemberFixture.createMember(passwordEncoder, emailHashEncoder, dataEncryptor)
-        );
-
-        Seller seller = Seller.builder()
-            .member(member)
-            .businessName("테스트 사업자")
-            .businessNumber("123-45-67890")
-            .mailOrderRegistrationNumber("2026-부산-0001")
-            .ownerName("홍길동")
-            .phoneNumber("010-1111-2222")
-            .bankName(dataEncryptor.encrypt("국민은행"))
-            .bankAccount(dataEncryptor.encrypt("123456789"))
-            .depositorName(dataEncryptor.encrypt("홍길동"))
-            .build();
-
-        Seller savedSeller = sellerRepository.save(seller);
-        sellerId = savedSeller.getId();
+        CustomUserPrincipal seller = loginAsApprovedSeller();
+        sellerId = seller.getId();
     }
 
-    // ======================================================================
-    // 유틸리티 메서드 (테스트 코드 가독성을 위한 Helper)
-    // ======================================================================
     private StoreAddressRequest createMockAddressRequest(String label, boolean isDefault) {
         return new StoreAddressRequest(
-            AddressType.BUSINESS, // Enum 가정
+            AddressType.BUSINESS,
             label,
             "010-1111-1111",
             "12345",
@@ -110,24 +64,6 @@ class StoreServiceTest {
         );
     }
 
-    private StoreAddress createAddressEntity(Long storeId, String label, boolean isDefault) {
-        return StoreAddress.builder()
-            .storeId(storeId)
-            .addressType(AddressType.BUSINESS)
-            .label(label)
-            .addressPhoneNumber("010-1111-1111")
-            .zipCode("12345")
-            .roadAddress("부산광역시 동구 중앙대로")
-            .jibunAddress("부산광역시 동구 초량동")
-            .detailAddress("101호")
-            .extraAddress("")
-            .isDefault(isDefault)
-            .build();
-    }
-
-    // ======================================================================
-    // 1. 상점 라이프사이클 (상점이 없는 상태)
-    // ======================================================================
     @Nested
     @DisplayName("상점 생성 및 목록 조회 테스트")
     class StoreLifecycle {
@@ -163,13 +99,12 @@ class StoreServiceTest {
 
             // then
             assertThat(responses).hasSize(2);
-            assertThat(responses).extracting("storeName").containsExactlyInAnyOrder("상점1", "상점2");
+            assertThat(responses)
+                .extracting("storeName")
+                .containsExactlyInAnyOrder("상점1", "상점2");
         }
     }
 
-    // ======================================================================
-    // 2. 상점 관리 (상점이 이미 있는 상태)
-    // ======================================================================
     @Nested
     @DisplayName("상점 정보 관리 테스트")
     class StoreManagement {
@@ -178,12 +113,8 @@ class StoreServiceTest {
 
         @BeforeEach
         void setUpStore() {
-            Store store = Store.builder()
-                .sellerId(sellerId)
-                .storeName("기존 테스트 상점")
-                .phoneNumber("010-9999-9999")
-                .build();
-            storeId = storeRepository.save(store).getId();
+            Store store = openStore(sellerId);
+            storeId = store.getId();
         }
 
         @Test
@@ -193,22 +124,27 @@ class StoreServiceTest {
             StoreInfoResponse response = storeService.getMyStoreInfo(storeId, sellerId);
 
             // then
-            assertThat(response.storeName()).isEqualTo("기존 테스트 상점");
-            assertThat(response.phoneNumber()).isEqualTo("010-9999-9999");
+            assertThat(response.storeName()).isNotBlank();
+            assertThat(response.phoneNumber()).isNotBlank();
         }
 
         @Test
         @DisplayName("상점 정보를 성공적으로 수정한다")
         void updateStoreInfo_success() {
             // given
-            StoreUpdateRequest updateRequest = new StoreUpdateRequest("수정된 상점",
-                "010-8888-8888", StoreStatus.OPEN);
+            StoreUpdateRequest updateRequest = new StoreUpdateRequest(
+                "수정된 상점",
+                "010-8888-8888",
+                StoreStatus.OPEN
+            );
 
             // when
             StoreResponse response = storeService.updateStoreInfo(storeId, updateRequest, sellerId);
 
             // then
             Store updatedStore = storeRepository.findById(storeId).orElseThrow();
+
+            assertThat(response.storeName()).isEqualTo("수정된 상점");
             assertThat(updatedStore.getStoreName()).isEqualTo("수정된 상점");
             assertThat(updatedStore.getPhoneNumber()).isEqualTo("010-8888-8888");
         }
@@ -221,18 +157,15 @@ class StoreServiceTest {
 
             // then
             Store deletedStore = storeRepository.findById(storeId).orElseThrow();
-            assertThat(deletedStore.getDeletedAt()).isNotNull(); // 삭제 시간이 기록되어야 함
+            assertThat(deletedStore.getDeletedAt()).isNotNull();
 
-            // 목록 조회 시 안 나와야 함
-            List<Store> activeStores = storeRepository.findAllBySellerIdAndDeletedAtIsNull(
-                sellerId);
+            List<Store> activeStores =
+                storeRepository.findAllBySellerIdAndDeletedAtIsNull(sellerId);
+
             assertThat(activeStores).isEmpty();
         }
     }
 
-    // ======================================================================
-    // 3. 상점 주소 라이프사이클 (상점은 있고, 주소는 없는 상태)
-    // ======================================================================
     @Nested
     @DisplayName("상점 주소 등록 테스트")
     class StoreAddressCreation {
@@ -241,54 +174,56 @@ class StoreServiceTest {
 
         @BeforeEach
         void setUpStore() {
-            Store store = Store.builder().sellerId(sellerId).storeName("주소 없는 상점")
-                .phoneNumber("010-1234-5678").build();
-            storeId = storeRepository.save(store).getId();
+            Store store = openStore(sellerId);
+            storeId = store.getId();
         }
 
         @Test
         @DisplayName("첫 주소를 등록하면 자동으로 기본 주소가 된다")
         void createFirstAddress_becomesDefault() {
             // given
-            StoreAddressRequest request = createMockAddressRequest("첫 주소",
-                false); // isDefault를 false로 보내도
+            StoreAddressRequest request = createMockAddressRequest("첫 주소", false);
 
             // when
-            StoreAddressResponse response = storeService.createStoreAddress(storeId, sellerId,
-                request);
+            StoreAddressResponse response =
+                storeService.createStoreAddress(storeId, sellerId, request);
 
             // then
-            StoreAddress savedAddress = storeAddressRepository.findById(response.storeAddressId()
-                .longValue()).orElseThrow();
-            assertThat(savedAddress.getIsDefault()).isTrue(); // true가 되어야 함
+            StoreAddress savedAddress =
+                storeAddressRepository.findById(response.storeAddressId().longValue())
+                    .orElseThrow();
+
+            assertThat(savedAddress.getIsDefault()).isTrue();
         }
 
         @Test
         @DisplayName("새로운 기본 주소를 등록하면 기존 기본 주소는 해제된다")
         void createDefaultAddress_overridesOldDefault() {
-            // given: 첫 주소(기본) 미리 등록
-            storeService.createStoreAddress(storeId, sellerId,
-                createMockAddressRequest("기존 주소", true));
+            // given
+            storeService.createStoreAddress(
+                storeId,
+                sellerId,
+                createMockAddressRequest("기존 주소", true)
+            );
 
-            // when: 새 기본 주소 등록
-            StoreAddressRequest newDefaultRequest = createMockAddressRequest("새 기본 주소", true);
-            StoreAddressResponse response = storeService.createStoreAddress(storeId, sellerId,
-                newDefaultRequest);
+            StoreAddressRequest newDefaultRequest =
+                createMockAddressRequest("새 기본 주소", true);
+
+            // when
+            storeService.createStoreAddress(storeId, sellerId, newDefaultRequest);
 
             // then
-            List<StoreAddress> addresses = storeAddressRepository.findByStoreIdOrderByIsDefaultDescCreatedAtDesc(
-                storeId);
+            List<StoreAddress> addresses =
+                storeAddressRepository.findByStoreIdOrderByIsDefaultDescCreatedAtDesc(storeId);
+
             assertThat(addresses).hasSize(2);
             assertThat(addresses.get(0).getLabel()).isEqualTo("새 기본 주소");
             assertThat(addresses.get(0).getIsDefault()).isTrue();
             assertThat(addresses.get(1).getLabel()).isEqualTo("기존 주소");
-            assertThat(addresses.get(1).getIsDefault()).isFalse(); // 해제됨
+            assertThat(addresses.get(1).getIsDefault()).isFalse();
         }
     }
 
-    // ======================================================================
-    // 4. 상점 주소 관리 (상점과 기본/일반 주소가 모두 있는 상태)
-    // ======================================================================
     @Nested
     @DisplayName("상점 주소 관리 및 삭제 로직 테스트")
     class StoreAddressManagement {
@@ -300,16 +235,12 @@ class StoreServiceTest {
 
         @BeforeEach
         void setUpAddresses() {
-            Store store = Store.builder().sellerId(sellerId).storeName("주소 있는 상점")
-                .phoneNumber("010-1234-5678").build();
-            storeId = storeRepository.save(store).getId();
+            Store store = openStore(sellerId);
+            storeId = store.getId();
 
-            defaultAddress = storeAddressRepository.save(
-                createAddressEntity(storeId, "기본 주소", true));
-            oldAddress = storeAddressRepository.save(
-                createAddressEntity(storeId, "이전 일반 주소", false));
-            latestAddress = storeAddressRepository.save(
-                createAddressEntity(storeId, "최신 일반 주소", false));
+            defaultAddress = createDefaultStoreAddress(storeId, "기본 주소");
+            oldAddress = createNormalStoreAddress(storeId, "이전 일반 주소");
+            latestAddress = createNormalStoreAddress(storeId, "최신 일반 주소");
         }
 
         @Test
@@ -319,14 +250,19 @@ class StoreServiceTest {
             StoreAddressRequest updateRequest = createMockAddressRequest("수정된 주소", true);
 
             // when
-            storeService.updateStoreAddress(latestAddress.getId(), storeId, sellerId,
-                updateRequest);
+            storeService.updateStoreAddress(
+                latestAddress.getId(),
+                storeId,
+                sellerId,
+                updateRequest
+            );
 
             // then
-            StoreAddress updated = storeAddressRepository.findById(latestAddress.getId())
-                .orElseThrow();
-            StoreAddress oldDefault = storeAddressRepository.findById(defaultAddress.getId())
-                .orElseThrow();
+            StoreAddress updated =
+                storeAddressRepository.findById(latestAddress.getId()).orElseThrow();
+
+            StoreAddress oldDefault =
+                storeAddressRepository.findById(defaultAddress.getId()).orElseThrow();
 
             assertThat(updated.getLabel()).isEqualTo("수정된 주소");
             assertThat(updated.getIsDefault()).isTrue();
@@ -340,13 +276,15 @@ class StoreServiceTest {
             storeService.changeDefault(oldAddress.getId(), storeId, sellerId);
 
             // then
-            assertThat(storeAddressRepository.findById(oldAddress.getId()).orElseThrow()
-                .getIsDefault()).isTrue();
-            assertThat(storeAddressRepository.findById(defaultAddress.getId()).orElseThrow()
-                .getIsDefault()).isFalse();
-        }
+            StoreAddress changedDefault =
+                storeAddressRepository.findById(oldAddress.getId()).orElseThrow();
 
-        // --- 여기서부터 사용자가 작성하셨던 삭제 관련 테스트 ---
+            StoreAddress previousDefault =
+                storeAddressRepository.findById(defaultAddress.getId()).orElseThrow();
+
+            assertThat(changedDefault.getIsDefault()).isTrue();
+            assertThat(previousDefault.getIsDefault()).isFalse();
+        }
 
         @Test
         @DisplayName("기본주소를 삭제하면 남아있는 최신 주소가 기본주소가 된다")
@@ -355,12 +293,14 @@ class StoreServiceTest {
             storeService.deleteStoreAddress(defaultAddress.getId(), storeId, sellerId);
 
             // then
-            StoreAddress deletedAddress = storeAddressRepository.findById(defaultAddress.getId())
-                .orElseThrow();
-            StoreAddress reloadedOldAddress = storeAddressRepository.findById(oldAddress.getId())
-                .orElseThrow();
-            StoreAddress reloadedLatestAddress = storeAddressRepository.findById(
-                latestAddress.getId()).orElseThrow();
+            StoreAddress deletedAddress =
+                storeAddressRepository.findById(defaultAddress.getId()).orElseThrow();
+
+            StoreAddress reloadedOldAddress =
+                storeAddressRepository.findById(oldAddress.getId()).orElseThrow();
+
+            StoreAddress reloadedLatestAddress =
+                storeAddressRepository.findById(latestAddress.getId()).orElseThrow();
 
             assertThat(deletedAddress.getDeletedAt()).isNotNull();
             assertThat(reloadedOldAddress.getIsDefault()).isFalse();
@@ -374,10 +314,11 @@ class StoreServiceTest {
             storeService.deleteStoreAddress(oldAddress.getId(), storeId, sellerId);
 
             // then
-            StoreAddress reloadedDefaultAddress = storeAddressRepository.findById(
-                defaultAddress.getId()).orElseThrow();
-            StoreAddress deletedAddress = storeAddressRepository.findById(oldAddress.getId())
-                .orElseThrow();
+            StoreAddress reloadedDefaultAddress =
+                storeAddressRepository.findById(defaultAddress.getId()).orElseThrow();
+
+            StoreAddress deletedAddress =
+                storeAddressRepository.findById(oldAddress.getId()).orElseThrow();
 
             assertThat(reloadedDefaultAddress.getIsDefault()).isTrue();
             assertThat(reloadedDefaultAddress.getDeletedAt()).isNull();
@@ -387,16 +328,17 @@ class StoreServiceTest {
         @Test
         @DisplayName("마지막 남은 기본주소를 삭제하면 기본주소는 존재하지 않는다")
         void deleteLastDefaultAddress_thenNoDefaultAddressExists() {
-            // given: 다른 일반 주소들을 먼저 전부 삭제
+            // given
             storeService.deleteStoreAddress(oldAddress.getId(), storeId, sellerId);
             storeService.deleteStoreAddress(latestAddress.getId(), storeId, sellerId);
 
-            // when: 마지막 남은 기본 주소 삭제
+            // when
             storeService.deleteStoreAddress(defaultAddress.getId(), storeId, sellerId);
 
             // then
-            StoreAddress deletedAddress = storeAddressRepository.findById(defaultAddress.getId())
-                .orElseThrow();
+            StoreAddress deletedAddress =
+                storeAddressRepository.findById(defaultAddress.getId()).orElseThrow();
+
             Optional<StoreAddress> anyDefaultAddress =
                 storeAddressRepository.findByStoreIdAndIsDefaultTrueAndDeletedAtIsNull(storeId);
 

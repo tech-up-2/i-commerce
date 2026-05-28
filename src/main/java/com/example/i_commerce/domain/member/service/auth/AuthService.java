@@ -41,6 +41,7 @@ public class AuthService {
     private final JwtTokenUtil jwtTokenUtil;
     private final SellerRepository sellerRepository;
 
+    //회원 가입
     @Transactional
     public SignUpResponse signUp(MemberSignUpRequest dto) {
         String emailHash = emailHashEncoder.encode(dto.email());
@@ -70,6 +71,7 @@ public class AuthService {
 
     }
 
+    //로그인
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest dto) {
         Member member = memberRepository.findByEmailHash(emailHashEncoder.encode(dto.email()))
@@ -96,7 +98,6 @@ public class AuthService {
             payload = new TokenPayload(
                 PrincipalType.MEMBER,
                 member.getId(),
-                email,
                 MemberType.SELLER,
                 member.getStatus(),
                 seller.getSellerStatus()
@@ -105,7 +106,6 @@ public class AuthService {
             payload = new TokenPayload(
                 PrincipalType.MEMBER,
                 member.getId(),
-                email,
                 MemberType.CUSTOMER,
                 member.getStatus(),
                 null

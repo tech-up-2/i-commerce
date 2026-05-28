@@ -50,7 +50,7 @@ public class ChatReportServiceTest {
     @BeforeEach
     public void init() {
         CustomUserPrincipal customUserPrincipal = new CustomUserPrincipal(PrincipalType.MEMBER, 1L,
-            "test1@naver.com", "1234", List.of());
+            List.of());
         SecurityContextHolder.getContext().setAuthentication(
             new UsernamePasswordAuthenticationToken(customUserPrincipal, null, List.of()));
 
@@ -85,7 +85,8 @@ public class ChatReportServiceTest {
         ChatReportRequest request = new ChatReportRequest(1L, ChatReportReason.SWEARWORD);
         when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
         when(chatMessageRepository.findById(1L)).thenReturn(Optional.of(chatMessage));
-        when(chatReportRepository.existsByReporterIdAndChatMessageId(1L, chatMessage.getId())).thenReturn(false);
+        when(chatReportRepository.existsByReporterIdAndChatMessageId(1L,
+            chatMessage.getId())).thenReturn(false);
 
         ApiResponse<Void> response = chatReportService.createChatReport(request);
 

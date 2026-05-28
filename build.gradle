@@ -25,7 +25,7 @@ dependencies {
 
     // AWS S3
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.0'
-//
+
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     
     // QueryDSL
@@ -54,14 +54,25 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+    testImplementation platform('org.testcontainers:testcontainers-bom:2.0.4')
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
+    testImplementation 'org.testcontainers:testcontainers-postgresql'
+    testImplementation 'org.springframework.security:spring-security-test'
+
     //스웨거
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
 
     //h2
     testImplementation 'com.h2database:h2'
 
+    //스프링 부트 기본 로컬 캐시
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
 }

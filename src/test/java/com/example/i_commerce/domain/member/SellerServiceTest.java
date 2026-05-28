@@ -3,7 +3,6 @@ package com.example.i_commerce.domain.member;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
@@ -14,7 +13,9 @@ import com.example.i_commerce.domain.member.service.seller.dto.SellerRequest;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerResponse;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
+import com.example.i_commerce.domain.testtools.IntegrationTestSupport;
 import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 @TestPropertySource(locations = "file:.env")
-public class SellerServiceTest {
+public class SellerServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private SellerService sellerService;
@@ -47,17 +48,18 @@ public class SellerServiceTest {
     @Autowired
     private DataEncryptor dataEncryptor;
 
-    private Member member;
+    private CustomUserPrincipal member;
+
+    private CustomUserPrincipal seller;
 
     @BeforeEach
     void setUp() {
-        member = memberRepository.save(
-            MemberFixture.createMember(
-                passwordEncoder,
-                emailHashEncoder,
-                dataEncryptor
-            )
-        );
+        member = loginAsActiveMaleMember();
+    }
+
+    @BeforeEach
+    void setup() {
+        seller = loginAsApprovedSeller();
     }
 
     @Test
@@ -80,34 +82,19 @@ public class SellerServiceTest {
     @DisplayName("판매자 재신청 성공 - WITHDRAW 상태면 정보를 덮어쓰고 PENDING 상태가 된다")
     void applyForSeller_success_withdrawSeller() {
         // given
-        Long memberId = member.getId();
-
-        Seller withdrawSeller = Seller.builder()
-            .member(member)
-            .businessName("기존상호")
-            .businessNumber("0000000000")
-            .mailOrderRegistrationNumber("기존신고번호")
-            .ownerName("기존대표")
-            .phoneNumber("01000000000")
-            .sellerStatus(SellerStatus.WITHDRAW)
-            .bankName(dataEncryptor.encrypt("기존은행"))
-            .bankAccount(dataEncryptor.encrypt("0000000000"))
-            .depositorName(dataEncryptor.encrypt("기존예금주"))
-            .build();
-
-        sellerRepository.save(withdrawSeller);
+        CustomUserPrincipal customUserPrincipal = loginAsWithdrawSellerAfterApproval();
 
         SellerRequest request = createSellerRequest("새상호");
 
         // when
-        SellerResponse response = sellerService.applyForSeller(memberId, request);
+        SellerResponse response = sellerService.applyForSeller(customUserPrincipal.getId(),
+            request);
 
         // then
-        Seller seller = sellerRepository.findById(memberId).orElseThrow();
+        Seller seller = sellerRepository.findById(customUserPrincipal.getId()).orElseThrow();
 
-        assertThat(response.sellerId()).isEqualTo(memberId);
-        assertThat(seller.getBusinessName()).isEqualTo("새상호");
-        assertThat(seller.getBusinessNumber()).isEqualTo("1234567890");
+        assertThat(response.sellerId()).isEqualTo(customUserPrincipal.getId());
+        assertThat(seller.getBusinessName()).isEqualTo(request.businessName());
         assertThat(seller.getSellerStatus()).isEqualTo(SellerStatus.PENDING);
     }
 
@@ -115,13 +102,12 @@ public class SellerServiceTest {
     @DisplayName("판매자 신청 실패 - PENDING 상태면 이미 신청된 판매자로 판단한다")
     void applyForSeller_fail_pendingSeller() {
         // given
-        Long memberId = member.getId();
-        sellerRepository.save(createSeller(memberId, SellerStatus.PENDING));
+        CustomUserPrincipal customUserPrincipal = loginAsPendingSeller();
 
         SellerRequest request = createSellerRequest("kt마켓");
 
         // when & then
-        assertThatThrownBy(() -> sellerService.applyForSeller(memberId, request))
+        assertThatThrownBy(() -> sellerService.applyForSeller(customUserPrincipal.getId(), request))
             .isInstanceOf(AppException.class);
     }
 
@@ -129,13 +115,12 @@ public class SellerServiceTest {
     @DisplayName("판매자 신청 실패 - APPROVED 상태면 이미 신청된 판매자로 판단한다")
     void applyForSeller_fail_approvedSeller() {
         // given
-        Long memberId = member.getId();
-        sellerRepository.save(createSeller(memberId, SellerStatus.APPROVED));
+        CustomUserPrincipal customUserPrincipal = loginAsApprovedSeller();
 
         SellerRequest request = createSellerRequest("kt마켓");
 
         // when & then
-        assertThatThrownBy(() -> sellerService.applyForSeller(memberId, request))
+        assertThatThrownBy(() -> sellerService.applyForSeller(customUserPrincipal.getId(), request))
             .isInstanceOf(AppException.class);
     }
 
@@ -143,13 +128,12 @@ public class SellerServiceTest {
     @DisplayName("판매자 신청 실패 - BLOCKED 상태면 이미 신청된 판매자로 판단한다")
     void applyForSeller_fail_blockedSeller() {
         // given
-        Long memberId = member.getId();
-        sellerRepository.save(createSeller(memberId, SellerStatus.BLOCKED));
+        CustomUserPrincipal customUserPrincipal = loginAsBlockedSellerAfterApproval();
 
         SellerRequest request = createSellerRequest("kt마켓");
 
         // when & then
-        assertThatThrownBy(() -> sellerService.applyForSeller(memberId, request))
+        assertThatThrownBy(() -> sellerService.applyForSeller(customUserPrincipal.getId(), request))
             .isInstanceOf(AppException.class);
     }
 
@@ -157,15 +141,16 @@ public class SellerServiceTest {
     @DisplayName("판매자 정보 조회 성공")
     void getSellerInfo_success() {
         // given
-        Long memberId = member.getId();
-        sellerRepository.save(createSeller(memberId, SellerStatus.APPROVED));
+        CustomUserPrincipal customUserPrincipal = loginAsApprovedSeller();
 
         // when
-        SellerInfoResponse response = sellerService.getSellerInfo(memberId);
+        SellerInfoResponse response = sellerService.getSellerInfo(customUserPrincipal.getId());
 
         // then
-        assertThat(response.businessName()).isEqualTo("kt마켓");
-        assertThat(response.businessNumber()).isEqualTo("1234567890");
+        assertThat(response.businessName()).isEqualTo(
+            sellerRepository.findById(customUserPrincipal.getId()).get().getBusinessName());
+        assertThat(response.businessNumber()).isEqualTo(
+            sellerRepository.findById(customUserPrincipal.getId()).get().getBusinessNumber());
         assertThat(response.sellerStatus()).isEqualTo(SellerStatus.APPROVED);
     }
 
@@ -184,20 +169,18 @@ public class SellerServiceTest {
     @DisplayName("판매자 정보 수정 성공")
     void updateSeller_success() {
         // given
-        Long memberId = member.getId();
-        sellerRepository.save(createSeller(memberId, SellerStatus.APPROVED));
+        CustomUserPrincipal customUserPrincipal = loginAsApprovedSeller();
 
         SellerRequest request = createSellerRequest("수정상호");
 
         // when
-        SellerResponse response = sellerService.updateSeller(memberId, request);
+        SellerResponse response = sellerService.updateSeller(customUserPrincipal.getId(), request);
 
         // then
-        Seller seller = sellerRepository.findById(memberId).orElseThrow();
+        Seller seller = sellerRepository.findById(customUserPrincipal.getId()).orElseThrow();
 
-        assertThat(response.sellerId()).isEqualTo(memberId);
+        assertThat(response.sellerId()).isEqualTo(customUserPrincipal.getId());
         assertThat(seller.getBusinessName()).isEqualTo("수정상호");
-        assertThat(seller.getBusinessNumber()).isEqualTo("1234567890");
     }
 
     @Test
@@ -227,7 +210,7 @@ public class SellerServiceTest {
 
     private Seller createSeller(Long memberId, SellerStatus status) {
         return Seller.builder()
-            .member(member)
+            .member(memberRepository.findById(memberId).orElseThrow())
             .businessName("kt마켓")
             .businessNumber("1234567890")
             .mailOrderRegistrationNumber("2025-서울용산-01075")

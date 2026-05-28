@@ -6,6 +6,7 @@ import com.example.i_commerce.domain.product.controller.request.CreateCategoryRe
 import com.example.i_commerce.domain.product.controller.response.CreateCategoryResponse;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
+import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.domain.product.repository.projection.CategoryTreeRow;
 import com.example.i_commerce.domain.product.controller.response.CategoryResponse;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
@@ -24,6 +25,7 @@ public class CategoryService {
     private static final int RECURSIVE_DEPTH_LIMIT = 5;
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
     private final CategoryMapper categoryMapper;
 
     @Transactional(readOnly = true)
@@ -71,6 +73,21 @@ public class CategoryService {
             : Category.createChild(parent, request.name(), MAX_DEPTH);
 
         return CreateCategoryResponse.from(categoryRepository.save(category));
+    }
+
+    @Transactional
+    public void deleteCategory(Long categoryId) {
+
+        categoryRepository.findById(categoryId)
+            .orElseThrow(() -> new AppException(ProductErrorCode.CATEGORY_NOT_FOUND));
+
+        List<Long> categoryIds = categoryRepository.findAllDescendantIds(categoryId);
+
+        if(productRepository.existsByCategoryIds(categoryIds)) {
+            throw new AppException(ProductErrorCode.CATEGORY_HAS_PRODUCTS);
+        }
+
+        categoryRepository.deleteAllByIdInBatch(categoryIds);
     }
 
 

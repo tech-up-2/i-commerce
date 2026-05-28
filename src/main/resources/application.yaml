@@ -17,7 +17,7 @@ app:
       enabled: true
       email: master@test.com
       password: master123!
-      name: 최초관리자
+      name: "최초관리자"
 
 security:
   email-hmac-key: "m+Mtv+DxZbk0psKymGWCsAMTx1jSMIJnIV/SVtlCTT8="

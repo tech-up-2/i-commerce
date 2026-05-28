@@ -11,6 +11,21 @@ jobs:
       id-token: write
       contents: read
 
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,8 +40,18 @@ jobs:
       - name: Grant execute permission
         run: chmod +x ./gradlew
 
+      - name: Create Dummy .env for GitHub Actions
+        run: touch .env
+
       # 1. 테스트 단계
       - name: Run Test
+
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
+          SPRING_DATASOURCE_USERNAME: testuser
+          SPRING_DATASOURCE_PASSWORD: testpassword
+          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+
         run: ./gradlew test
 
       # 2. AWS 인증 (OIDC)

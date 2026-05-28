@@ -14,20 +14,18 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CategoryOptionRepository extends JpaRepository<CategoryOption, Long> {
 
-    Optional<CategoryOption> findByCategoryId(Long categoryId);
+    Optional<CategoryOption> findByIdAndCategoryId(Long id, Long categoryId);
+
+    List<CategoryOption> findAllByCategoryId(Long categoryId);
 
     @Query("""
-    SELECT
-        co.id AS categoryOptionId,
-        co.required AS required,
-        o.id AS optionId,
-        o.type AS optionType,
-        o.value AS optionValue,
-        o.inputType AS inputType
+    SELECT new com.example.i_commerce.domain.product.repository.projection.CategoryOptionProjection(
+        co.id, co.required, o.id, o.name, o.inputType
+    )
     FROM CategoryOption co
     JOIN co.option o
     WHERE co.category.id = :categoryId
-    ORDER BY o.type, o.value
+    ORDER BY o.name
     """)
     List<CategoryOptionProjection> findOptionsByCategoryId(
         @Param("categoryId") Long categoryId

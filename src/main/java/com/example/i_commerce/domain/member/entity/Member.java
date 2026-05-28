@@ -80,9 +80,9 @@ public class Member extends BaseEntity {
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Seller seller;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserLoginHistory> loginHistories = new ArrayList<>();
+//    @Builder.Default
+//    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<UserLoginHistory> loginHistories = new ArrayList<>();
 
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -119,5 +119,9 @@ public class Member extends BaseEntity {
 
     public void changeStatus(MemberStatus status) {
         this.status = status;
+    }
+
+    public void isSeller() {
+        this.isSeller = true;
     }
 }

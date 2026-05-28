@@ -15,6 +15,7 @@ import com.example.i_commerce.domain.product.facade.ProductQueryFacade;
 import com.example.i_commerce.domain.product.facade.dto.ProductItemInfoResponse;
 import com.example.i_commerce.domain.product.repository.ProductAttributeRepository;
 import com.example.i_commerce.domain.product.repository.ProductImageRepository;
+import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.domain.product.repository.projection.ProductItemInfoProjection;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.domain.product.repository.ProductQueryRepository;
@@ -33,11 +34,27 @@ public class ProductQueryService implements ProductQueryFacade {
     private final OptionGroupBuilder optionGroupBuilder;
     private final OptionLookupBuilder optionLookupBuilder;
 
+    private final ProductRepository productRepository;
     private final ProductQueryRepository productQueryRepository;
     private final ProductImageRepository productImageRepository;
     private final ProductItemRepository productItemRepository;
     private final ProductAttributeRepository productAttributeRepository;
 
+    public ProductItem getProductItemById(Long productItemId) {
+        return productItemRepository.findById(productItemId)
+            .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_ITEM_NOT_FOUND));
+    }
+
+    public List<Long> getProductIdsByStoreIds(List<Long> storeIds) {
+        return productRepository.findAllIdsByStoreIds(storeIds);
+    }
+
+    public Long getStoreIdByProductId(Long productId) {
+        return productRepository.findById(productId)
+            .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_NOT_FOUND))
+            .getStoreId();
+    }
+  
     @Override
     public List<ProductItemInfoResponse> getProductItemInfos(Set<Long> productItemIds) {
         if (productItemIds.isEmpty()) {
