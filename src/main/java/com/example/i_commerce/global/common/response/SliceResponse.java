@@ -36,4 +36,10 @@ public record SliceResponse<T>(
             slice.isLast()
         );
     }
+
+    public static <T> SliceResponse<T> empty() {
+        return SliceResponse.of(
+            new org.springframework.data.domain.SliceImpl<>(java.util.Collections.emptyList())
+        );
+    }
 }
