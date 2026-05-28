@@ -60,7 +60,7 @@ public class ReviewService {
 
         Long productId = orderProduct.getProductSkuId();
 
-        Review review = Review.from(orderProductId, productId, userId, dto);
+        Review review = Review.from(orderProductId, userId, productId, dto);
         Review savedReview = reviewRepo.save(review);
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
