@@ -13,23 +13,30 @@ import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
 import com.example.i_commerce.global.exception.AppException;
+import io.github.resilience4j.retry.RetryRegistry;
+import io.github.resilience4j.spring6.retry.configure.RetryAspect;
+import io.github.resilience4j.spring6.retry.configure.RetryConfigurationProperties;
+import io.github.resilience4j.springboot3.retry.autoconfigure.RetryAutoConfiguration;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
-@SpringBootTest
-@ExtendWith(MockitoExtension.class)
+@SpringJUnitConfig(classes = { TossPaymentClient.class })
+@Import(RetryAutoConfiguration.class) // ◀ Resilience4j의 모든 Retry AOP 인프라가 1초만에 켜집니다!
+@EnableAspectJAutoProxy
 class TossPaymentClientTest {
 
     @MockitoBean
@@ -87,7 +94,7 @@ class TossPaymentClientTest {
         given(restTemplate.postForEntity(anyString(), any(), eq(Map.class)))
                 .willThrow(new ResourceAccessException("취소 API 타임아웃"));
 
-        PaymentCancelRequest dto = new PaymentCancelRequest(1L, 10000, "PAYMENT_KEY_1", "고객 변심");
+        PaymentCancelRequest dto = new PaymentCancelRequest("toss_1_123", 10000, "PAYMENT_KEY_1", "고객 변심");
 
 
         assertThatThrownBy(() -> tossPaymentClient.requestCanceled(dto))
@@ -96,5 +103,4 @@ class TossPaymentClientTest {
 
         verify(restTemplate, times(1)).postForEntity(anyString(), any(), eq(Map.class));
     }
-
 }

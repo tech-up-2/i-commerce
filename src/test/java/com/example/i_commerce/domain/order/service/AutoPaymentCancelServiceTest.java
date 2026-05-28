@@ -48,6 +48,8 @@ class AutoPaymentCancelServiceTest {
 
     private Payment payment;
     private Order order;
+    String tossOrderId = "toss_order-id";
+    String paymentKey = "toss_payment-key";
 
     @BeforeEach
     void setUp() {
@@ -68,8 +70,8 @@ class AutoPaymentCancelServiceTest {
     @DisplayName("[자동 취소 성공] 토스 취소 API가 성공하면 결제는 FAILED, 주문은 CANCELLED로 변경된다")
     void autoCancelPayment_success() {
         // given
-        PaymentCancelRequest dto = new PaymentCancelRequest(1L, 10000, "toss_1_123", "재고 부족 자동 취소");
-        given(paymentRepository.findById(1L)).willReturn(Optional.of(payment));
+        PaymentCancelRequest dto = new PaymentCancelRequest(tossOrderId, 10000, paymentKey, "재고 부족 자동 취소");
+        given(paymentRepository.findByTossOrderIdWithOrder(tossOrderId)).willReturn(Optional.of(payment));
         Map<String, Object> response = Map.of("status", "CANCELED", "paymentKey", "toss_1_123");
         given(tossPaymentClient.requestCanceled(dto)).willReturn(response);
 
@@ -87,8 +89,8 @@ class AutoPaymentCancelServiceTest {
     @DisplayName("[자동 취소 타임아웃] 취소 중 타임아웃이 발생하면 주문은 CANCEL_REQUESTED(취소요청)로 격리된다")
     void autoCancelPayment_fail_timeout() {
         // given
-        PaymentCancelRequest dto = new PaymentCancelRequest(1L, 10000, "toss_1_123", "재고 부족 자동 취소");
-        given(paymentRepository.findById(1L)).willReturn(Optional.of(payment));
+        PaymentCancelRequest dto = new PaymentCancelRequest(tossOrderId, 10000, paymentKey, "재고 부족 자동 취소");
+        given(paymentRepository.findByTossOrderIdWithOrder(tossOrderId)).willReturn(Optional.of(payment));
         given(tossPaymentClient.requestCanceled(dto))
                 .willThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT));
 

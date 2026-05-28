@@ -48,5 +48,13 @@ jwt:
   secretKey: Y2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2VuY2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2VuY2hhdHNlcnZlcnNlY3JldGFjY2Vzc3Rva2Vu
   expiration: 3000 # 3000?
 
+resilience4j.retry:
+  instances:
+    tossConfirmRetry:
+      maxAttempts: 3                            # 최대 3번 시도
+      waitDuration: 1s                          # 재시도 간격 1초
+      retryExceptions:
+        - org.springframework.web.client.ResourceAccessException
+
 toss:
   secretKey: ${TOSS_SECRET_KEY}

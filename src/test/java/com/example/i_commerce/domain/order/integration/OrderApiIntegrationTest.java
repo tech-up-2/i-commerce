@@ -206,8 +206,11 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
 
         PaymentDetailResponse paymentDetailResponse = paymentService.getPaymentDetails(testPrincipal.getId(), orderId);
         // 사이 프론트 생략
+
+        String tossOrderId = paymentDetailResponse.tossOrderId();
         PaymentConfirmRequest paymentConfirmRequest = new PaymentConfirmRequest(paymentKey,
             paymentDetailResponse.tossOrderId(), paymentDetailResponse.amount());
+
 
         jsonContent = objectMapper.writeValueAsString(paymentConfirmRequest);
 
@@ -248,7 +251,7 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
         Long paymentId = dataNode.path("paymentInfo").path("paymentId").asLong();
 
         // 결제 취소
-        PaymentCancelRequest paymentCancelRequest = new PaymentCancelRequest(paymentId, 10000,
+        PaymentCancelRequest paymentCancelRequest = new PaymentCancelRequest(tossOrderId, 10000,
             paymentKey, "단순 변심");
 
         jsonContent = objectMapper.writeValueAsString(paymentCancelRequest);
