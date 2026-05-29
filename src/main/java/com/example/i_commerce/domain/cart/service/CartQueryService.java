@@ -53,7 +53,8 @@ public class CartQueryService {
             productQueryService.getProductItemInfosByIds(productItemIds).stream()
                 .collect(Collectors.toMap(
                     ProductItemInfo::productItemId,
-                    Function.identity()
+                    Function.identity(),
+                    (existing, replacement) -> existing
                 ));
 
         Map<Long, StoreAccumulator> storeMap = new LinkedHashMap<>();

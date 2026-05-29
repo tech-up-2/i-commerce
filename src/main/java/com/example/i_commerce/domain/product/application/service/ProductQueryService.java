@@ -58,7 +58,7 @@ public class ProductQueryService  {
     }
 
     public List<ProductItemInfo> getProductItemInfosByIds(Set<Long> productItemIds) {
-        if (productItemIds.isEmpty()) {
+        if (productItemIds == null || productItemIds.isEmpty()) {
             return List.of();
         }
 
