@@ -11,27 +11,21 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Component
 @RequiredArgsConstructor
 public class TossPaymentClient {
 
-    private final RestTemplate restTemplate;
+    private final WebClient tossWebClient;
 
     @Value("${toss.secretKey}")
     private String SECRET_KEY;
     private String encodedKey;
-
-    private static final String BASE_URL = "https://api.tosspayments.com/v1/payments";
 
     @PostConstruct
     public void init() {
@@ -40,7 +34,7 @@ public class TossPaymentClient {
 
     @Retry(name = "tossConfirmRetry", fallbackMethod = "checkPaymentStatus")
     public Map<String, Object> requestConfirm(PaymentConfirmRequest dto) {
-        String url =  BASE_URL + "/confirm";
+        String url = "/confirm";
 
         Map<String, Object> params = new HashMap<>();
         params.put("orderId", dto.tossOrderId());
@@ -49,13 +43,16 @@ public class TossPaymentClient {
 
         try{
             return executePost(url, params);
-        } catch (HttpStatusCodeException e) {
-            throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
+        } catch (WebClientResponseException e) {
+            if (e.getStatusCode().is4xxClientError()) {
+                throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
+            }
+            throw e;
         }
     }
 
     public Map<String, Object> requestCanceled(PaymentCancelRequest dto) {
-        String url = BASE_URL+ "/" + dto.paymentKey() + "/cancel";
+        String url = "/" + dto.paymentKey() + "/cancel";
 
         Map<String, Object> params = new HashMap<>();
         params.put("cancelReason", dto.cancelReason());
@@ -63,47 +60,56 @@ public class TossPaymentClient {
 
         try{
             return executePost(url, params);
-        } catch (ResourceAccessException e) {
+        } catch (WebClientRequestException e) {
             throw new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT);
-        } catch (HttpStatusCodeException e) {
-            throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_FAILED);
+        } catch (WebClientResponseException e) {
+            if (e.getStatusCode().is4xxClientError()) {
+                throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_FAILED);
+            }
+            throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
         }
     }
 
-    public Map<String, Object> checkPaymentStatus(PaymentConfirmRequest dto, ResourceAccessException e) {
+    public Map<String, Object> checkPaymentStatus(PaymentConfirmRequest dto, Exception e) {
         return this.checkPaymentStatus(dto.paymentKey());
     }
 
-    public Map<String, Object> checkPaymentStatus(String paymentKey) {
-        String url = BASE_URL + "/" + paymentKey;
-
-        HttpHeaders headers = getCommonHeaders();
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
+    public Map checkPaymentStatus(String paymentKey) {
+        String url = "/" + paymentKey;
 
         try {
-            ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
-            return response.getBody();
+            return tossWebClient.get()
+                    .uri(url)
+                    .headers(httpHeaders -> {
+                        httpHeaders.set("Authorization", "Basic " + encodedKey);
+                        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                    })
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
 
-        } catch (ResourceAccessException ex) {
+        } catch (WebClientRequestException e) {
             throw new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT);
-        } catch (HttpStatusCodeException ex) {
-            throw new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND);
+        } catch (WebClientResponseException e) {
+            if (e.getStatusCode().is4xxClientError()) {
+                throw new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND);
+            }
+            throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
         }
     }
 
-    private Map<String, Object> executePost(String url, Map<String, Object> params) {
-        HttpHeaders headers = getCommonHeaders();
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(params, headers);
+    private Map executePost(String url, Map<String, Object> params) {
+        return tossWebClient.post()
+                .uri(url)
+                .headers(httpHeaders -> {
+                    httpHeaders.set("Authorization", "Basic " + encodedKey);
+                    httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                })
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(params)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(url, entity, Map.class);
-        return response.getBody();
     }
-
-    private HttpHeaders getCommonHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Basic " + encodedKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        return headers;
-    }
-
 }

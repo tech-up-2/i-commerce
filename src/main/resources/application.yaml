@@ -21,3 +21,14 @@ app:
 
 security:
   email-hmac-key: "m+Mtv+DxZbk0psKymGWCsAMTx1jSMIJnIV/SVtlCTT8="
+
+resilience4j.retry:
+  instances:
+    tossConfirmRetry:
+      maxAttempts: 3                            # 최대 3번 시도
+      waitDuration: 1s                          # 재시도 간격 1초
+      ignoreExceptions:
+        - org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
+        - org.springframework.web.reactive.function.client.WebClientResponseException.Unauthorized
+        - org.springframework.web.reactive.function.client.WebClientResponseException.Forbidden
+        - org.springframework.web.reactive.function.client.WebClientResponseException.NotFound
