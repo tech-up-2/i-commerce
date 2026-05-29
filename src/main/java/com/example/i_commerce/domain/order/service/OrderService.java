@@ -21,6 +21,7 @@ import com.example.i_commerce.domain.order.service.dto.CreateOrderResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse.OrderProductDetail;
 import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse.PaymentInfo;
+import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderSummaryResponse;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
@@ -171,8 +172,14 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderProduct findOrderProductById(Long orderProductId) {
-        return orderProductRepository.findById(orderProductId)
+    public OrderProductResponse getOrderProductForReview(Long orderProductId) {
+        OrderProduct orderProduct = orderProductRepository.findByIdWithOrder(orderProductId)
             .orElseThrow(() -> new AppException(OrderErrorCode.ORDER_PRODUCT_NOT_FOUND));
+
+        return new OrderProductResponse(
+            orderProduct.getProductSkuId(),
+            orderProduct.getOrder().getUserId(),
+            orderProduct.getOrder().getOrderStatus()
+        );
     }
 }
