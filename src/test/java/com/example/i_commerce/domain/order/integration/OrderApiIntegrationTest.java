@@ -71,8 +71,6 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private MemberRepository memberRepository;
     @Autowired
-    private PaymentRepository paymentRepository;
-    @Autowired
     private DeliveryAddressRepository deliveryAddressRepository;
     @Autowired
     private ProductRepository productRepository;

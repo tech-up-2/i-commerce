@@ -1,7 +1,6 @@
 package com.example.i_commerce.domain.order.facade;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
@@ -16,8 +15,9 @@ import com.example.i_commerce.domain.order.service.dto.PaymentCancelPreparedDto;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmPrepareDto;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
+import com.example.i_commerce.domain.product.event.OrderCancelledEvent;
+import com.example.i_commerce.domain.product.event.OrderCompletedEvent;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
-import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentFacadeTest {
@@ -42,7 +43,7 @@ class PaymentFacadeTest {
     TossPaymentClient tossPaymentClient;
 
     @Mock
-    StockFacade stockFacade;
+    ApplicationEventPublisher publisher;
 
     @InjectMocks
     PaymentFacade paymentFacade;
@@ -57,10 +58,11 @@ class PaymentFacadeTest {
     @BeforeEach
     void setUp() {
         Long paymentId = 1L;
+        Long orderId = 1L;
         confirmRequestDto = new PaymentConfirmRequest(paymentKey, tossOrderId, 1000);
-        confirmPrepareDto = new PaymentConfirmPrepareDto(paymentId, tossOrderId, null);
+        confirmPrepareDto = new PaymentConfirmPrepareDto(paymentId, orderId, tossOrderId, null);
         cancelRequestDto = new PaymentCancelRequest(tossOrderId, 1000, paymentKey, "단순 변심");
-        cancelPreparedDto = new PaymentCancelPreparedDto(tossOrderId, 1L);
+        cancelPreparedDto = new PaymentCancelPreparedDto(tossOrderId, orderId);
     }
 
     @Test
@@ -76,7 +78,7 @@ class PaymentFacadeTest {
         paymentFacade.confirmPayment(confirmRequestDto);
 
         verify(paymentService).completePaymentSuccess(tossOrderId, paymentKey, PaymentStatus.READY, responseBody.toString());
-        verify(stockFacade).deductStock(confirmPrepareDto.commands());
+        verify(publisher).publishEvent(any(OrderCompletedEvent.class));
     }
 
     @Test
@@ -87,7 +89,7 @@ class PaymentFacadeTest {
 
         given(paymentService.validateAndPrepareConfirm(confirmRequestDto)).willReturn(confirmPrepareDto);
         given(tossPaymentClient.requestConfirm(confirmRequestDto)).willReturn(responseBody);
-        doThrow(new AppException(ProductErrorCode.INSUFFICIENT_STOCK)).when(stockFacade).deductStock(confirmPrepareDto.commands());
+        doThrow(new AppException(ProductErrorCode.INSUFFICIENT_STOCK)).when(publisher).publishEvent(any(OrderCompletedEvent.class));
 
         assertThatThrownBy(() -> paymentFacade.confirmPayment(confirmRequestDto))
                 .isInstanceOf(AppException.class)
@@ -108,7 +110,7 @@ class PaymentFacadeTest {
                 .isInstanceOf(AppException.class)
                 .hasMessage(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD.getMessage());
 
-        verify(stockFacade).deductStock(confirmPrepareDto.commands());
+        verify(publisher).publishEvent(any(OrderCompletedEvent.class));
         verify(paymentService).handleTimeoutSuccess(confirmRequestDto.tossOrderId());
     }
 
@@ -117,7 +119,7 @@ class PaymentFacadeTest {
     void confirmPayment_Timeout_SafeRoute_Fail_OutOfStock() {
         given(paymentService.validateAndPrepareConfirm(confirmRequestDto)).willReturn(confirmPrepareDto);
         doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(tossPaymentClient).requestConfirm(confirmRequestDto);
-        doThrow(new AppException(ProductErrorCode.INSUFFICIENT_STOCK)).when(stockFacade).deductStock(confirmPrepareDto.commands());
+        doThrow(new AppException(ProductErrorCode.INSUFFICIENT_STOCK)).when(publisher).publishEvent(any(OrderCompletedEvent.class));
 
         assertThatThrownBy(() -> paymentFacade.confirmPayment(confirmRequestDto))
                 .isInstanceOf(AppException.class)
@@ -142,7 +144,7 @@ class PaymentFacadeTest {
         paymentFacade.cancelPayment(cancelRequestDto);
 
         verify(paymentService).completeCancelSuccess(cancelRequestDto, paymentKey, responseBody.toString());
-        verify(stockFacade).rollbackStocks(cancelPreparedDto.orderId());
+        verify(publisher).publishEvent(any(OrderCancelledEvent.class));
 
     }
 
