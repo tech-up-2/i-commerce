@@ -1,9 +1,6 @@
 package com.example.i_commerce.domain.order.integration;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
+// ...removed RestTemplate/Mockito stubs; replaced with MockWebServer enqueues
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -41,29 +38,33 @@ import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.MockResponse;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClient;
+import com.example.i_commerce.domain.order.config.TestWebClientConfig;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
+import com.example.i_commerce.domain.order.client.TossPaymentClient;
 
 
 @Transactional
 class OrderApiIntegrationTest extends IntegrationTestSupport {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    @MockitoBean
-    RestTemplate restTemplate;
+    @Autowired
+    private TossPaymentClient tossPaymentClient;
     @Autowired
     private MockMvc mockMvc;
     @Autowired
@@ -85,6 +86,29 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private OrderRepository orderRepository;
 
+    private static MockWebServer mockWebServer;
+
+    @BeforeAll
+    static void startServer() throws IOException {
+        mockWebServer = new MockWebServer();
+        mockWebServer.start(8089); // @TestPropertySource에 지정한 포트와 일치시킵니다.
+    }
+
+    @AfterAll
+    static void stopServer() throws IOException {
+        if (mockWebServer != null) {
+            mockWebServer.shutdown();
+        }
+    }
+
+    @BeforeEach
+    void setUp() {
+        // 시나리오 테스트 시작 전, 혹시 남아있을 가짜 응답 대기열을 완전히 비워줍니다.
+        mockWebServer.setDispatcher(new okhttp3.mockwebserver.QueueDispatcher());
+        // 테스트의 TossPaymentClient가 MockWebServer를 바라보도록 WebClient를 교체합니다.
+        WebClient targetWebClient = TestWebClientConfig.createTestWebClient(mockWebServer.url("/").toString());
+        ReflectionTestUtils.setField(tossPaymentClient, "tossWebClient", targetWebClient);
+    }
 
     protected CustomUserPrincipal loginAsMember() {
         Member member = Member.builder()
@@ -193,22 +217,22 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
         JsonNode root = objectMapper.readTree(responseBody);
         JsonNode dataNode = root.path("data");
 
-        // 결제
+        // 결제: MockWebServer에 결제 승인 응답을 준비합니다.
         String paymentKey = "toss_1_123";
-        Map<String, Object> tossResponseBody = new HashMap<>();
-        tossResponseBody.put("paymentKey", paymentKey);
-        ResponseEntity<Map> responseEntity = new ResponseEntity<>(tossResponseBody, HttpStatus.OK);
+        mockWebServer.enqueue(new MockResponse()
+            .setResponseCode(200)
+            .setHeader(org.springframework.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .setBody("{\"paymentKey\": \"" + paymentKey + "\"}"));
 
-        given(restTemplate.postForEntity(anyString(), any(), eq(Map.class)))
-            .willReturn(responseEntity);
+        Long orderId =  dataNode.path("orderId").asLong();
 
-        Long firstPaymentId = dataNode.path("paymentId").asLong();
-
-        PaymentDetailResponse paymentDetailResponse = paymentService.getPaymentDetails(
-            testPrincipal.getId(), firstPaymentId);
+        PaymentDetailResponse paymentDetailResponse = paymentService.getPaymentDetails(testPrincipal.getId(), orderId);
         // 사이 프론트 생략
+
+        String tossOrderId = paymentDetailResponse.tossOrderId();
         PaymentConfirmRequest paymentConfirmRequest = new PaymentConfirmRequest(paymentKey,
             paymentDetailResponse.tossOrderId(), paymentDetailResponse.amount());
+
 
         jsonContent = objectMapper.writeValueAsString(paymentConfirmRequest);
 
@@ -234,7 +258,7 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
         root = objectMapper.readTree(responseBody);
         dataNode = root.path("data");
 
-        long orderId = dataNode.get(0).path("orderId").asLong();
+        orderId = dataNode.get(0).path("orderId").asLong();
 
         // 상세 내역 조회
         mvcResult = mockMvc.perform(get("/api/v1/orders/" + orderId)
@@ -249,10 +273,16 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
         Long paymentId = dataNode.path("paymentInfo").path("paymentId").asLong();
 
         // 결제 취소
-        PaymentCancelRequest paymentCancelRequest = new PaymentCancelRequest(paymentId, 10000,
+        PaymentCancelRequest paymentCancelRequest = new PaymentCancelRequest(tossOrderId, 10000,
             paymentKey, "단순 변심");
 
         jsonContent = objectMapper.writeValueAsString(paymentCancelRequest);
+
+        // 결제 취소: MockWebServer에 취소 응답을 준비합니다.
+        mockWebServer.enqueue(new MockResponse()
+            .setResponseCode(200)
+            .setHeader(org.springframework.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .setBody("{\"paymentKey\": \"" + paymentKey + "\"}"));
 
         mvcResult = mockMvc.perform(post("/api/v1/payments/cancel")
                 .with(user(testPrincipal))
