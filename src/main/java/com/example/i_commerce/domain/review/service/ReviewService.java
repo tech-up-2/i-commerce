@@ -168,7 +168,11 @@ public class ReviewService {
 
         validateAuthor(review, userId);
 
-        review.delete();
+        if (review.getImages() != null && !review.getImages().isEmpty()) {
+            review.getImages().forEach(image -> s3ImageService.deleteImage(image.getImageUrl()));
+        }
+
+        reviewRepo.delete(review);
     }
 
     @Transactional
