@@ -25,6 +25,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -43,6 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
 @SecurityRequirement(name = "BearerAuth")
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/api/v1/reviews")
 public class ReviewController {
 
