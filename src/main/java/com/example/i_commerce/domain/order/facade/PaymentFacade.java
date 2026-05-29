@@ -92,6 +92,8 @@ public class PaymentFacade {
                 paymentService.handleCancelTimeout(target.tossOrderId(), dto.cancelAmount(), dto.cancelReason());
                 throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
             }
+
+            paymentService.failCancel(target.tossOrderId());
             throw e;
         }
     }

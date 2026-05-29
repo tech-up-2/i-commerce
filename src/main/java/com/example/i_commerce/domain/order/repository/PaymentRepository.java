@@ -13,4 +13,10 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     @Query("select p from Payment p join fetch p.order where p.tossOrderId = :tossOrderId")
     Optional<Payment> findByTossOrderIdWithOrder(@Param("tossOrderId") String tossOrderId);
+
+    @Query("select p from Payment p " +
+            "join fetch p.order o " +
+            "join fetch o.deliveries " +
+            "where p.tossOrderId = :tossOrderId")
+    Optional<Payment> findByTossOrderIdWithOrderAndDeliveries(@Param("tossOrderId") String tossOrderId);
 }

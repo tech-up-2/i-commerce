@@ -144,9 +144,9 @@ public class PaymentService {
     // 결제 취소 - 에러 핸들링
     //-----------------------------------
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PaymentCancelPreparedDto validateAndPrepareCancel(PaymentCancelRequest dto) {
-        Payment payment = paymentRepository.findByTossOrderIdWithOrder(dto.tossOrderId())
+        Payment payment = paymentRepository.findByTossOrderIdWithOrderAndDeliveries(dto.tossOrderId())
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
         if(!Objects.equals(dto.paymentKey(), payment.getPgTid())) {
@@ -167,10 +167,8 @@ public class PaymentService {
             if(delivery.getDeliveryStatus() != DeliveryStatus.PREPARING) {
                 throw new AppException(PaymentErrorCode.ALREADY_SHIPPED);
             }
+            delivery.changeDeliveryStatus(DeliveryStatus.CANCEL_REQUESTED);
         });
-
-        //TODO: 낙관적 락 개선
-        publisher.publishEvent(new DeliveryCancelRequestEvent(payment.getOrder().getId()));
 
         return new PaymentCancelPreparedDto(dto.tossOrderId(), order.getId());
     }
@@ -178,13 +176,14 @@ public class PaymentService {
     @Transactional
     public void completeCancelSuccess(PaymentCancelRequest dto, String pgTid, String responseStr) {
 
-        Payment payment = paymentRepository.findByTossOrderIdWithOrder(dto.tossOrderId()).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Payment payment = paymentRepository.findByTossOrderIdWithOrderAndDeliveries(dto.tossOrderId()).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         Order order = payment.getOrder();
 
         PaymentStatus previousStatus = payment.getPayStatus();
 
         payment.cancelPayment(dto.cancelAmount());
         order.changeOrderStatus(OrderStatus.CANCELLED);
+        order.getDeliveries().forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.CANCELLED));
 
         publisher.publishEvent(new PaymentStatusChangedEvent(
                 payment, previousStatus, dto.cancelReason(),
@@ -192,8 +191,15 @@ public class PaymentService {
     }
 
     @Transactional
+    public void failCancel(String tossOrderId) {
+        Payment payment = paymentRepository.findByTossOrderIdWithOrderAndDeliveries(tossOrderId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Order order = payment.getOrder();
+        order.getDeliveries().forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.PREPARING));
+    }
+
+    @Transactional
     public void handleCancelTimeout(String tossOrderId, int cancelAmount, String cancelReason) {
-        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Payment payment = paymentRepository.findByTossOrderIdWithOrderAndDeliveries(tossOrderId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         Order order = payment.getOrder();
 
         payment.prepareCancellation(cancelAmount, cancelReason);
