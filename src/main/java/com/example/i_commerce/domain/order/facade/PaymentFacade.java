@@ -1,10 +1,7 @@
 package com.example.i_commerce.domain.order.facade;
 
 import com.example.i_commerce.domain.order.client.TossPaymentClient;
-import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
-import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
-import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.service.AutoPaymentCancelService;
 import com.example.i_commerce.domain.order.service.PaymentService;
@@ -12,11 +9,14 @@ import com.example.i_commerce.domain.order.service.dto.PaymentCancelPreparedDto;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmPrepareDto;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
+import com.example.i_commerce.domain.product.event.OrderCancelledEvent;
+import com.example.i_commerce.domain.product.event.OrderCompletedEvent;
 import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -27,7 +27,7 @@ public class PaymentFacade {
     private final PaymentService paymentService;
     private final AutoPaymentCancelService autoPaymentCancelService;
     private final TossPaymentClient tossPaymentClient;
-    private final StockFacade stockFacade;
+    private final ApplicationEventPublisher publisher;
 
     public void confirmPayment(PaymentConfirmRequest dto) {
 
@@ -39,7 +39,7 @@ public class PaymentFacade {
             String pgTid = (String) response.get("paymentKey");
 
             try {
-                stockFacade.deductStock(target.commands());
+                publisher.publishEvent(new OrderCompletedEvent(target.commands()));
 
                 paymentService.completePaymentSuccess(target.tossOrderId(), pgTid, previousStatus, response.toString());
             } catch (AppException e) {
@@ -57,7 +57,9 @@ public class PaymentFacade {
 
             if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
                 try {
-                    stockFacade.deductStock(target.commands());
+                    publisher.publishEvent(new OrderCompletedEvent(target.commands()));
+
+
                     paymentService.handleTimeoutSuccess(target.tossOrderId());
                     throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
                 } catch (AppException ex) {
@@ -84,8 +86,8 @@ public class PaymentFacade {
 
             paymentService.completeCancelSuccess(dto, pgTid, response.toString());
 
-            stockFacade.rollbackStocks(target.orderId());
-
+            //TODO: 재고 원복 실패했을 때 처리 방법 고민해보기
+            publisher.publishEvent(new OrderCancelledEvent(target.orderId()));
         } catch (AppException e) {
             if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
                 log.error("[취소 비상] 결제 취소 중 타임아웃 발생. 토스 장부 확인 불가.");

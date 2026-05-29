@@ -1,12 +1,10 @@
 package com.example.i_commerce.domain.order.service;
 
-import com.example.i_commerce.domain.order.client.TossPaymentClient;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
-import com.example.i_commerce.domain.order.event.dto.DeliveryCancelRequestEvent;
 import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
 import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
@@ -101,7 +99,7 @@ public class PaymentService {
                 .map(op -> new StockDeductCommand(op.getProductSkuId(), op.getCount(), order.getId()))
                 .toList();
 
-        return PaymentConfirmPrepareDto.of(payment, commands);
+        return PaymentConfirmPrepareDto.of(payment, order.getId(), commands);
     }
 
     @Transactional
