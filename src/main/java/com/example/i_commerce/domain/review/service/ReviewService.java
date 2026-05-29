@@ -5,6 +5,7 @@ import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
 import com.example.i_commerce.domain.review.entity.Review;
+import com.example.i_commerce.domain.review.entity.ReviewImage;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.repository.StarRateCountProjection;
@@ -62,9 +63,9 @@ public class ReviewService {
         Long productId = orderInfo.productId();
 
         Review review = Review.from(orderProductId, userId, productId, dto);
-        Review savedReview = reviewRepo.save(review);
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
+
             for (MultipartFile file : imageFiles) {
                 if (!file.isEmpty()) {
                     String imageUrl = s3ImageService.uploadImage(file, "reviews");
@@ -72,6 +73,8 @@ public class ReviewService {
                 }
             }
         }
+
+        Review savedReview = reviewRepo.save(review);
 
         return savedReview.getId();
     }
@@ -149,13 +152,53 @@ public class ReviewService {
     }
 
     @Transactional
-    public Long editReview(Long reviewId, Long userId, UpdateReviewRequest dto) {
+    public Long editReview(Long reviewId, Long userId, UpdateReviewRequest dto, List<MultipartFile> newImageFiles) {
         Review review = getReviewOrThrow(reviewId);
 
         validateAuthor(review, userId);
         reviewForbiddenWordValidator.validateContent(dto.getContent());
 
-        review.update(dto.getContent(), dto.getStarRate(), dto.getImageUrls());
+        List<String> originalImageUrls = review.getImages().stream()
+            .map(ReviewImage::getImageUrl)
+            .toList();
+
+        List<String> finalImageUrls = new ArrayList<>();
+
+        if (dto.getImageUrls() == null) {
+            finalImageUrls.addAll(originalImageUrls);
+        } else {
+            for (String requestUrl : dto.getImageUrls()) {
+                if (!originalImageUrls.contains(requestUrl)) {
+                    throw new AppException(ReviewErrorCode.UNMATCHED_REVIEW_IMAGE);
+                }
+            }
+            finalImageUrls.addAll(dto.getImageUrls());
+        }
+
+        long newImageCount = 0;
+        if (newImageFiles != null) {
+            newImageCount = newImageFiles.stream().filter(file -> !file.isEmpty()).count();
+        }
+
+        if (finalImageUrls.size() + newImageCount > 10) {
+            throw new AppException(ReviewErrorCode.EXCEED_MAX_IMAGE_COUNT);
+        }
+
+        review.getImages().stream()
+            .map(ReviewImage::getImageUrl)
+            .filter(oldUrl -> !finalImageUrls.contains(oldUrl))
+            .forEach(url -> s3ImageService.deleteImage(url));
+
+        if (newImageFiles != null && !newImageFiles.isEmpty()) {
+            for (MultipartFile file : newImageFiles) {
+                if (!file.isEmpty()) {
+                    String uploadedUrl = s3ImageService.uploadImage(file, "reviews");
+                    finalImageUrls.add(uploadedUrl);
+                }
+            }
+        }
+
+        review.update(dto.getContent(), dto.getStarRate(), finalImageUrls);
 
         return reviewId;
     }
@@ -166,7 +209,11 @@ public class ReviewService {
 
         validateAuthor(review, userId);
 
-        review.delete();
+        if (review.getImages() != null && !review.getImages().isEmpty()) {
+            review.getImages().forEach(image -> s3ImageService.deleteImage(image.getImageUrl()));
+        }
+
+        reviewRepo.delete(review);
     }
 
     @Transactional
