@@ -2,11 +2,11 @@ package com.example.i_commerce.domain.product.application.service;
 
 
 import com.example.i_commerce.domain.product.application.mapper.CategoryAttributeMapper;
-import com.example.i_commerce.domain.product.controller.request.AddCategoryAttributeRequest;
-import com.example.i_commerce.domain.product.controller.response.AddCategoryAttributeResponse;
-import com.example.i_commerce.domain.product.controller.response.AddCategoryAttributeResponse.AlreadyExistsAttribute;
+import com.example.i_commerce.domain.product.presentation.request.AddCategoryAttributeRequest;
+import com.example.i_commerce.domain.product.presentation.response.AddCategoryAttributeResponse;
+import com.example.i_commerce.domain.product.presentation.response.AddCategoryAttributeResponse.AlreadyExistsAttribute;
 import com.example.i_commerce.domain.product.application.dto.CategoryAttributeGroupDto;
-import com.example.i_commerce.domain.product.controller.response.CategoryAttributeResponse;
+import com.example.i_commerce.domain.product.presentation.response.CategoryAttributeResponse;
 import com.example.i_commerce.domain.product.entity.Attribute;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.CategoryAttribute;

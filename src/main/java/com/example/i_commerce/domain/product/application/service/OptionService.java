@@ -1,8 +1,8 @@
 package com.example.i_commerce.domain.product.application.service;
 
 
-import com.example.i_commerce.domain.product.controller.request.CreateOptionRequest;
-import com.example.i_commerce.domain.product.controller.response.OptionResponse;
+import com.example.i_commerce.domain.product.presentation.request.CreateOptionRequest;
+import com.example.i_commerce.domain.product.presentation.response.OptionResponse;
 import com.example.i_commerce.domain.product.entity.Option;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.OptionRepository;

@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.product.fixture;
 
 import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.entity.ProductItemStatus;
+import com.example.i_commerce.domain.product.entity.enums.ProductItemStatus;
 import com.example.i_commerce.domain.product.entity.ProductOptionValue;
 import java.util.List;
 

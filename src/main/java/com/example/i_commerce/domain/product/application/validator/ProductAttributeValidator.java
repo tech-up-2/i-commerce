@@ -1,9 +1,9 @@
 package com.example.i_commerce.domain.product.application.validator;
 
 
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ItemAttributeRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ProductItemRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ItemAttributeRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ProductItemRequest;
 import com.example.i_commerce.domain.product.entity.Attribute;
 import com.example.i_commerce.domain.product.entity.CategoryAttribute;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;

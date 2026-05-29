@@ -14,14 +14,9 @@ import org.springframework.stereotype.Repository;
 public interface ProductItemRepository extends JpaRepository<ProductItem, Long> {
 
     @Query("""
-        SELECT
-            pi.id as productItemId,
-            p.name as productName,
-            p.storeId as storeId,
-            pi.price as price,
-            pi.displayOptionName as displayOptionName,
-            s.quantity as stockQuantity,
-            pi.status as status
+        SELECT new com.example.i_commerce.domain.product.repository.projection.ProductItemInfoProjection(
+                pi.id, p.name, p.storeId, pi.price, pi.displayOptionName, s.quantity, pi.status
+        )
         FROM ProductItem pi
         JOIN pi.product p
         JOIN pi.stock s
@@ -30,14 +25,9 @@ public interface ProductItemRepository extends JpaRepository<ProductItem, Long> 
     Optional<ProductItemInfoProjection> findItemInfoById(@Param("itemId") Long itemId);
 
     @Query("""
-        SELECT
-            pi.id as productItemId,
-            p.name as productName,
-            p.storeId as storeId,
-            pi.price as price,
-            pi.displayOptionName as displayOptionName,
-            s.quantity as stockQuantity,
-            pi.status as status
+        SELECT new com.example.i_commerce.domain.product.repository.projection.ProductItemInfoProjection(
+                pi.id, p.name, p.storeId, pi.price, pi.displayOptionName, s.quantity, pi.status
+        )
         FROM ProductItem pi
         JOIN pi.product p
         JOIN pi.stock s

@@ -1,4 +1,3 @@
-
 package com.example.i_commerce.domain.chat.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,9 +23,8 @@ import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
-import com.example.i_commerce.domain.product.entity.ProductOptionType;
-import com.example.i_commerce.domain.product.entity.ProductStatus;
-import com.example.i_commerce.domain.product.repository.ProductRepository;
+import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
+import com.example.i_commerce.domain.product.entity.enums.ProductStatus;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;

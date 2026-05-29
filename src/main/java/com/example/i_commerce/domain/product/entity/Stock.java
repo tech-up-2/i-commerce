@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.product.entity;
 
+import com.example.i_commerce.domain.product.entity.enums.StockStatus;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import com.example.i_commerce.global.exception.AppException;

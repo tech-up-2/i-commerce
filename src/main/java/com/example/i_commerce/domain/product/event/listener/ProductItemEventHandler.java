@@ -2,7 +2,7 @@ package com.example.i_commerce.domain.product.event.listener;
 
 
 import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.entity.ProductItemStatus;
+import com.example.i_commerce.domain.product.entity.enums.ProductItemStatus;
 import com.example.i_commerce.domain.product.event.StockDepletedEvent;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import java.util.List;

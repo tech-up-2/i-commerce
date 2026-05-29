@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.cart.controller.response;
 
 import com.example.i_commerce.domain.cart.entity.CartItem;
-import com.example.i_commerce.domain.cart.infrastructure.ProductItemInfo;
+import com.example.i_commerce.domain.product.application.dto.ProductItemInfo;
 import lombok.Builder;
 
 @Builder
