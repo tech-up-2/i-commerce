@@ -1,11 +1,11 @@
 package com.example.i_commerce.domain.product.fixture;
 
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ItemAttributeRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionValueRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ProductItemRequest;
-import com.example.i_commerce.domain.product.entity.ProductOptionType;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ItemAttributeRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.OptionRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.OptionValueRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ProductItemRequest;
+import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
 import java.util.List;
 
 public class CreateProductRequestFixture {

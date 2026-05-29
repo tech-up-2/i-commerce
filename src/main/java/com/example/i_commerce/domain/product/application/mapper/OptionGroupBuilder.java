@@ -2,7 +2,7 @@ package com.example.i_commerce.domain.product.application.mapper;
 
 import com.example.i_commerce.domain.product.application.dto.ProductOptionGroupDto;
 import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.entity.ProductOptionType;
+import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
 import com.example.i_commerce.domain.product.entity.ProductOptionValue;
 import java.util.ArrayList;
 import java.util.Collections;

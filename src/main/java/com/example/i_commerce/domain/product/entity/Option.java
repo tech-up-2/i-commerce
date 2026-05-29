@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.product.entity;
 
+import com.example.i_commerce.domain.product.entity.enums.OptionInputType;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

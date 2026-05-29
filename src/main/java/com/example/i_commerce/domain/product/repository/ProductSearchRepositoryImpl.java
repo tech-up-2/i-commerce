@@ -1,9 +1,9 @@
 package com.example.i_commerce.domain.product.repository;
 
 import com.example.i_commerce.domain.product.application.dto.ProductSearchQuery;
-import com.example.i_commerce.domain.product.controller.response.ProductItemSearchResponse;
-import com.example.i_commerce.domain.product.entity.ProductItemStatus;
-import com.example.i_commerce.domain.product.entity.ProductStatus;
+import com.example.i_commerce.domain.product.presentation.response.ProductItemSearchResponse;
+import com.example.i_commerce.domain.product.entity.enums.ProductItemStatus;
+import com.example.i_commerce.domain.product.entity.enums.ProductStatus;
 import com.example.i_commerce.domain.product.entity.QAttribute;
 import com.example.i_commerce.domain.product.entity.QCategory;
 import com.example.i_commerce.domain.product.entity.QProduct;

@@ -1,12 +1,12 @@
 package com.example.i_commerce.domain.product.application.validator;
 
 
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionValueRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.OptionRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.OptionValueRequest;
 import com.example.i_commerce.domain.product.entity.CategoryOption;
 import com.example.i_commerce.domain.product.entity.Option;
-import com.example.i_commerce.domain.product.entity.ProductOptionType;
+import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.CategoryOptionRepository;
 import com.example.i_commerce.global.exception.AppException;

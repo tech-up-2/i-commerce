@@ -2,9 +2,9 @@ package com.example.i_commerce.domain.product.fixture;
 
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.entity.Stock;
-import com.example.i_commerce.domain.product.entity.StockChangeType;
+import com.example.i_commerce.domain.product.entity.enums.StockChangeType;
 import com.example.i_commerce.domain.product.entity.StockHistory;
-import com.example.i_commerce.domain.product.entity.StockStatus;
+import com.example.i_commerce.domain.product.entity.enums.StockStatus;
 
 
 public class StockFixture {
