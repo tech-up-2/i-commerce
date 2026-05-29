@@ -55,6 +55,7 @@ public class ChatRoomService {
             .orElseThrow(() -> new AppException(
                 MemberErrorCode.USER_NOT_FOUND));
 
+        reqToSelf(member, otherMember);
         chatRoleChecker.roleCheck(member, otherMember);
 
 //       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 에러코드를 return
@@ -160,6 +161,11 @@ public class ChatRoomService {
         }
 
         return ApiResponse.success();
+    }
+    public void reqToSelf(Member member, Member othermember){
+        if(member.getId().equals(othermember.getId())){
+            throw new AppException(ChatErrorCode.CANNOT_REQUEST_TO_SELF);
+        }
     }
 
 }

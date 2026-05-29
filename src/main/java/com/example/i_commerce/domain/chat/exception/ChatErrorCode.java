@@ -15,6 +15,7 @@ public enum ChatErrorCode implements ErrorCode {
     ONLY_GROUP_CHAT_CAN_LEAVE(HttpStatus.BAD_REQUEST, "CHT-40002", "그룹 채팅만 퇴장기능을 이용할 수 있습니다."),
     CANNOT_CHAT_SAME_ROLE(HttpStatus.BAD_REQUEST, "CHT-40003", "같은 권한의 사용자끼리 대화를 할 수 없습니다."),
     CANNOT_REPORT_SELF(HttpStatus.BAD_REQUEST, "CHT-40004", "본인의 메시지는 신고할 수 없습니다."),
+    CANNOT_REQUEST_TO_SELF(HttpStatus.BAD_REQUEST, "CHT-40005", "본인에게는 채팅을 신청할 수 없습니다."),
 
 //    401
     INVALID_STOMP_TOKEN_HEADER(HttpStatus.UNAUTHORIZED, "CHT-40101", "STOMP에서 사용할 토큰 헤더 값이 올바르지 않습니다."),
