@@ -5,15 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.example.i_commerce.domain.order.entity.Order;
-import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.service.OrderService;
+import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
@@ -62,15 +60,8 @@ public class ReviewServiceTest {
 
         given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
 
-        Order mockOrder = mock(Order.class);
-        OrderProduct mockOrderProduct = mock(OrderProduct.class);
-
-        given(mockOrder.getUserId()).willReturn(userId);
-        given(mockOrder.getOrderStatus()).willReturn(OrderStatus.COMPLETED);
-        given(mockOrderProduct.getOrder()).willReturn(mockOrder);
-        given(mockOrderProduct.getProductSkuId()).willReturn(productId);
-
-        given(orderService.findOrderProductById(orderProductId)).willReturn(mockOrderProduct);
+        OrderProductResponse mockResponse = new OrderProductResponse(productId, userId, OrderStatus.COMPLETED);
+        given(orderService.getOrderProductForReview(orderProductId)).willReturn(mockResponse);
 
         Review mockReview = Review.builder().id(reviewId).build();
         given(reviewRepo.save(any(Review.class))).willReturn(mockReview);
@@ -89,19 +80,14 @@ public class ReviewServiceTest {
         // given
         Long userId = 1L;
         Long orderProductId = 10L;
+        Long productId = 99L;
         CreateReviewRequest request = new CreateReviewRequest("내 돈 내 산 리뷰", 5);
         List<MultipartFile> imageFiles = List.of();
 
         given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
 
-        Order mockOrder = mock(Order.class);
-        OrderProduct mockOrderProduct = mock(OrderProduct.class);
-
-        given(mockOrder.getUserId()).willReturn(userId);
-        given(mockOrder.getOrderStatus()).willReturn(OrderStatus.PENDING); // ⭐️ 예외 발생 지점
-        given(mockOrderProduct.getOrder()).willReturn(mockOrder);
-
-        given(orderService.findOrderProductById(orderProductId)).willReturn(mockOrderProduct);
+        OrderProductResponse mockResponse = new OrderProductResponse(productId, userId, OrderStatus.PENDING);
+        given(orderService.getOrderProductForReview(orderProductId)).willReturn(mockResponse);
 
         // when & then
         assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request, imageFiles))
@@ -129,7 +115,8 @@ public class ReviewServiceTest {
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.ALREADY_REVIEWED);
 
         verify(reviewRepo, never()).save(any(Review.class));
-        verify(orderService, never()).findOrderProductById(anyLong());
+
+        verify(orderService, never()).getOrderProductForReview(anyLong());
     }
 
     @Test
