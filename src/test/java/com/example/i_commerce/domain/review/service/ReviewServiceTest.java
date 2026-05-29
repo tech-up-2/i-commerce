@@ -10,6 +10,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
+import com.example.i_commerce.domain.order.service.OrderService;
+import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
@@ -32,6 +34,9 @@ public class ReviewServiceTest {
     @Mock
     private ReviewRepository reviewRepo;
 
+    @Mock
+    private OrderService orderService;
+
     @InjectMocks
     private ReviewService reviewService;
 
@@ -48,14 +53,15 @@ public class ReviewServiceTest {
         Long userId = 1L;
         Long orderProductId = 10L;
         Long reviewId = 100L;
+        Long productId = 99L;
 
         CreateReviewRequest request = new CreateReviewRequest("굳굳", 5);
         List<MultipartFile> imageFiles = List.of();
 
-        given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
-            .willReturn(true);
+        given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
 
-        given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(false);
+        OrderProductResponse mockResponse = new OrderProductResponse(productId, userId, OrderStatus.COMPLETED);
+        given(orderService.getOrderProductForReview(orderProductId)).willReturn(mockResponse);
 
         Review mockReview = Review.builder().id(reviewId).build();
         given(reviewRepo.save(any(Review.class))).willReturn(mockReview);
@@ -74,18 +80,19 @@ public class ReviewServiceTest {
         // given
         Long userId = 1L;
         Long orderProductId = 10L;
+        Long productId = 99L;
         CreateReviewRequest request = new CreateReviewRequest("내 돈 내 산 리뷰", 5);
         List<MultipartFile> imageFiles = List.of();
 
-        given(reviewRepo.existsByOrderProductIdAndUserId(orderProductId, userId)).willReturn(false);
+        given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
 
-        given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
-            .willReturn(false);
+        OrderProductResponse mockResponse = new OrderProductResponse(productId, userId, OrderStatus.PENDING);
+        given(orderService.getOrderProductForReview(orderProductId)).willReturn(mockResponse);
 
         // when & then
         assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request, imageFiles))
             .isInstanceOf(AppException.class)
-            .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.NOT_ACTUAL_BUYER);
+            .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.REVIEW_NOT_ALLOWED_STATE);
 
         verify(reviewRepo, never()).save(any(Review.class));
     }
@@ -100,7 +107,7 @@ public class ReviewServiceTest {
         CreateReviewRequest request = new CreateReviewRequest("리뷰 또 쓰고 싶다", 5);
         List<MultipartFile> imageFiles = List.of();
 
-        given(reviewRepo.existsByOrderProductIdAndUserId(orderProductId, userId)).willReturn(true);
+        given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(true);
 
         //when&then
         assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request, imageFiles))
@@ -108,13 +115,14 @@ public class ReviewServiceTest {
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.ALREADY_REVIEWED);
 
         verify(reviewRepo, never()).save(any(Review.class));
+
+        verify(orderService, never()).getOrderProductForReview(anyLong());
     }
 
     @Test
     @DisplayName("실패: 별점이 1점 미만 혹은 5점 초과면 예외가 발생한다")
     void createReview_Fail_InvalidStarRating(){
         //given
-
         Long userId = 1L;
         Long orderProductId = 10L;
 
@@ -126,8 +134,7 @@ public class ReviewServiceTest {
             .isInstanceOf(AppException.class)
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.INVALID_STAR_RATING);
 
-        verify(reviewRepo, never()).existsByOrderProductIdAndUserId(anyLong(), anyLong());
+        verify(reviewRepo, never()).existsByOrderProductId(anyLong());
         verify(reviewRepo, never()).save(any(Review.class));
     }
-
 }

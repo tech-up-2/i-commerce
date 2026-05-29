@@ -43,7 +43,7 @@ public class ReviewCommentService {
         Review review = reviewRepo.findById(reviewId)
             .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
 
-        Long storeId = reviewRepo.findStoreIdByProductId(review.getProductId());
+        Long storeId = productQueryService.getStoreIdByProductId(review.getProductId());
 
         if (storeId == null) {
             throw new AppException(ReviewErrorCode.PRODUCT_NOT_FOUND);

@@ -21,6 +21,7 @@ import com.example.i_commerce.domain.order.service.dto.CreateOrderResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse.OrderProductDetail;
 import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse.PaymentInfo;
+import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderSummaryResponse;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
@@ -29,6 +30,7 @@ import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.exception.ErrorCode;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -167,5 +169,17 @@ public class OrderService {
         if (!order.getUserId().equals(userId)) {
             throw new AppException(OrderErrorCode.ORDER_NOT_OWNED);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public OrderProductResponse getOrderProductForReview(Long orderProductId) {
+        OrderProduct orderProduct = orderProductRepository.findByIdWithOrder(orderProductId)
+            .orElseThrow(() -> new AppException(OrderErrorCode.ORDER_PRODUCT_NOT_FOUND));
+
+        return new OrderProductResponse(
+            orderProduct.getProductSkuId(),
+            orderProduct.getOrder().getUserId(),
+            orderProduct.getOrder().getOrderStatus()
+        );
     }
 }
