@@ -54,4 +54,9 @@ public class Delivery extends BaseEntity {
     public void changeDeliveryStatus(DeliveryStatus deliveryStatus) {
         this.deliveryStatus = deliveryStatus;
     }
+
+    public void registerTrackingNumber(String trackingNo) {
+        this.trackingNo = trackingNo;
+        this.changeDeliveryStatus(DeliveryStatus.SHIPPING);
+    }
 }
