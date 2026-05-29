@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.5'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com.example'
@@ -79,4 +80,28 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     jvmArgs("-XX:+EnableDynamicAgentLoading")
+    finalizedBy tasks.jacocoTestReport
+    //ignoreFailures = true
+}
+
+tasks.named('jacocoTestReport', JacocoReport)  {
+    dependsOn tasks.test
+
+    executionData.setFrom(
+            fileTree(layout.buildDirectory).include("jacoco/*.exec")
+    )
+
+    sourceDirectories.setFrom(files("src/main/java"))
+    classDirectories.setFrom(
+            fileTree("build/classes/java/main") {
+                include "**/service/**"
+                include "**/entity/**"
+            }
+    )
+
+    reports {
+        html.required = true
+        xml.required = false
+        csv.required = false
+    }
 }
