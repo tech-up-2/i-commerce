@@ -1,9 +1,11 @@
+
 package com.example.i_commerce.domain.chat.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+import com.example.i_commerce.domain.chat.entity.ChatMessage;
 import com.example.i_commerce.domain.chat.entity.ChatParticipant;
 import com.example.i_commerce.domain.chat.entity.ChatRoom;
 import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
@@ -13,14 +15,18 @@ import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
 import com.example.i_commerce.domain.chat.util.ChatRoleChecker;
 import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
+import com.example.i_commerce.domain.chat.util.TempChatUtil;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
+import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductOptionType;
 import com.example.i_commerce.domain.product.entity.ProductStatus;
+import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;

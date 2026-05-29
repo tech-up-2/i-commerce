@@ -37,6 +37,7 @@ public class ChatRoomService {
     private final ChatRoomNameGenerator chatRoomNameGenerator;
 
 
+
     public void addParticipantToRoom(ChatRoom chatRoom, Long memberId) {
         ChatParticipant chatParticipant = ChatParticipant.builder()
             .chatRoom(chatRoom)
@@ -88,7 +89,7 @@ public class ChatRoomService {
             ProductErrorCode.PRODUCT_NOT_FOUND));
 
 //      채팅방 중복 여부 검증
-        if (chatRoomRepository.existsByProductIdAndIsGroupChat(productId, true)) {
+        if (chatRoomRepository.existsByProductIdAndIsGroupChat(product.getId(), true)) {
             throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
         }
 
@@ -97,7 +98,7 @@ public class ChatRoomService {
         ChatRoom chatRoom = ChatRoom.builder()
             .name(ProductRoomName)
             .isGroupChat(true)
-            .product(product)
+            .productId(product.getId())
             .build();
 
         chatRoomRepository.save(chatRoom);

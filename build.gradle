@@ -70,6 +70,10 @@ dependencies {
     //스프링 부트 기본 로컬 캐시
     implementation 'org.springframework.boot:spring-boot-starter-cache'
 
+    //spring actuator, prometheus, grafana
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
 }
 
 tasks.named('test') {

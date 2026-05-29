@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.chat.service;
+package com.example.i_commerce.domain.chat.service.oldtest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,6 +10,7 @@ import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
+import com.example.i_commerce.domain.chat.service.ChatRoomService;
 import com.example.i_commerce.domain.chat.util.ChatRoleChecker;
 import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
 import com.example.i_commerce.domain.member.entity.Member;
@@ -58,7 +59,6 @@ public class ChatRoomServiceTest {
 
     private Member member;
     private Member member2;
-    private CustomUserPrincipal customUserPrincipal;
     private Member otherMember;
     private ChatRoom singlechatRoom;
     private ChatRoom groupchatRoom;
