@@ -5,6 +5,7 @@ import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
 import com.example.i_commerce.domain.review.entity.Review;
+import com.example.i_commerce.domain.review.entity.ReviewImage;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.repository.StarRateCountProjection;
@@ -151,13 +152,33 @@ public class ReviewService {
     }
 
     @Transactional
-    public Long editReview(Long reviewId, Long userId, UpdateReviewRequest dto) {
+    public Long editReview(Long reviewId, Long userId, UpdateReviewRequest dto, List<MultipartFile> newImageFiles) {
         Review review = getReviewOrThrow(reviewId);
 
         validateAuthor(review, userId);
         reviewForbiddenWordValidator.validateContent(dto.getContent());
 
-        review.update(dto.getContent(), dto.getStarRate(), dto.getImageUrls());
+        List<String> finalImageUrls = new ArrayList<>();
+
+        if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
+            finalImageUrls.addAll(dto.getImageUrls());
+        }
+
+        review.getImages().stream()
+            .map(ReviewImage::getImageUrl)
+            .filter(oldUrl -> !finalImageUrls.contains(oldUrl))
+            .forEach(url -> s3ImageService.deleteImage(url));
+
+        if (newImageFiles != null && !newImageFiles.isEmpty()) {
+            for (MultipartFile file : newImageFiles) {
+                if (!file.isEmpty()) {
+                    String uploadedUrl = s3ImageService.uploadImage(file, "reviews");
+                    finalImageUrls.add(uploadedUrl);
+                }
+            }
+        }
+
+        review.update(dto.getContent(), dto.getStarRate(), finalImageUrls);
 
         return reviewId;
     }

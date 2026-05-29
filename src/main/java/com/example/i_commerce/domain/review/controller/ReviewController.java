@@ -16,6 +16,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -32,8 +34,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Review API", description = "리뷰 관련 API")
 @SecurityRequirement(name = "BearerAuth")
@@ -89,8 +93,10 @@ public class ReviewController {
     public ApiResponse<Long> editReview(
         @PathVariable Long reviewId,
         @AuthenticationPrincipal CustomUserPrincipal principal,
-        @RequestBody @Valid UpdateReviewRequest dto) {
-        Long editedReviewId = reviewService.editReview(reviewId, principal.getId(), dto);
+        @RequestPart(value = "review") @Valid UpdateReviewRequest dto,
+        @Size(max = 10, message = "이미지는 최대 10장까지 업로드할 수 있습니다.")
+        @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles) {
+        Long editedReviewId = reviewService.editReview(reviewId, principal.getId(), dto, imageFiles);
         return ApiResponse.success(editedReviewId);
     }
 
