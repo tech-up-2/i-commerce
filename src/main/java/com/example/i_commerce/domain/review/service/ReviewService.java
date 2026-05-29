@@ -168,6 +168,15 @@ public class ReviewService {
             finalImageUrls.addAll(dto.getImageUrls());
         }
 
+        long newImageCount = 0;
+        if (newImageFiles != null) {
+            newImageCount = newImageFiles.stream().filter(file -> !file.isEmpty()).count();
+        }
+
+        if (finalImageUrls.size() + newImageCount > 10) {
+            throw new AppException(ReviewErrorCode.EXCEED_MAX_IMAGE_COUNT);
+        }
+
         review.getImages().stream()
             .map(ReviewImage::getImageUrl)
             .filter(oldUrl -> !finalImageUrls.contains(oldUrl))
