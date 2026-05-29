@@ -93,9 +93,12 @@ tasks.named('jacocoTestReport', JacocoReport)  {
 
     sourceDirectories.setFrom(files("src/main/java"))
     classDirectories.setFrom(
-            fileTree("build/classes/java/main") {
+            fileTree(layout.buildDirectory.dir("classes/java/main")) {
                 include "**/service/**"
                 include "**/entity/**"
+                exclude "**/dto/**"
+                exclude "**/config/**"
+                exclude "**/Q*.class"
             }
     )
 
