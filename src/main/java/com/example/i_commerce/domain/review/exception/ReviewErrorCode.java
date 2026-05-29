@@ -20,6 +20,7 @@ public enum ReviewErrorCode implements ErrorCode {
     FORBIDDEN_WORD_INCLUDED(HttpStatus.BAD_REQUEST, "REV-40913", "금칙어가 포함되어 있습니다.") ,
     REVIEW_NOT_ALLOWED_STATE(HttpStatus.BAD_REQUEST, "REV-40916", "구매 확정일 때만 리뷰 등록이 가능합니다."),
     EXCEED_MAX_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "REV-40917", "사진은 최대 10장까지 올릴 수 있습니다."),
+    UNMATCHED_REVIEW_IMAGE(HttpStatus.BAD_REQUEST, "REV-40918", "요청하신 이미지 중 해당 리뷰에 등록되지 않은 이미지가 포함되어 있습니다."),
 
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REV-40907", "해당 리뷰를 찾을 수 없습니다."),
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "REV-40908", "해당 신고를 찾을 수 없습니다."),

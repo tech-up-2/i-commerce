@@ -158,13 +158,20 @@ public class ReviewService {
         validateAuthor(review, userId);
         reviewForbiddenWordValidator.validateContent(dto.getContent());
 
+        List<String> originalImageUrls = review.getImages().stream()
+            .map(ReviewImage::getImageUrl)
+            .toList();
+
         List<String> finalImageUrls = new ArrayList<>();
 
         if (dto.getImageUrls() == null) {
-            finalImageUrls.addAll(review.getImages().stream()
-                .map(ReviewImage::getImageUrl)
-                .toList());
+            finalImageUrls.addAll(originalImageUrls);
         } else {
+            for (String requestUrl : dto.getImageUrls()) {
+                if (!originalImageUrls.contains(requestUrl)) {
+                    throw new AppException(ReviewErrorCode.UNMATCHED_REVIEW_IMAGE);
+                }
+            }
             finalImageUrls.addAll(dto.getImageUrls());
         }
 
