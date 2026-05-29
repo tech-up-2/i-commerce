@@ -146,7 +146,7 @@ public class PaymentService {
 
     @Transactional
     public PaymentCancelPreparedDto validateAndPrepareCancel(PaymentCancelRequest dto) {
-        Payment payment = paymentRepository.findByTossOrderIdWithOrderAndDeliveries(dto.tossOrderId())
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(dto.tossOrderId())
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
         if(!Objects.equals(dto.paymentKey(), payment.getPgTid())) {
@@ -176,7 +176,7 @@ public class PaymentService {
     @Transactional
     public void completeCancelSuccess(PaymentCancelRequest dto, String pgTid, String responseStr) {
 
-        Payment payment = paymentRepository.findByTossOrderIdWithOrderAndDeliveries(dto.tossOrderId()).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(dto.tossOrderId()).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         Order order = payment.getOrder();
 
         PaymentStatus previousStatus = payment.getPayStatus();
@@ -192,14 +192,14 @@ public class PaymentService {
 
     @Transactional
     public void failCancel(String tossOrderId) {
-        Payment payment = paymentRepository.findByTossOrderIdWithOrderAndDeliveries(tossOrderId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         Order order = payment.getOrder();
         order.getDeliveries().forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.PREPARING));
     }
 
     @Transactional
     public void handleCancelTimeout(String tossOrderId, int cancelAmount, String cancelReason) {
-        Payment payment = paymentRepository.findByTossOrderIdWithOrderAndDeliveries(tossOrderId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
         Order order = payment.getOrder();
 
         payment.prepareCancellation(cancelAmount, cancelReason);

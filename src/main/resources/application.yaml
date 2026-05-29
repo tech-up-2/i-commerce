@@ -6,6 +6,10 @@ spring:
     name: i-commerce
   profiles: #기본 프로파일 설정
     default: ${SPRING_PROFILES_ACTIVE:dev}
+#  jpa:
+#    properties:
+#      hibernate:
+#        default_batch_fetch_size: 100
 
 app:
   encryption:

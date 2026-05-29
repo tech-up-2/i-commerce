@@ -16,6 +16,7 @@ import com.example.i_commerce.domain.member.repository.DeliveryAddressRepository
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
+import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.PaymentService;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest.OrderItemDto;
@@ -70,6 +71,8 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private MemberRepository memberRepository;
     @Autowired
+    private PaymentRepository paymentRepository;
+    @Autowired
     private DeliveryAddressRepository deliveryAddressRepository;
     @Autowired
     private ProductRepository productRepository;
@@ -83,8 +86,6 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
     private DataEncryptor dataEncryptor;
     @Autowired
     private PaymentService paymentService;
-    @Autowired
-    private OrderRepository orderRepository;
 
     private static MockWebServer mockWebServer;
 

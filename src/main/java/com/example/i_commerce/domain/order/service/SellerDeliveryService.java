@@ -23,7 +23,7 @@ public class SellerDeliveryService {
         if (delivery.getDeliveryStatus() != DeliveryStatus.PREPARING) {
             throw new AppException(DeliveryErrorCode.CANNOT_SHIP_STATUS);
         }
-        
+
         delivery.registerTrackingNumber(request.trackingNumber());
     }
 }

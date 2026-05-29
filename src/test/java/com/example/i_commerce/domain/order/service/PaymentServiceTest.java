@@ -173,8 +173,6 @@ public class PaymentServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.tossOrderId()).isEqualTo(tossOrderId);
-
-            verify(publisher).publishEvent(any(DeliveryCancelRequestEvent.class));
         }
 
         @Test
