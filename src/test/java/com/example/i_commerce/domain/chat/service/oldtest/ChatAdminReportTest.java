@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.chat.service;
+package com.example.i_commerce.domain.chat.service.oldtest;
 
 import static org.mockito.Mockito.when;
 
@@ -9,6 +9,7 @@ import com.example.i_commerce.domain.chat.entity.enums.ChatReportReason;
 import com.example.i_commerce.domain.chat.entity.enums.ChatReportStatus;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatReportRepository;
+import com.example.i_commerce.domain.chat.service.ChatReportService;
 import com.example.i_commerce.domain.member.entity.Admin;
 import com.example.i_commerce.domain.member.entity.enums.AdminRole;
 import com.example.i_commerce.domain.member.entity.enums.AdminStatus;

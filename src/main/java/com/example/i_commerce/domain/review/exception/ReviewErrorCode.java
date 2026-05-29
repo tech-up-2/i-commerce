@@ -17,6 +17,7 @@ public enum ReviewErrorCode implements ErrorCode {
     INVALID_SELF_REPORTING(HttpStatus.BAD_REQUEST, "REV-40905", "자신의 리뷰를 신고할 수 없습니다."),
     ADMIN_ID_REQUIRED(HttpStatus.BAD_REQUEST, "REV-40906", "관리자 ID는 필수입니다."),
     FORBIDDEN_WORD_INCLUDED(HttpStatus.BAD_REQUEST, "REV-40913", "금칙어가 포함되어 있습니다.") ,
+    REVIEW_NOT_ALLOWED_STATE(HttpStatus.BAD_REQUEST, "REV-40916", "구매 확정일 때만 리뷰 등록이 가능합니다."),
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REV-40907", "해당 리뷰를 찾을 수 없습니다."),
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "REV-40908", "해당 신고를 찾을 수 없습니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "REV-40912", "해당 답글을 찾을 수 없습니다."),
