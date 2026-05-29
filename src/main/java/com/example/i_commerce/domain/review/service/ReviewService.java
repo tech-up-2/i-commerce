@@ -62,9 +62,9 @@ public class ReviewService {
         Long productId = orderInfo.productId();
 
         Review review = Review.from(orderProductId, userId, productId, dto);
-        Review savedReview = reviewRepo.save(review);
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
+
             for (MultipartFile file : imageFiles) {
                 if (!file.isEmpty()) {
                     String imageUrl = s3ImageService.uploadImage(file, "reviews");
@@ -72,6 +72,8 @@ public class ReviewService {
                 }
             }
         }
+
+        Review savedReview = reviewRepo.save(review);
 
         return savedReview.getId();
     }
