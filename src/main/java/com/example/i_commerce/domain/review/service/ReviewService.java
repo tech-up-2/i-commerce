@@ -160,7 +160,11 @@ public class ReviewService {
 
         List<String> finalImageUrls = new ArrayList<>();
 
-        if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
+        if (dto.getImageUrls() == null) {
+            finalImageUrls.addAll(review.getImages().stream()
+                .map(ReviewImage::getImageUrl)
+                .toList());
+        } else {
             finalImageUrls.addAll(dto.getImageUrls());
         }
 
