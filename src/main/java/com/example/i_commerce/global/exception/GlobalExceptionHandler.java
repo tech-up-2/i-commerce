@@ -66,6 +66,6 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT_VALUE, e.getMessage()));
+            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT_VALUE, errorMessage));
     }
 }
