@@ -102,6 +102,8 @@ tasks.named('jacocoTestReport', JacocoReport)  {
             fileTree(layout.buildDirectory.dir("classes/java/main")) {
                 include "**/service/**"
                 include "**/entity/**"
+                include "**/facade/**"
+                include "**/scheduler/**"
                 exclude "**/dto/**"
                 exclude "**/config/**"
                 exclude "**/Q*.class"

@@ -1,5 +1,11 @@
 package com.example.i_commerce.common;
 
+import com.example.i_commerce.domain.order.repository.DeliveryRepository;
+import com.example.i_commerce.domain.order.repository.OrderProductRepository;
+import com.example.i_commerce.domain.order.repository.OrderRepository;
+import com.example.i_commerce.domain.order.repository.PaymentRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.ActiveProfiles;
@@ -11,6 +17,15 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public abstract class IntegrationTestSupport {
+
+    @Autowired
+    protected DeliveryRepository deliveryRepository;
+    @Autowired
+    protected PaymentRepository paymentRepository;
+    @Autowired
+    protected OrderRepository orderRepository;
+    @Autowired
+    protected OrderProductRepository orderProductRepository;
 
     static final PostgreSQLContainer<?> postgresContainer;
 
@@ -30,5 +45,14 @@ public abstract class IntegrationTestSupport {
         registry.add("spring.datasource.username", postgresContainer::getUsername);
         registry.add("spring.datasource.password", postgresContainer::getPassword);
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+    }
+
+    @AfterEach
+    void tearDown() {
+        orderProductRepository.deleteAllInBatch(); // 💡 추가: 주문 상품 먼저 삭제
+        deliveryRepository.deleteAllInBatch();
+        paymentRepository.deleteAllInBatch();
+
+        orderRepository.deleteAllInBatch();
     }
 }
