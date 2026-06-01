@@ -63,7 +63,7 @@ public class ProductUpdateServiceTest {
 
         @Test
         @DisplayName("상품 기본 정보를 정상적으로 수정한다.")
-        public void updateBasicInfo_success(){
+        void updateBasicInfo_success(){
             // given
             UpdateProductRequest request = basicProductUpdateRequest();
 
@@ -89,7 +89,7 @@ public class ProductUpdateServiceTest {
 
         @Test
         @DisplayName("존재하지 않는 상품일 경우 예외가 발생한다.")
-        public void updateBasicInfo_fail_productNotFound(){
+        void updateBasicInfo_fail_productNotFound(){
             // given
             UpdateProductRequest request = basicProductUpdateRequest();
 
@@ -109,7 +109,7 @@ public class ProductUpdateServiceTest {
 
         @Test
         @DisplayName("상품 관리자가 아니라면 예외가 발생한다.")
-        public void updateBasicInfo_fail_accessDenied(){
+        void updateBasicInfo_fail_accessDenied(){
             // given
             UpdateProductRequest request = basicProductUpdateRequest();
 
@@ -137,7 +137,7 @@ public class ProductUpdateServiceTest {
 
         @Test
         @DisplayName("ON_SALE 상태로 변경한다.")
-        public void changeProductStatus_success_toOnSale(){
+        void changeProductStatus_success_toOnSale(){
             // given
             UpdateProductStatusRequest request =
                 new UpdateProductStatusRequest(ProductStatus.ON_SALE);
@@ -161,7 +161,7 @@ public class ProductUpdateServiceTest {
 
         @Test
         @DisplayName("PENDING 상태로 변경한다.")
-        public void changeProductStatus_success_toPending(){
+        void changeProductStatus_success_toPending(){
             // given
             UpdateProductStatusRequest request =
                 new UpdateProductStatusRequest(ProductStatus.PENDING);
@@ -185,7 +185,7 @@ public class ProductUpdateServiceTest {
 
         @Test
         @DisplayName("DISCONTINUED 상태로 변경한다.")
-        public void changeProductStatus_success_toDiscontinued(){
+        void changeProductStatus_success_toDiscontinued(){
             // given
             UpdateProductStatusRequest request =
                 new UpdateProductStatusRequest(ProductStatus.DISCONTINUED);
@@ -215,7 +215,7 @@ public class ProductUpdateServiceTest {
 
         @Test
         @DisplayName("cascade 불필요한 변경 시 존재하지 않는 상품일 경우 예외가 발생한다.")
-        public void changeProductStaus_fail_productNotFound(){
+        void changeProductStaus_fail_productNotFound(){
             // given
             UpdateProductStatusRequest request =
                 new UpdateProductStatusRequest(ProductStatus.ON_SALE);
@@ -235,7 +235,7 @@ public class ProductUpdateServiceTest {
 
         @Test
         @DisplayName("cascade 필요한 변경 시 존재하지 않는 상품일 경우 예외가 발생한다.")
-        public void changeProductStaus_fail_productNotFound_withCascade(){
+        void changeProductStaus_fail_productNotFound_withCascade(){
             // given
             UpdateProductStatusRequest request =
                 new UpdateProductStatusRequest(ProductStatus.DISCONTINUED);
@@ -255,7 +255,7 @@ public class ProductUpdateServiceTest {
         
         @Test
         @DisplayName("상품 관리자가 아니라면 예외가 발생한다.")
-        public void changeProductStatus_fail_accessDenied(){
+        void changeProductStatus_fail_accessDenied(){
             // given
             UpdateProductStatusRequest request =
                 new UpdateProductStatusRequest(ProductStatus.ON_SALE);
