@@ -6,9 +6,9 @@ import com.example.i_commerce.domain.order.exception.DeliveryErrorCode;
 import com.example.i_commerce.domain.order.repository.DeliveryRepository;
 import com.example.i_commerce.domain.order.service.dto.DeliveryShipRequest;
 import com.example.i_commerce.global.exception.AppException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
