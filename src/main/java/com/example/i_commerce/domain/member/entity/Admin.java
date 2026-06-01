@@ -68,4 +68,12 @@ public class Admin extends BaseEntity {
             && this.adminStatus == AdminStatus.ACTIVE
             && this.getDeletedAt() == null;
     }
+
+    public void lock() {
+        if (this.adminStatus != AdminStatus.ACTIVE) {
+            return;
+        }
+
+        this.adminStatus = AdminStatus.LOCKED;
+    }
 }

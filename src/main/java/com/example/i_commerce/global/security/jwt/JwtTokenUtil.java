@@ -77,7 +77,7 @@ public class JwtTokenUtil {
             case ADMIN -> AdminStatus.valueOf(accountStatus);
         };
 
-        AccountStatus parsedSellerStatus = null;
+        SellerStatus parsedSellerStatus = null;
 
         if (sellerStatus != null) {
             parsedSellerStatus = SellerStatus.valueOf(sellerStatus);

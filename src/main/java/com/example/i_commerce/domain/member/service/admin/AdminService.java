@@ -5,6 +5,8 @@ import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.enums.AdminRole;
 import com.example.i_commerce.domain.member.entity.enums.AdminStatus;
+import com.example.i_commerce.domain.member.entity.enums.LoginFailReason;
+import com.example.i_commerce.domain.member.entity.enums.LoginResult;
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.AdminRepository;
@@ -22,6 +24,7 @@ import com.example.i_commerce.domain.member.service.admin.dto.AdminSellerStatusU
 import com.example.i_commerce.domain.member.service.admin.dto.AdminStatusUpdateRequest;
 import com.example.i_commerce.domain.member.service.admin.dto.AdminUpdateResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
+import com.example.i_commerce.domain.member.service.loginHistory.LoginLogService;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
 import com.example.i_commerce.global.common.response.SliceResponse;
@@ -29,6 +32,7 @@ import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
 import com.example.i_commerce.global.security.jwt.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -47,19 +51,40 @@ public class AdminService {
     private final JwtTokenUtil jwtTokenUtil;
     private final MemberRepository memberRepository;
     private final SellerRepository sellerRepository;
+    private final LoginLogService loginLogService;
 
     @Transactional(readOnly = true)
     public AdminLoginResponse login(LoginRequest dto) {
-        Admin admin = adminRepository.findByEmailHash(emailHashEncoder.encode(dto.email()))
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+
+        //email을 key로 변환
+        String emailHashKey = emailHashEncoder.encode(dto.email());
+
+        Admin admin = adminRepository.findByEmailHash(emailHashKey)
+            .orElseGet(() -> {
+                //로그인 실패 기록
+                loginLogService.writeAdminLoginHistory(null,
+                    LoginResult.FAILURE, null, LocalDateTime.now(),
+                    LoginFailReason.INVALID_CREDENTIALS);
+                //예외처리
+                throw new AppException(MemberErrorCode.ADMIN_NOT_FOUND);
+            });
+
+        validateLoginStatus(admin);// status상태 검증
+
+        /*
+        emailblacklist 검사 하는 코드
+        관리자는 로그인 실패시 계정을 잠그기 때문에 별로 필요 없기는 한데 혹시나 해서 넣어둠
+         */
+        loginLogService.adminValidateNotBlocked(emailHashKey);
 
         if (!passwordEncoder.matches(dto.password(), admin.getPassword())) {
+            //로그인 실패 기록
+            loginLogService.writeAdminLoginHistory(admin.getId(), LoginResult.FAILURE, null,
+                LocalDateTime.now(), LoginFailReason.PASSWORD_MISMATCH);
+            //로그인 실패시 절차
+            loginLogService.adminLoginFailedSequence(emailHashKey);
             throw new AppException(MemberErrorCode.INVALID_PASSWORD);
         }
-
-        validateLoginStatus(admin);// status상태 검즘
-
-        String email = dataEncryptor.decrypt(admin.getEmailEncrypted());
 
         TokenPayload payload = new TokenPayload(
             PrincipalType.ADMIN,
@@ -80,6 +105,7 @@ public class AdminService {
     private void validateLoginStatus(Admin admin) {
         switch (admin.getAdminStatus()) {
             case WITHDRAWN -> throw new AppException(MemberErrorCode.WITHDRAWN_MEMBER);
+            case LOCKED -> throw new AppException(MemberErrorCode.ADMIN_LOCKED);
         }
     }
 

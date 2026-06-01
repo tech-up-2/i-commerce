@@ -79,21 +79,28 @@ public class AuthService {
     //로그인
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest dto) {
-        Member member = memberRepository.findByEmailHash(emailHashEncoder.encode(dto.email()))
+        String emailHash = emailHashEncoder.encode(dto.email());
+        Member member = memberRepository.findByEmailHash(emailHash)
             .orElseGet(() -> {
+                //로그인 실패 기록
                 loginLogService.writeMemberLoginHistory(null,
                     LoginResult.FAILURE, null, LocalDateTime.now(),
                     LoginFailReason.INVALID_CREDENTIALS);
                 throw new AppException(MemberErrorCode.USER_NOT_FOUND);
             });
 
+        validateLoginStatus(member);// status상태 검증
+        //emailblacklist 검사 하는 코드
+        loginLogService.validateNotBlocked(emailHash);
+
         if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
+            //로그인 실패 기록
             loginLogService.writeMemberLoginHistory(member.getId(), LoginResult.FAILURE, null,
                 LocalDateTime.now(), LoginFailReason.PASSWORD_MISMATCH);
+            //로그인 실패시 절차
+            loginLogService.userLoginFailedSequence(emailHash);
             throw new AppException(MemberErrorCode.INVALID_PASSWORD);
         }
-
-        validateLoginStatus(member);// status상태 검즘
 
         String email = dataEncryptor.decrypt(member.getEmailEncrypted());
 
@@ -125,6 +132,10 @@ public class AuthService {
         }
 
         String accessToken = jwtTokenUtil.createToken(payload);
+
+        //로그인 성공 기록
+        loginLogService.writeMemberLoginHistory(member.getId(),
+            LoginResult.SUCCESS, null, LocalDateTime.now(), null);
 
         return new LoginResponse(
             member.getId(),
