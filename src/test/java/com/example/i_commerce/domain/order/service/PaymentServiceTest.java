@@ -18,6 +18,7 @@ import com.example.i_commerce.domain.order.event.dto.DeliveryCancelRequestEvent;
 import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
 import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
+import com.example.i_commerce.domain.order.repository.DeliveryRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelPreparedDto;
@@ -49,6 +50,9 @@ public class PaymentServiceTest {
 
     @Mock
     ApplicationEventPublisher publisher;
+
+    @Mock
+    DeliveryRepository deliveryRepository;
 
     @InjectMocks
     PaymentService paymentService;
@@ -163,7 +167,7 @@ public class PaymentServiceTest {
             Delivery delivery1 = mock(Delivery.class);
             Delivery delivery2 = mock(Delivery.class);
             given(paymentRepository.findByTossOrderIdWithOrder(tossOrderId)).willReturn(Optional.of(payment));
-            ReflectionTestUtils.setField(order, "deliveries", List.of(delivery1, delivery2));
+            given(deliveryRepository.findAllByOrderId(order.getId())).willReturn(List.of(delivery1, delivery2));
             given(delivery1.getDeliveryStatus()).willReturn(DeliveryStatus.PREPARING);
             given(delivery2.getDeliveryStatus()).willReturn(DeliveryStatus.PREPARING);
 
@@ -194,7 +198,8 @@ public class PaymentServiceTest {
             Delivery delivery1 = mock(Delivery.class);
             Delivery delivery2 = mock(Delivery.class);
             given(paymentRepository.findByTossOrderIdWithOrder(tossOrderId)).willReturn(Optional.of(payment));
-            ReflectionTestUtils.setField(order, "deliveries", List.of(delivery1, delivery2));
+            given(deliveryRepository.findAllByOrderId(order.getId())).willReturn(List.of(delivery1, delivery2));
+
             given(delivery1.getDeliveryStatus()).willReturn(DeliveryStatus.PREPARING);
             given(delivery2.getDeliveryStatus()).willReturn(DeliveryStatus.SHIPPING);
 

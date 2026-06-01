@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.order.service;
 
+import com.example.i_commerce.domain.order.entity.Delivery;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
@@ -8,6 +9,7 @@ import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
 import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
+import com.example.i_commerce.domain.order.repository.DeliveryRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelPreparedDto;
@@ -33,6 +35,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final DeliveryRepository deliveryRepository;
     private final ApplicationEventPublisher publisher;
 
     @Transactional
@@ -161,12 +164,15 @@ public class PaymentService {
 
         Order order = payment.getOrder();
 
-        order.getDeliveries().forEach(delivery -> {
-            if(delivery.getDeliveryStatus() != DeliveryStatus.PREPARING) {
+        List<Delivery> deliveries = deliveryRepository.findAllByOrderId(order.getId());
+
+        for (Delivery delivery : deliveries) {
+            if (delivery.getDeliveryStatus() != DeliveryStatus.PREPARING) {
+                // 이미 배송 처리가 되었다면 예외 발생
                 throw new AppException(PaymentErrorCode.ALREADY_SHIPPED);
             }
             delivery.changeDeliveryStatus(DeliveryStatus.CANCEL_REQUESTED);
-        });
+        }
 
         return new PaymentCancelPreparedDto(dto.tossOrderId(), order.getId());
     }
