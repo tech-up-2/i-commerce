@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.5'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com.example'
@@ -22,11 +23,16 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     // AWS S3
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:4.0.0'
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // 재시도
+    implementation 'org.springframework.boot:spring-boot-starter-aop:3.0.5'
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.2.0'
     
     // QueryDSL
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
@@ -39,6 +45,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'
     testCompileOnly 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testAnnotationProcessor 'org.projectlombok:lombok'
@@ -79,4 +86,31 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     jvmArgs("-XX:+EnableDynamicAgentLoading")
+    finalizedBy tasks.jacocoTestReport
+    //ignoreFailures = true
+}
+
+tasks.named('jacocoTestReport', JacocoReport)  {
+    dependsOn tasks.test
+
+    executionData.setFrom(
+            fileTree(layout.buildDirectory).include("jacoco/*.exec")
+    )
+
+    sourceDirectories.setFrom(files("src/main/java"))
+    classDirectories.setFrom(
+            fileTree(layout.buildDirectory.dir("classes/java/main")) {
+                include "**/service/**"
+                include "**/entity/**"
+                exclude "**/dto/**"
+                exclude "**/config/**"
+                exclude "**/Q*.class"
+            }
+    )
+
+    reports {
+        html.required = true
+        xml.required = false
+        csv.required = false
+    }
 }

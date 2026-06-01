@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.product.entity;
 
+import com.example.i_commerce.domain.product.entity.enums.StockChangeType;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

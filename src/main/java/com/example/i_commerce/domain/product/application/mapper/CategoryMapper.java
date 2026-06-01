@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.product.application.mapper;
 
 
-import com.example.i_commerce.domain.product.controller.response.CategoryResponse;
+import com.example.i_commerce.domain.product.presentation.response.CategoryResponse;
 import com.example.i_commerce.domain.product.repository.projection.CategoryTreeRow;
 import java.util.Collections;
 import java.util.LinkedHashMap;

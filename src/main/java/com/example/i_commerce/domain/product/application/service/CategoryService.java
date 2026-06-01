@@ -2,13 +2,13 @@ package com.example.i_commerce.domain.product.application.service;
 
 
 import com.example.i_commerce.domain.product.application.mapper.CategoryMapper;
-import com.example.i_commerce.domain.product.controller.request.CreateCategoryRequest;
-import com.example.i_commerce.domain.product.controller.response.CreateCategoryResponse;
+import com.example.i_commerce.domain.product.presentation.request.CreateCategoryRequest;
+import com.example.i_commerce.domain.product.presentation.response.CreateCategoryResponse;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.domain.product.repository.projection.CategoryTreeRow;
-import com.example.i_commerce.domain.product.controller.response.CategoryResponse;
+import com.example.i_commerce.domain.product.presentation.response.CategoryResponse;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.List;

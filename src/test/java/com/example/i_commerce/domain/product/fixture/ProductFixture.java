@@ -3,9 +3,9 @@ package com.example.i_commerce.domain.product.fixture;
 
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.entity.ProductOptionType;
+import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
 import com.example.i_commerce.domain.product.entity.ProductOptionValue;
-import com.example.i_commerce.domain.product.entity.ProductStatus;
+import com.example.i_commerce.domain.product.entity.enums.ProductStatus;
 import java.util.List;
 
 public class ProductFixture {

@@ -2,9 +2,9 @@ package com.example.i_commerce.domain.product.application.service;
 
 
 import com.example.i_commerce.domain.member.service.store.StoreService;
-import com.example.i_commerce.domain.product.controller.request.UpdateProductRequest;
-import com.example.i_commerce.domain.product.controller.request.UpdateProductStatusRequest;
-import com.example.i_commerce.domain.product.controller.response.UpdateProductStatusResponse;
+import com.example.i_commerce.domain.product.presentation.request.UpdateProductRequest;
+import com.example.i_commerce.domain.product.presentation.request.UpdateProductStatusRequest;
+import com.example.i_commerce.domain.product.presentation.response.UpdateProductStatusResponse;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.ProductRepository;

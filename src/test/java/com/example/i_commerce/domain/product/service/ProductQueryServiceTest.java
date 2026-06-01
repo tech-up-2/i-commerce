@@ -9,7 +9,7 @@ import com.example.i_commerce.domain.product.application.service.ProductQuerySer
 import com.example.i_commerce.domain.product.application.mapper.OptionGroupBuilder;
 import com.example.i_commerce.domain.product.application.mapper.OptionLookupBuilder;
 import com.example.i_commerce.domain.product.application.dto.OptionItemLookupDto;
-import com.example.i_commerce.domain.product.controller.response.ProductDetailResponse;
+import com.example.i_commerce.domain.product.presentation.response.ProductDetailResponse;
 import com.example.i_commerce.domain.product.application.dto.ProductOptionGroupDto;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductAttribute;

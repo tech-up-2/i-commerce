@@ -1,8 +1,8 @@
 package com.example.i_commerce.domain.product.application.service;
 
 
-import com.example.i_commerce.domain.product.controller.request.CreateAttributeRequest;
-import com.example.i_commerce.domain.product.controller.response.AttributeGroupResponse;
+import com.example.i_commerce.domain.product.presentation.request.CreateAttributeRequest;
+import com.example.i_commerce.domain.product.presentation.response.AttributeGroupResponse;
 import com.example.i_commerce.domain.product.entity.Attribute;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.AttributeRepository;

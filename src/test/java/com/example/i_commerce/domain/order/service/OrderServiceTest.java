@@ -99,7 +99,6 @@ class OrderServiceTest {
         return item;
     }
 
-
     private Payment createMockPayment(Long id, LocalDateTime createdAt) {
         Payment payment = Payment.builder().build(); // 또는 빌더 사용
 
@@ -167,24 +166,25 @@ class OrderServiceTest {
         Long userId = 10L;
 
         Order order = mock(Order.class);
-        List<Payment> mockPayments = List.of(
-                createMockPayment(1L, LocalDateTime.now().minusHours(2)), // 2시간 전
-                createMockPayment(2L, LocalDateTime.now())               // 지금 (최신)
-        );
+        Payment payment1 = createMockPayment(1L, LocalDateTime.now().minusHours(2));
+        Payment payment2 = createMockPayment(2L, LocalDateTime.now()) ;
 
-        // 연관관계 흐름 모킹
+        ReflectionTestUtils.setField(payment2, "tossOrderId", "toss_order_id");
+        List<Payment> mockPayments = List.of(payment1, payment2);
+        String tossOrderId = "toss_order_id";
+
+
         given(order.getId()).willReturn(orderId);
         given(orderProductRepository.findAllByOrderId(orderId)).willReturn(List.of());
-
         given(orderRepository.findByIdAndUserId(orderId, userId)).willReturn(Optional.of(order));
         given(order.getPayments()).willReturn(mockPayments);
 
         // when
         OrderDetailResponse response = orderService.getOrderDetail(orderId, userId);
 
-        // then
+        // then14
         assertNotNull(response);
-        assertEquals(2L, response.paymentInfo().paymentId());
+        assertEquals(tossOrderId, response.paymentInfo().tossOrderId());
     }
 
     @Test

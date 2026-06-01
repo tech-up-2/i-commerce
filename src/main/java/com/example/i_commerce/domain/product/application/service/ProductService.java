@@ -2,12 +2,12 @@ package com.example.i_commerce.domain.product.application.service;
 
 
 import com.example.i_commerce.domain.member.service.store.StoreService;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ItemAttributeRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionValueRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ProductItemRequest;
-import com.example.i_commerce.domain.product.controller.response.CreatedProductResponse;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ItemAttributeRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.OptionRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.OptionValueRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ProductItemRequest;
+import com.example.i_commerce.domain.product.presentation.response.CreatedProductResponse;
 import com.example.i_commerce.domain.product.entity.Attribute;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
@@ -23,7 +23,6 @@ import com.example.i_commerce.domain.product.application.validator.ProductOption
 import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
