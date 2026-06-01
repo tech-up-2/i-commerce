@@ -19,6 +19,8 @@ import com.example.i_commerce.domain.chat.util.TempChatUtil;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.service.member.MemberService;
+import com.example.i_commerce.domain.member.service.member.dto.MemberChatInfo;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
@@ -35,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Service
 @Transactional
@@ -47,6 +50,8 @@ public class ChatService {
     private final ChatParticipantRepository chatParticipantRepository;
     private final MemberRepository memberRepository;
     private final ChatStatusRepository chatStatusRepository;
+    private final MemberService memberService;
+    private final ChatRoleChecker chatRoleChecker;
 
 
     public ApiResponse<Void> messageRead(Long roomId) {
@@ -63,10 +68,9 @@ public class ChatService {
     }
 
     public ApiResponse<List<MyChatListResponse>> getMyChatList() {
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        MemberChatInfo member = memberService.getMemberChatInfo(TempChatUtil.getCurrentUserId());
         List<MyChatListResponse> myChatListResponses = chatStatusRepository.findMyChatList(
-            member.getId());
+            member.id());
         return ApiResponse.success(myChatListResponses);
     }
 
@@ -88,11 +92,10 @@ public class ChatService {
 //            멤버에서 ID를 가져오는 부분 시큐리티가 ws에서 작동하려면 StompHandler 수정이 필요
 //            추후 리펙토링을 통해 보완예정
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        Member member = memberRepository.findById(chatMessageSendRequest.senderId())
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        MemberChatInfo member = memberService.getMemberChatInfo(TempChatUtil.getCurrentUserId());
         ChatMessage chatMessage = ChatMessage.builder()
             .chatRoom(chatRoom)
-            .memberId(member.getId())
+            .memberId(member.id())
             .content(chatMessageSendRequest.message())
             .build();
         chatMessageRepository.save(chatMessage);
@@ -102,7 +105,7 @@ public class ChatService {
                 .chatRoom(chatRoom)
                 .memberId(p.getMemberId())
                 .chatMessage(chatMessage)
-                .isRead(p.getMemberId().equals(member.getId()))
+                .isRead(p.getMemberId().equals(member.id()))
                 .build();
             chatStatusRepository.save(readStatus);
         }
@@ -143,6 +146,17 @@ public class ChatService {
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
 
         return chatParticipantRepository.findByChatRoomAndMemberId(chatRoom, myId).isPresent();
+
+    }
+
+    public void deleteMessage(Long messageId) {
+        MemberChatInfo member = memberService.getMemberChatInfo(TempChatUtil.getCurrentUserId());
+
+        ChatMessage chatMessage = chatMessageRepository.findById(messageId)
+            .orElseThrow(() -> new AppException(ChatErrorCode.MESSAGE_NOT_FOUND));
+        chatRoleChecker.mDelRoleChecker(member, chatMessage);
+
+
 
     }
 }

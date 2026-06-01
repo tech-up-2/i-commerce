@@ -3,6 +3,7 @@ package com.example.i_commerce.domain.chat.exception;
 import com.example.i_commerce.global.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.micrometer.observation.autoconfigure.ObservationProperties.Http;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -23,11 +24,13 @@ public enum ChatErrorCode implements ErrorCode {
 //    403
     CHAT_ROOM_FORBIDDEN(HttpStatus.FORBIDDEN,"CHT-40301", "채팅방 접근 권한이 없습니다."),
     NOT_A_ROOM_MEMBER(HttpStatus.FORBIDDEN, "CHT-40302", "해당 방에 멤버가 아닙니다."),
+    UNAUTHORIZED_DELETE(HttpStatus.NOT_FOUND, "CHT-40303", "삭제할 권한이 없습니다."),
 
 //    404
     CHAT_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "CHT-40401", "해당 채팅방을 찾을 수 없습니다."),
     MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "CHT-40402", "해당 메시지를 찾을 수 없습니다."),
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "CHT-40403", "해당 신고를 찾을 수 없습니다."),
+
 
 //    409
     ALREADY_PARTICIPANT(HttpStatus.CONFLICT, "CHT-40901", "이미 채팅방에 참여 중인 유저입니다."),

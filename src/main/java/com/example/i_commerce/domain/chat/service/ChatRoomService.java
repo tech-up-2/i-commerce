@@ -11,6 +11,8 @@ import com.example.i_commerce.domain.chat.util.TempChatUtil;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.service.member.MemberService;
+import com.example.i_commerce.domain.member.service.member.dto.MemberChatInfo;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
@@ -35,6 +37,7 @@ public class ChatRoomService {
     private final MemberRepository memberRepository;
     private final ChatRoleChecker chatRoleChecker;
     private final ChatRoomNameGenerator chatRoomNameGenerator;
+    private final MemberService memberService;
 
 
 
@@ -48,12 +51,8 @@ public class ChatRoomService {
 
     public ApiResponse<Long> getOrCreatePrivateRoom(Long otherMemberId) {
 
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(
-                MemberErrorCode.USER_NOT_FOUND));
-        Member otherMember = memberRepository.findById(otherMemberId)
-            .orElseThrow(() -> new AppException(
-                MemberErrorCode.USER_NOT_FOUND));
+        MemberChatInfo member = memberService.getMemberChatInfo(TempChatUtil.getCurrentUserId());
+        MemberChatInfo otherMember = memberService.getMemberChatInfo(otherMemberId);
 
         reqToSelf(member, otherMember);
         chatRoleChecker.roleCheck(member, otherMember);
@@ -61,30 +60,28 @@ public class ChatRoomService {
 //       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 에러코드를 return
 //       사용자 입장에서는 에러코드 보다는 참여하고있는 채팅 리다이렉션이 훨씬 편리할 것 같음.
         Optional<ChatRoom> chatRoom = chatParticipantRepository.findExistingPrivateRoom(
-            member.getId(), otherMember.getId());
+            member.id(), otherMember.id());
         if (chatRoom.isPresent()) {
             throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
         }
 //      만약에 1:1 채팅방이 없을 경우 기존 채팅방 개설
-        String privateRoomName = chatRoomNameGenerator.getPrivateRoomName(member.getName(),
-            otherMember.getName());
+        String privateRoomName = chatRoomNameGenerator.getPrivateRoomName(member.name(),
+            otherMember.name());
         ChatRoom newRoom = ChatRoom.builder()
             .isGroupChat(false)
             .name(privateRoomName)
             .build();
         chatRoomRepository.save(newRoom);
 //        두 사람을 채팅방에 참여자로 새롭게 추가
-        addParticipantToRoom(newRoom, member.getId());
-        addParticipantToRoom(newRoom, otherMember.getId());
+        addParticipantToRoom(newRoom, member.id());
+        addParticipantToRoom(newRoom, otherMember.id());
 
         return ApiResponse.success(newRoom.getId());
     }
 
     public ApiResponse<Long> createGroupRoom(Long productId) {
 //      채팅방 참여 멤버 검증
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(
-                MemberErrorCode.USER_NOT_FOUND));
+        MemberChatInfo member = memberService.getMemberChatInfo(TempChatUtil.getCurrentUserId());
 //      상품 존재여부 검증
         Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(
             ProductErrorCode.PRODUCT_NOT_FOUND));
@@ -105,7 +102,7 @@ public class ChatRoomService {
         chatRoomRepository.save(chatRoom);
 
 //      최초 생성자를 방에 참가시킨다.
-        addParticipantToRoom(chatRoom, member.getId());
+        addParticipantToRoom(chatRoom, member.id());
 
         return ApiResponse.success(chatRoom.getId());
     }
@@ -120,32 +117,30 @@ public class ChatRoomService {
             throw new AppException(ChatErrorCode.CANNOT_JOIN_PRIVATE_ROOM);
         }
         //참여하고자 하는 멤버가 존재하는지 검증
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        MemberChatInfo member = memberService.getMemberChatInfo(TempChatUtil.getCurrentUserId());
         //강퇴 여부 확인(미구현)
 
         //이미 참여하고 있는지 검증 및 멤버 추가
         Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndMemberId(
-            chatRoom, member.getId());
+            chatRoom, member.id());
         if (participant.isPresent()) {
             throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
         }
-        addParticipantToRoom(chatRoom, member.getId());
+        addParticipantToRoom(chatRoom, member.id());
         return ApiResponse.success();
     }
 
     public ApiResponse<Void> leaveGroupRoom(Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        MemberChatInfo member = memberService.getMemberChatInfo(TempChatUtil.getCurrentUserId());
         //해당 채팅방이 그룹채팅인지 검증
         if (!chatRoom.getIsGroupChat()) {
             throw new AppException(ChatErrorCode.ONLY_GROUP_CHAT_CAN_LEAVE);
         }
         //해당 사용자가 해당 채팅방에 참가하고 있는지 검증
         ChatParticipant chatParticipant = chatParticipantRepository.findByChatRoomAndMemberId(
-                chatRoom, member.getId())
+                chatRoom, member.id())
             .orElseThrow(() -> new AppException(ChatErrorCode.NOT_A_ROOM_MEMBER));
         //유저를 해당 채팅방에서 제거
         chatParticipantRepository.delete(chatParticipant);
@@ -162,8 +157,8 @@ public class ChatRoomService {
 
         return ApiResponse.success();
     }
-    public void reqToSelf(Member member, Member othermember){
-        if(member.getId().equals(othermember.getId())){
+    public void reqToSelf(MemberChatInfo member, MemberChatInfo otherMember){
+        if(member.id().equals(otherMember.id())){
             throw new AppException(ChatErrorCode.CANNOT_REQUEST_TO_SELF);
         }
     }
