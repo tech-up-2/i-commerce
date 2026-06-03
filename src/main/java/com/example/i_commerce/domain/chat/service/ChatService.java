@@ -13,31 +13,20 @@ import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendRequest;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
 import com.example.i_commerce.domain.chat.service.dto.GroupChatListResponse;
 import com.example.i_commerce.domain.chat.service.dto.MyChatListResponse;
-import com.example.i_commerce.domain.chat.util.ChatRoleChecker;
-import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
+import com.example.i_commerce.domain.chat.util.ChatHealthCheck;
 import com.example.i_commerce.domain.chat.util.TempChatUtil;
-import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.service.member.MemberService;
 import com.example.i_commerce.domain.member.service.member.dto.MemberChatInfo;
-import com.example.i_commerce.domain.member.tools.DataEncryptor;
-import com.example.i_commerce.domain.product.entity.Product;
-import com.example.i_commerce.domain.product.exception.ProductErrorCode;
-import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
 
-import java.lang.classfile.instruction.SwitchCase;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @Service
 @Transactional
@@ -51,7 +40,7 @@ public class ChatService {
     private final MemberRepository memberRepository;
     private final ChatStatusRepository chatStatusRepository;
     private final MemberService memberService;
-    private final ChatRoleChecker chatRoleChecker;
+    private final ChatHealthCheck chatRoleChecker;
 
 
     public ApiResponse<Void> messageRead(Long roomId) {

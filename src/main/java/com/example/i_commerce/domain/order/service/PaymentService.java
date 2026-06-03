@@ -18,7 +18,7 @@ import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentDetailResponse;
 import com.example.i_commerce.domain.product.facade.StockFacade;
-import com.example.i_commerce.domain.product.facade.dto.StockDeductCommand;
+import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.Comparator;
 import java.util.List;

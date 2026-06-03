@@ -5,11 +5,9 @@ import com.example.i_commerce.domain.chat.entity.ChatRoom;
 import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
-import com.example.i_commerce.domain.chat.util.ChatRoleChecker;
+import com.example.i_commerce.domain.chat.util.ChatHealthCheck;
 import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
 import com.example.i_commerce.domain.chat.util.TempChatUtil;
-import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.service.member.MemberService;
 import com.example.i_commerce.domain.member.service.member.dto.MemberChatInfo;
@@ -18,6 +16,7 @@ import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
+import com.sun.net.httpserver.Authenticator.Success;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +33,8 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatParticipantRepository chatParticipantRepository;
     private final ProductRepository productRepository;
-    private final MemberRepository memberRepository;
-    private final ChatRoleChecker chatRoleChecker;
+
+    private final ChatHealthCheck chatRoleChecker;
     private final ChatRoomNameGenerator chatRoomNameGenerator;
     private final MemberService memberService;
 
@@ -59,17 +58,19 @@ public class ChatRoomService {
 
 //       나와 상대방이 1:1 채팅을 이미 참여하고 있다면 에러코드를 return
 //       사용자 입장에서는 에러코드 보다는 참여하고있는 채팅 리다이렉션이 훨씬 편리할 것 같음.
-        Optional<ChatRoom> chatRoom = chatParticipantRepository.findExistingPrivateRoom(
-            member.id(), otherMember.id());
+        String roomKey = ChatRoom.generateRoomKey(member.id(), otherMember.id());
+        Optional<ChatRoom> chatRoom = chatRoomRepository.findByRoomKey(roomKey);
         if (chatRoom.isPresent()) {
-            throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
+            return ApiResponse.success(chatRoom.get().getId());
         }
+
 //      만약에 1:1 채팅방이 없을 경우 기존 채팅방 개설
         String privateRoomName = chatRoomNameGenerator.getPrivateRoomName(member.name(),
             otherMember.name());
         ChatRoom newRoom = ChatRoom.builder()
             .isGroupChat(false)
             .name(privateRoomName)
+            .roomKey(roomKey)
             .build();
         chatRoomRepository.save(newRoom);
 //        두 사람을 채팅방에 참여자로 새롭게 추가
@@ -77,6 +78,11 @@ public class ChatRoomService {
         addParticipantToRoom(newRoom, otherMember.id());
 
         return ApiResponse.success(newRoom.getId());
+    }
+    @Transactional(readOnly = true)
+    public Long getPrivateRoomIdByRoomKey(String roomKey) {
+        return chatRoomRepository.findByRoomKey(roomKey)
+            .map(ChatRoom::getId).orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
     }
 
     public ApiResponse<Long> createGroupRoom(Long productId) {

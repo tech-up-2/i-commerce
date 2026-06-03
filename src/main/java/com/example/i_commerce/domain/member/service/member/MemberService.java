@@ -40,7 +40,8 @@ public class MemberService {
         return new MemberChatInfo(
             member.getId(),
             dataEncryptor.decrypt(member.getName()),
-            member.getRole()
+            member.getRole(),
+            member.getStatus()
         );
     }
 
