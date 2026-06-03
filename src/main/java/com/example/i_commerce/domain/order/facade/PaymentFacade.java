@@ -1,6 +1,5 @@
 package com.example.i_commerce.domain.order.facade;
 
-import com.example.i_commerce.domain.order.client.TossPaymentClient;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.service.AutoPaymentCancelService;
@@ -11,7 +10,6 @@ import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
 import com.example.i_commerce.domain.product.event.OrderCancelledEvent;
 import com.example.i_commerce.domain.product.event.OrderCompletedEvent;
-import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +24,6 @@ public class PaymentFacade {
 
     private final PaymentService paymentService;
     private final AutoPaymentCancelService autoPaymentCancelService;
-    private final TossPaymentClient tossPaymentClient;
     private final ApplicationEventPublisher publisher;
 
     public void confirmPayment(PaymentConfirmRequest dto) {
@@ -35,7 +32,7 @@ public class PaymentFacade {
         PaymentStatus previousStatus = PaymentStatus.READY;
 
         try {
-            Map<String, Object> response = tossPaymentClient.requestConfirm(dto);
+            Map<String, Object> response = paymentService.requestConfirm(dto);
             String pgTid = (String) response.get("paymentKey");
 
             try {
@@ -58,16 +55,13 @@ public class PaymentFacade {
             if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
                 try {
                     publisher.publishEvent(new OrderCompletedEvent(target.commands()));
-
-
                     paymentService.handleTimeoutSuccess(target.tossOrderId());
                     throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
                 } catch (AppException ex) {
                     log.error("[비상] 타임아웃 대피 중 재고 부족 발생! 망취소 처리합니다.");
                     try {
-                        tossPaymentClient.requestCanceled(new PaymentCancelRequest(target.tossOrderId(), dto.amount(), dto.paymentKey(), "타임아웃 대피 중 재고 부족으로 인한 망취소"));
+                        paymentService.requestCanceled(new PaymentCancelRequest(target.tossOrderId(), dto.amount(), dto.paymentKey(), "타임아웃 대피 중 재고 부족으로 인한 망취소"));
                     } catch (Exception ignored) {}
-
                     paymentService.handleTimeoutFailed(target.tossOrderId());
                     throw ex;
                 }
@@ -81,7 +75,7 @@ public class PaymentFacade {
         PaymentCancelPreparedDto target = paymentService.validateAndPrepareCancel(dto);
 
         try{
-            Map<String, Object> response = tossPaymentClient.requestCanceled(dto);
+            Map<String, Object> response = paymentService.requestCanceled(dto);
             String pgTid = (String) response.get("paymentKey");
 
             paymentService.completeCancelSuccess(dto, pgTid, response.toString());

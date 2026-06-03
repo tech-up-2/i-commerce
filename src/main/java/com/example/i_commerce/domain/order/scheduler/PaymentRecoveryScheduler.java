@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.order.scheduler;
 
+import com.example.i_commerce.domain.order.client.PaymentClient;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
@@ -26,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PaymentRecoveryScheduler {
 
     private final PaymentRepository paymentRepository;
-    private final TossPaymentClient tossPaymentClient;
+    private final PaymentClient tossPaymentClient;
     private final StockFacade stockFacade;
 
     @Scheduled(fixedDelay = 300000)
