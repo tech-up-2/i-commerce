@@ -14,7 +14,6 @@ import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
-import com.example.i_commerce.domain.order.event.dto.DeliveryCancelRequestEvent;
 import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
 import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;

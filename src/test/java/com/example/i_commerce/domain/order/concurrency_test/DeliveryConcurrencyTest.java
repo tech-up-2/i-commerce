@@ -4,6 +4,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
 
 import com.example.i_commerce.common.IntegrationTestSupport;
+import com.example.i_commerce.domain.order.client.PaymentClient;
 import com.example.i_commerce.domain.order.client.TossPaymentClient;
 import com.example.i_commerce.domain.order.entity.Delivery;
 import com.example.i_commerce.domain.order.entity.Order;
@@ -53,7 +54,7 @@ class DeliveryConcurrencyTest extends IntegrationTestSupport {
     private PaymentRepository paymentRepository;
 
     @MockitoBean // 스프링 부트 3.4+ 버전 기준 (구버전은 @MockBean 사용)
-    private TossPaymentClient tossPaymentClient;
+    private PaymentClient tossPaymentClient;
 
 //    @MockitoBean
 //    private ApplicationEventPublisher publisher;

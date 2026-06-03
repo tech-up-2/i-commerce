@@ -15,6 +15,7 @@ import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.repository.DeliveryAddressRepository;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
+import com.example.i_commerce.domain.order.client.PaymentClient;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.PaymentService;
@@ -65,7 +66,7 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
-    private TossPaymentClient tossPaymentClient;
+    private PaymentClient tossPaymentClient;
     @Autowired
     private MockMvc mockMvc;
     @Autowired

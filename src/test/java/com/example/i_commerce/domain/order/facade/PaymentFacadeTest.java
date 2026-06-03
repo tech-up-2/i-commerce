@@ -40,9 +40,6 @@ class PaymentFacadeTest {
     AutoPaymentCancelService autoPaymentCancelService;
 
     @Mock
-    TossPaymentClient tossPaymentClient;
-
-    @Mock
     ApplicationEventPublisher publisher;
 
     @InjectMocks
@@ -73,7 +70,7 @@ class PaymentFacadeTest {
         responseBody.put("paymentKey", paymentKey);
 
         given(paymentService.validateAndPrepareConfirm(confirmRequestDto)).willReturn(confirmPrepareDto);
-        given(tossPaymentClient.requestConfirm(confirmRequestDto)).willReturn(responseBody);
+        given(paymentService.requestConfirm(confirmRequestDto)).willReturn(responseBody);
 
         paymentFacade.confirmPayment(confirmRequestDto);
 
@@ -88,7 +85,7 @@ class PaymentFacadeTest {
         responseBody.put("paymentKey", tossOrderId);
 
         given(paymentService.validateAndPrepareConfirm(confirmRequestDto)).willReturn(confirmPrepareDto);
-        given(tossPaymentClient.requestConfirm(confirmRequestDto)).willReturn(responseBody);
+        given(paymentService.requestConfirm(confirmRequestDto)).willReturn(responseBody);
         doThrow(new AppException(ProductErrorCode.INSUFFICIENT_STOCK)).when(publisher).publishEvent(any(OrderCompletedEvent.class));
 
         assertThatThrownBy(() -> paymentFacade.confirmPayment(confirmRequestDto))
@@ -104,7 +101,7 @@ class PaymentFacadeTest {
     @DisplayName("타임아웃 대피소 작동: 토스 API 호출 중 타임아웃 발생 시 재고 차감을 시도하고 결제 보류(UNKNOWN_HOLD)로 진입한다")
     void confirmPayment_Timeout_SafeRoute_Success() {
         given(paymentService.validateAndPrepareConfirm(confirmRequestDto)).willReturn(confirmPrepareDto);
-        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(tossPaymentClient).requestConfirm(confirmRequestDto);
+        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(paymentService).requestConfirm(confirmRequestDto);
 
         assertThatThrownBy(() -> paymentFacade.confirmPayment(confirmRequestDto))
                 .isInstanceOf(AppException.class)
@@ -118,14 +115,14 @@ class PaymentFacadeTest {
     @DisplayName("타임아웃 대피소 비상: 타임아웃 대피 중 재고까지 부족하면 토스 장부 망취소를 호출하고 결제 실패를 기록한다")
     void confirmPayment_Timeout_SafeRoute_Fail_OutOfStock() {
         given(paymentService.validateAndPrepareConfirm(confirmRequestDto)).willReturn(confirmPrepareDto);
-        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(tossPaymentClient).requestConfirm(confirmRequestDto);
+        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(paymentService).requestConfirm(confirmRequestDto);
         doThrow(new AppException(ProductErrorCode.INSUFFICIENT_STOCK)).when(publisher).publishEvent(any(OrderCompletedEvent.class));
 
         assertThatThrownBy(() -> paymentFacade.confirmPayment(confirmRequestDto))
                 .isInstanceOf(AppException.class)
                 .hasMessage(ProductErrorCode.INSUFFICIENT_STOCK.getMessage());
 
-        verify(tossPaymentClient).requestCanceled(any(PaymentCancelRequest.class));
+        verify(paymentService).requestCanceled(any(PaymentCancelRequest.class));
         verify(paymentService).handleTimeoutFailed(confirmRequestDto.tossOrderId());
     }
 
@@ -139,7 +136,7 @@ class PaymentFacadeTest {
         responseBody.put("paymentKey", paymentKey);
 
         given(paymentService.validateAndPrepareCancel(cancelRequestDto)).willReturn(cancelPreparedDto);
-        given(tossPaymentClient.requestCanceled(cancelRequestDto)).willReturn(responseBody);
+        given(paymentService.requestCanceled(cancelRequestDto)).willReturn(responseBody);
 
         paymentFacade.cancelPayment(cancelRequestDto);
 
@@ -152,7 +149,7 @@ class PaymentFacadeTest {
     @DisplayName("타임아웃 대피소 작동: 토스 API 호출 중 타임아웃 발생 시 결제 취소 보류(CANCEL_UNKNOWN_HOLD)로 진입한다")
     void cancelPayment_Fail_InvalidDeliveryStatus() {
         given(paymentService.validateAndPrepareCancel(cancelRequestDto)).willReturn(cancelPreparedDto);
-        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(tossPaymentClient).requestCanceled(cancelRequestDto);
+        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(paymentService).requestCanceled(cancelRequestDto);
 
         assertThatThrownBy(() -> paymentFacade.cancelPayment(cancelRequestDto))
                 .isInstanceOf(AppException.class)
