@@ -1,15 +1,15 @@
 package com.example.i_commerce.domain.order.service;
 
-import com.example.i_commerce.domain.order.client.TossPaymentClient;
+import com.example.i_commerce.domain.order.entity.Delivery;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
-import com.example.i_commerce.domain.order.event.dto.DeliveryCancelRequestEvent;
 import com.example.i_commerce.domain.order.event.dto.PaymentApprovedEvent;
 import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
+import com.example.i_commerce.domain.order.repository.DeliveryRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelPreparedDto;
@@ -17,12 +17,10 @@ import com.example.i_commerce.domain.order.service.dto.PaymentConfirmPrepareDto;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentDetailResponse;
-import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +35,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final DeliveryRepository deliveryRepository;
     private final ApplicationEventPublisher publisher;
 
     @Transactional
@@ -146,7 +145,7 @@ public class PaymentService {
     // 결제 취소 - 에러 핸들링
     //-----------------------------------
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PaymentCancelPreparedDto validateAndPrepareCancel(PaymentCancelRequest dto) {
         Payment payment = paymentRepository.findByTossOrderIdWithOrder(dto.tossOrderId())
                 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
@@ -165,14 +164,15 @@ public class PaymentService {
 
         Order order = payment.getOrder();
 
-        order.getDeliveries().forEach(delivery -> {
-            if(delivery.getDeliveryStatus() != DeliveryStatus.PREPARING) {
+        List<Delivery> deliveries = deliveryRepository.findAllByOrderId(order.getId());
+
+        for (Delivery delivery : deliveries) {
+            if (delivery.getDeliveryStatus() != DeliveryStatus.PREPARING) {
+                // 이미 배송 처리가 되었다면 예외 발생
                 throw new AppException(PaymentErrorCode.ALREADY_SHIPPED);
             }
-        });
-
-        //TODO: 낙관적 락 개선
-        publisher.publishEvent(new DeliveryCancelRequestEvent(payment.getOrder().getId()));
+            delivery.changeDeliveryStatus(DeliveryStatus.CANCEL_REQUESTED);
+        }
 
         return new PaymentCancelPreparedDto(dto.tossOrderId(), order.getId());
     }
@@ -187,10 +187,18 @@ public class PaymentService {
 
         payment.cancelPayment(dto.cancelAmount());
         order.changeOrderStatus(OrderStatus.CANCELLED);
+        order.getDeliveries().forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.CANCELLED));
 
         publisher.publishEvent(new PaymentStatusChangedEvent(
                 payment, previousStatus, dto.cancelReason(),
                 PaymentStatus.CANCELLED, pgTid, responseStr ));
+    }
+
+    @Transactional
+    public void failCancel(String tossOrderId) {
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Order order = payment.getOrder();
+        order.getDeliveries().forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.PREPARING));
     }
 
     @Transactional

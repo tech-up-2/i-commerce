@@ -6,11 +6,12 @@ import java.util.List;
 
 public record PaymentConfirmPrepareDto(
         Long paymentId,
+        Long orderId,
         String tossOrderId,
         List<StockDeductCommand> commands
 
 ) {
-    public static PaymentConfirmPrepareDto of(Payment payment, List<StockDeductCommand> commands) {
-        return new PaymentConfirmPrepareDto(payment.getId(), payment.getTossOrderId(), commands);
+    public static PaymentConfirmPrepareDto of(Payment payment, Long orderId, List<StockDeductCommand> commands) {
+        return new PaymentConfirmPrepareDto(payment.getId(), orderId, payment.getTossOrderId(), commands);
     }
 }
