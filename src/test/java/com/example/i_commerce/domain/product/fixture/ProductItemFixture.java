@@ -10,18 +10,18 @@ public class ProductItemFixture {
     public static ProductItem.ProductItemBuilder defaultProductItem() {
         return ProductItem
             .builder()
-            .sku("SKU")
-            .displayOptionName("기본 옵션 이름")
+            .sku("SKU-001")
+            .price(10000)
             .status(ProductItemStatus.ON_SALE)
             .attributes(List.of())
             .isDefault(true);
 
     }
 
-    public static ProductItem mockProductItem(Long productItemId) {
+    public static ProductItem createItem(Long id, Boolean isDefault) {
         return defaultProductItem()
-            .sku("SKU-00" + productItemId)
-            .price(10000)
+            .id(id)
+            .isDefault(isDefault)
             .build();
     }
 

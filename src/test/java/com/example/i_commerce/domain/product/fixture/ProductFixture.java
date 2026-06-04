@@ -14,19 +14,30 @@ public class ProductFixture {
         return Product
             .builder()
             .storeId(1L)
+            .category(CategoryFixture.rootCategory())
             .name("테스트 상품")
             .description("테스트 상품 설명")
+            .optionType(ProductOptionType.NONE)
             .status(ProductStatus.ON_SALE)
-            .category(CategoryFixture.defaultCategory().build())
-            .images(List.of())
-            ;
+            .images(List.of());
     }
 
-    public static Product createNoneOptionProduct() {
-        ProductItem defaultItem = ProductItemFixture.defaultProductItem().build();
+    public static Product createNoneOptionProduct(ProductItem defaultItem) {
         return defaultProduct()
             .items(List.of(defaultItem))
             .optionType(ProductOptionType.NONE)
+            .build();
+    }
+
+    public static Product singleOptionProduct() {
+        ProductOptionValue optionValue =
+            ProductOptionValue.of(1, "색상", "빨강", 1);
+        ProductItem defaultItem = ProductItemFixture.createSingleOptionItem(optionValue);
+
+        return defaultProduct()
+            .optionType(ProductOptionType.SINGLE)
+            .options(List.of(optionValue))
+            .items(List.of(defaultItem))
             .build();
     }
 
