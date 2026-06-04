@@ -28,6 +28,7 @@ import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
 import com.example.i_commerce.global.security.jwt.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -80,14 +81,20 @@ public class AuthService {
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest dto) {
         String emailHash = emailHashEncoder.encode(dto.email());
-        Member member = memberRepository.findByEmailHash(emailHash)
-            .orElseGet(() -> {
-                //로그인 실패 기록
-                loginLogService.writeMemberLoginHistory(null,
-                    LoginResult.FAILURE, null, LocalDateTime.now(),
-                    LoginFailReason.INVALID_CREDENTIALS);
-                throw new AppException(MemberErrorCode.USER_NOT_FOUND);
-            });
+
+        Optional<Member> memberOptional = memberRepository.findByEmailHash(emailHash);
+
+        if (memberOptional.isEmpty()) {
+            // 로그인 실패 기록
+            loginLogService.writeMemberLoginHistory(null,
+                LoginResult.FAILURE, null, LocalDateTime.now(),
+                LoginFailReason.INVALID_CREDENTIALS
+            );
+
+            throw new AppException(MemberErrorCode.USER_NOT_FOUND);
+        }
+
+        Member member = memberOptional.get();
 
         validateLoginStatus(member);// status상태 검증
         //emailblacklist 검사 하는 코드

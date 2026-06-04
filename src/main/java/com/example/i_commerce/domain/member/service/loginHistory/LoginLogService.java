@@ -86,7 +86,6 @@ public class LoginLogService {
     //로그인 실패횟수 탐색해서 5회이상이면 blacklist에 기록
     //캐싱 필요할 것 같은데 해시맵사용?
     //member용
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void userLoginFailedSequence(String emailHashKey) {
         LocalDateTime now = LocalDateTime.now();
         // compute는 변경된 최종 객체를 반환합니다.
@@ -116,7 +115,6 @@ public class LoginLogService {
 
     //관리자용
     //관리자는 5회이상 실패시 계정 잠금
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void adminLoginFailedSequence(String emailHashKey) {
         LocalDateTime now = LocalDateTime.now();
         AtomicBoolean shouldLockAdmin = new AtomicBoolean(false);

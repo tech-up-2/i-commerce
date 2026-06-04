@@ -33,6 +33,7 @@ import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
 import com.example.i_commerce.global.security.jwt.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -59,15 +60,19 @@ public class AdminService {
         //email을 key로 변환
         String emailHashKey = emailHashEncoder.encode(dto.email());
 
-        Admin admin = adminRepository.findByEmailHash(emailHashKey)
-            .orElseGet(() -> {
-                //로그인 실패 기록
-                loginLogService.writeAdminLoginHistory(null,
-                    LoginResult.FAILURE, null, LocalDateTime.now(),
-                    LoginFailReason.INVALID_CREDENTIALS);
-                //예외처리
-                throw new AppException(MemberErrorCode.ADMIN_NOT_FOUND);
-            });
+        Optional<Admin> adminOptional = adminRepository.findByEmailHash(emailHashKey);
+
+        if (adminOptional.isEmpty()) {
+            // 로그인 실패 기록
+            loginLogService.writeMemberLoginHistory(null,
+                LoginResult.FAILURE, null, LocalDateTime.now(),
+                LoginFailReason.INVALID_CREDENTIALS);
+
+            //예외처리
+            throw new AppException(MemberErrorCode.USER_NOT_FOUND);
+        }
+
+        Admin admin = adminOptional.get();
 
         validateLoginStatus(admin);// status상태 검증
 
