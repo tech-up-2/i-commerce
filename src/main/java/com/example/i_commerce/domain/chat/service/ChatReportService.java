@@ -13,6 +13,8 @@ import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.AdminRepository;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.service.member.MemberService;
+import com.example.i_commerce.domain.member.service.member.dto.MemberChatInfo;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
 import lombok.RequiredArgsConstructor;
@@ -31,19 +33,17 @@ public class ChatReportService {
     private final MemberRepository memberRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final AdminRepository adminRepository;
-
+    private final MemberService memberService;
     public ApiResponse<Void> createChatReport(ChatReportRequest chatReportRequest) {
-        Member member = memberRepository.findById(TempChatUtil.getCurrentUserId())
-            .orElseThrow(() -> new AppException(
-                MemberErrorCode.USER_NOT_FOUND));
+        MemberChatInfo member = memberService.getMemberChatInfo(TempChatUtil.getCurrentUserId());
         ChatMessage message = chatMessageRepository.findById(chatReportRequest.messageId())
             .orElseThrow(() -> new AppException(
                 ChatErrorCode.MESSAGE_NOT_FOUND));
 
-        validateReport(member.getId(), message);
+        validateReport(member.id(), message);
 
         ChatReport chatReport = ChatReport.builder()
-            .reporterId(member.getId())
+            .reporterId(member.id())
             .reportedId(message.getMemberId())
             .chatMessage(message)
             .chatRoom(message.getChatRoom())

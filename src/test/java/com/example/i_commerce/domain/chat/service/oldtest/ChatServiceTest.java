@@ -1,26 +1,23 @@
-package com.example.i_commerce.domain.chat.service;
+package com.example.i_commerce.domain.chat.service.oldtest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import com.example.i_commerce.domain.chat.entity.ChatMessage;
 import com.example.i_commerce.domain.chat.entity.ChatParticipant;
 import com.example.i_commerce.domain.chat.entity.ChatRoom;
 import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
+import com.example.i_commerce.domain.chat.service.ChatService;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
-import com.example.i_commerce.domain.chat.util.ChatRoleChecker;
+import com.example.i_commerce.domain.chat.util.ChatHealthCheck;
 import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
-import com.example.i_commerce.domain.chat.util.TempChatUtil;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
-import com.example.i_commerce.domain.member.repository.MemberRepository;
-import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
@@ -57,7 +54,7 @@ class ChatServiceTest {
     @Mock
     private ChatRoomNameGenerator chatRoomNameGenerator;
     @Spy
-    private ChatRoleChecker chatRoleChecker = new ChatRoleChecker();
+    private ChatHealthCheck chatRoleChecker = new ChatHealthCheck();
 
     private Member member;
     private Member member2;

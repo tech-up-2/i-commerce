@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -23,7 +24,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "chat_rooms")
+@Table(name = "chat_rooms",
+uniqueConstraints = {@UniqueConstraint(
+    name = "uk_room_key", columnNames = {"room_key"})
+})
 @Getter
 @Builder
 @AllArgsConstructor
@@ -35,6 +39,9 @@ public class ChatRoom extends BaseEntity {
     private Long id;
 
     private String name;
+
+    @Column(name = "room_key", nullable = true)
+    private String roomKey;
 
     @Builder.Default
     private Boolean isGroupChat = false;
@@ -57,4 +64,11 @@ public class ChatRoom extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "chatRoom")
     private List<ChatReport> reports = new ArrayList<>();
+
+    public static String generateRoomKey(Long memberId1, Long memberId2) {
+        Long min =  Math.min(memberId1, memberId2);
+        Long max = Math.max(memberId1, memberId2);
+        return min + "_" + max;
+    }
 }
+

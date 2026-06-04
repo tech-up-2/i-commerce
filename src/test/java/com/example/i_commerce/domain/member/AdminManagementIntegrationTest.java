@@ -43,7 +43,7 @@ class AdminManagementIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     MockMvc mockMvc;
-    
+
     ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired

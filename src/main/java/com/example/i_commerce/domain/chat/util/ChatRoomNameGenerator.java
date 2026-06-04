@@ -14,10 +14,8 @@ public class ChatRoomNameGenerator {
     //    static을 붙여서 계속 호출되는 메모리 공간을 한 곳만 사용하도록 설정
     private static final String PRIVATE_ROOM_NAME = "%s님이 요청한 %s님과의 채팅";
     private static final String PRODUCT_ROOM_NAME = "%s 상품 채팅방";
-    public String getPrivateRoomName(byte[] memberName, byte[] otherMemberName) {
-        String decryptMemberName = dataEncryptor.decrypt(memberName);
-        String decryptOtherMemberName = dataEncryptor.decrypt(otherMemberName);
-        return String.format(PRIVATE_ROOM_NAME, decryptMemberName, decryptOtherMemberName);
+    public String getPrivateRoomName(String memberName, String otherMemberName) {
+        return String.format(PRIVATE_ROOM_NAME, memberName, otherMemberName);
     }
     public String getProductRoomName(String productName){
         return String.format(PRODUCT_ROOM_NAME, productName);

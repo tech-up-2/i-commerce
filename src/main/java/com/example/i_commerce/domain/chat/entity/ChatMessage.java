@@ -58,6 +58,9 @@ public class ChatMessage extends BaseEntity {
     @Builder.Default
     private boolean isBlind = false;
 
+    @Builder.Default
+    private boolean isDelete = false;
+
     public void blind(){
         this.isBlind =  true;
     }
