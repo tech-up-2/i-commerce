@@ -10,6 +10,12 @@ public class CategoryFixture {
             .depth(0);
     }
 
+    public static Category createRootWithId(Long id) {
+        return defaultCategory()
+            .id(id)
+            .build();
+    }
+
     public static Category rootCategory() {
         return defaultCategory()
             .build();

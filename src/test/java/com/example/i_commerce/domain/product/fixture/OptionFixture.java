@@ -12,6 +12,13 @@ public class OptionFixture {
             .inputType(OptionInputType.RADIO);
     }
 
+    public static Option createWithIdAndName(Long id, String name) {
+        return defaultOption()
+            .id(id)
+            .name(name)
+            .build();
+    }
+
     public static List<Option> defaultOptions() {
         Option option1 = defaultOption()
             .name("용량")
