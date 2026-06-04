@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.member;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -8,8 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.i_commerce.domain.member.entity.enums.Gender;
+import com.example.i_commerce.domain.member.service.auth.AuthService;
 import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.MemberSignUpRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.SignUpResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserUpdateRequest;
 import com.example.i_commerce.domain.testtools.IntegrationTestSupport;
 import com.example.i_commerce.global.common.response.ApiResponse;
@@ -40,13 +43,16 @@ import tools.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @Transactional
 @TestPropertySource(locations = "file:.env")
-class AuthFlowIntegrationTest extends IntegrationTestSupport {
+class AuthServiceTest extends IntegrationTestSupport {
 
     @Autowired
     MockMvc mockMvc;
 
     @Autowired
     ObjectMapper objectMapper;
+
+    @Autowired
+    AuthService authService;
 
     @Test
     @DisplayName("회원가입 성공")
@@ -56,13 +62,23 @@ class AuthFlowIntegrationTest extends IntegrationTestSupport {
             "password123!"
         );
 
-        mockMvc.perform(post("/api/v1/auth/signup")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(toJson(request)))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.code").value("SUCCESS"))
-            .andExpect(jsonPath("$.data.id").exists())
-            .andExpect(jsonPath("$.data.email").value("signup@test.com"));
+        SignUpResponse response = authService.signUp(request);
+
+        assertThat(response.id()).isNotNull();
+        assertThat(response.email()).isEqualTo("signup@test.com");
+    }
+
+    @Test
+    @DisplayName("회원가입 실패")
+    void signUp_fail() throws Exception {
+        MemberSignUpRequest request = createSignUpRequest(
+            "signuptest.com",
+            "password123!"
+        );
+
+        SignUpResponse response = authService.signUp(request);
+
+        //assertThat()
     }
 
     @Test
