@@ -16,7 +16,6 @@ import com.example.i_commerce.domain.member.service.auth.dto.SignUpResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserUpdateRequest;
 import com.example.i_commerce.domain.testtools.IntegrationTestSupport;
 import com.example.i_commerce.global.common.response.ApiResponse;
-import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.DisplayName;
@@ -79,7 +78,7 @@ class AuthServiceTest extends IntegrationTestSupport {
 
         SignUpResponse response = authService.signUp(request);
 
-        assertThat()
+        //assertThat()
     }
 
     @Test
