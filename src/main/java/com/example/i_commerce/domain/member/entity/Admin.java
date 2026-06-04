@@ -51,10 +51,6 @@ public class Admin extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private AdminStatus adminStatus = AdminStatus.ACTIVE;
 
-//    @Builder.Default
-//    @OneToMany(mappedBy = "admin")
-//    private List<AdminLoginHistory> loginHistories = new ArrayList<>();
-
     public void changeRole(AdminRole adminRole) {
         this.adminRole = adminRole;
     }

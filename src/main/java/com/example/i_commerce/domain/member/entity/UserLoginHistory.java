@@ -31,10 +31,6 @@ public class UserLoginHistory extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "user_id", nullable = false)
-//    private Member member;
-
     @Column(nullable = true, name = "user_id")
     private Long memberId;
 

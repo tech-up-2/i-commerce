@@ -4,7 +4,6 @@ import com.example.i_commerce.domain.member.entity.AdminLoginHistory;
 import com.example.i_commerce.domain.member.entity.FailedLoginAttempt;
 import com.example.i_commerce.domain.member.entity.UserLoginHistory;
 import com.example.i_commerce.domain.member.entity.enums.LoginFailReason;
-import com.example.i_commerce.domain.member.entity.enums.LoginFailState;
 import com.example.i_commerce.domain.member.entity.enums.LoginResult;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.AdminLoginHistoryRepository;
@@ -78,7 +77,7 @@ public class LoginLogService {
 있으면 2-1, 없으면 2-2
 2-1. email해싱이 있으면 count+=1
 2-2. email해칭이 없으면 캐싱에 추가하고 count=1 설정
-3. count 가 5이상이 되었을 때 해당 email해싱의 상태를 blocking으로 전환
+3. count 가 5이상이 되었을 때 해당 email해싱의 상태를 block으로 전환
 
 캐싱해둔 email은 expiresat에 따라 주기적으로  삭제
      */
@@ -87,6 +86,7 @@ public class LoginLogService {
     //로그인 실패횟수 탐색해서 5회이상이면 blacklist에 기록
     //캐싱 필요할 것 같은데 해시맵사용?
     //member용
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void userLoginFailedSequence(String emailHashKey) {
         LocalDateTime now = LocalDateTime.now();
         // compute는 변경된 최종 객체를 반환합니다.
@@ -94,7 +94,7 @@ public class LoginLogService {
 
             // 1. 캐시에 없는 첫 실패인 경우, 차단시간이 만료된 경우
             if (failedLoginAttempt == null || failedLoginAttempt.isExpired(now)) {
-                return new FailedLoginAttempt(1, now.plusHours(1), LoginFailState.COUNTING);
+                return FailedLoginAttempt.startCounting(now.plusHours(1));
             }
 
             // 2. 이미 차단이 실행되고 있는 경우
@@ -103,11 +103,11 @@ public class LoginLogService {
             }
 
             // 3. 이미 캐시에 존재하는 경우 (안전하게 값 증가)
-            failedLoginAttempt.increase();
+            failedLoginAttempt = failedLoginAttempt.increase();
 
             // 4. 5회 이상 카운팅 시 차단
-            if (failedLoginAttempt.getCount() >= 5) {
-                failedLoginAttempt.blockUntil(now.plusMinutes(5));
+            if (failedLoginAttempt.shouldBlock()) {
+                return failedLoginAttempt.blockUntil(now.plusMinutes(5));
             }
 
             return failedLoginAttempt;
@@ -116,7 +116,7 @@ public class LoginLogService {
 
     //관리자용
     //관리자는 5회이상 실패시 계정 잠금
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void adminLoginFailedSequence(String emailHashKey) {
         LocalDateTime now = LocalDateTime.now();
         AtomicBoolean shouldLockAdmin = new AtomicBoolean(false);
@@ -126,7 +126,7 @@ public class LoginLogService {
 
             // 1. 캐시에 없는 첫 실패인 경우, 차단시간이 만료된 경우
             if (failedLoginAttempt == null || failedLoginAttempt.isExpired(now)) {
-                return new FailedLoginAttempt(1, now.plusHours(1), LoginFailState.COUNTING);
+                return FailedLoginAttempt.startCounting(now.plusHours(1));
             }
 
             if (failedLoginAttempt.isBlocked(now)) {
@@ -134,12 +134,12 @@ public class LoginLogService {
             }
 
             // 2. 이미 캐시에 존재하는 경우 (안전하게 값 증가)
-            failedLoginAttempt.increase();
+            failedLoginAttempt = failedLoginAttempt.increase();
 
             // 3. 5회 이상 카운팅 시 계정 잠금
-            if (failedLoginAttempt.getCount() >= 5) {
-                failedLoginAttempt.blockUntil(now.plusMinutes(5));
+            if (failedLoginAttempt.shouldBlock()) {
                 shouldLockAdmin.set(true);
+                return failedLoginAttempt.blockUntil(now.plusMinutes(5));
             }
 
             return failedLoginAttempt;
@@ -178,7 +178,7 @@ public class LoginLogService {
     public void adminValidateNotBlocked(String emailHashKey) {
         LocalDateTime now = LocalDateTime.now();
 
-        FailedLoginAttempt attempt = userFailedLoginCache.get(emailHashKey);
+        FailedLoginAttempt attempt = adminFailedLoginCache.get(emailHashKey);
 
         if (attempt != null && attempt.isBlocked(now)) {
             throw new AppException(MemberErrorCode.LOGIN_TEMPORARILY_BLOCKED);

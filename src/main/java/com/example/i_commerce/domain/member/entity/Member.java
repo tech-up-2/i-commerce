@@ -80,21 +80,9 @@ public class Member extends BaseEntity {
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Seller seller;
 
-//    @Builder.Default
-//    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<UserLoginHistory> loginHistories = new ArrayList<>();
-
-//    @Builder.Default
-//    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<DeliveryAddress> deliveryAddresses = new ArrayList<>();
-
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PointHistory> pointHistories = new ArrayList<>();
-
-//    @Builder.Default
-//    @OneToMany(mappedBy = "member")
-//    private List<ChatMessage> chatMessages = new ArrayList<>();
 
     public void changePassword(String password) {
         this.password = password;

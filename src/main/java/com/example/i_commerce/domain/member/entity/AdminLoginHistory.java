@@ -30,10 +30,6 @@ public class AdminLoginHistory extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "admin_id", nullable = false)
-//    private Admin admin;
-
     @Column(nullable = true, name = "admin_id")
     private Long adminId;
 

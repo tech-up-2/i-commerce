@@ -26,10 +26,6 @@ public class DeliveryAddress extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "member_id", insertable = false, updatable = false)
-//    private Member member;
-
     /**
      * 배송지는 회원 기준으로 조회하므로 user_id는 평문 FK 유지
      */

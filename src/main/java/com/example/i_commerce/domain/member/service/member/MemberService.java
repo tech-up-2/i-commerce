@@ -41,7 +41,7 @@ public class MemberService {
     // --- 채팅 ---
     @Transactional(readOnly = true)
     public MemberChatInfo getMemberChatInfo(Long memberId) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         return new MemberChatInfo(
@@ -52,7 +52,7 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public MemberChatInfo getSellerChatInfo(Long sellerId) {
-        Seller seller = sellerRepository.findById(sellerId)
+        Seller seller = sellerRepository.findByIdAndDeletedAtIsNull(sellerId)
             .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
 
         return new MemberChatInfo(
@@ -63,7 +63,7 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public MemberChatInfo getAdminChatInfo(Long adminId) {
-        Admin admin = adminRepository.findById(adminId)
+        Admin admin = adminRepository.findByIdAndDeletedAtIsNull(adminId)
             .orElseThrow(() -> new AppException(MemberErrorCode.ADMIN_NOT_FOUND));
 
         return new MemberChatInfo(
