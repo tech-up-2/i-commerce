@@ -1,8 +1,8 @@
 package com.example.i_commerce.domain.product.application.service;
 
 import com.example.i_commerce.domain.product.application.dto.ProductSearchQuery;
-import com.example.i_commerce.domain.product.controller.request.SearchProductRequest;
-import com.example.i_commerce.domain.product.controller.response.ProductItemSearchResponse;
+import com.example.i_commerce.domain.product.presentation.request.SearchProductRequest;
+import com.example.i_commerce.domain.product.presentation.response.ProductItemSearchResponse;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.domain.product.repository.ProductSearchRepositoryCustom;

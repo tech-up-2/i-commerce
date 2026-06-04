@@ -6,33 +6,45 @@ import com.example.i_commerce.domain.review.service.ReviewService;
 import com.example.i_commerce.domain.review.service.dto.CreateReportRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
+import com.example.i_commerce.domain.review.service.dto.ReviewStatsResponse;
+import com.example.i_commerce.domain.review.service.dto.SearchReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
+import com.example.i_commerce.global.common.response.SliceResponse;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Review API", description = "리뷰 관련 API")
 @SecurityRequirement(name = "BearerAuth")
 @RestController
 @RequiredArgsConstructor
+@Validated
 @RequestMapping("/api/v1/reviews")
 public class ReviewController {
 
@@ -42,10 +54,11 @@ public class ReviewController {
 
     @Operation(summary = "리뷰 목록 보기", description = "특정 상품에 대한 전체 리뷰를 본다.")
     @GetMapping
-    public ApiResponse<List<ReviewListResponse>> viewReviewList(
-        @RequestParam Long productId
+    public ApiResponse<SliceResponse<ReviewListResponse>> viewReviewList(
+        @RequestParam Long productId,
+        @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        List<ReviewListResponse> responses = reviewService.viewReviewList(productId);
+        SliceResponse<ReviewListResponse> responses = reviewService.viewReviewList(productId, pageable);
         return ApiResponse.success(responses);
     }
 
@@ -57,14 +70,35 @@ public class ReviewController {
         return ApiResponse.success(response);
     }
 
+    @Operation(summary = "리뷰 검색 및 페이징 조회", description = "옵션명과 키워드로 리뷰를 검색합니다.")
+    @GetMapping("/search")
+    public ApiResponse<SliceResponse<ReviewResponse>> searchReviews(
+        @ModelAttribute SearchReviewRequest request,
+        @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        SliceResponse<ReviewResponse> response = reviewService.searchReviews(request, pageable);
+        return ApiResponse.success(response);
+    }
+
+    @Operation(summary = "상품 별점 통계 조회", description = "특정 상품의 평균 별점 및 1~5점 별점별 리뷰 개수를 조회합니다.")
+    @GetMapping("/products/{productId}/stats")
+    public ApiResponse<ReviewStatsResponse> getReviewStats(
+        @PathVariable("productId") Long productId
+    ) {
+        ReviewStatsResponse response = reviewService.getProductReviewStats(productId);
+        return ApiResponse.success(response);
+    }
+
     @Operation(summary = "리뷰 수정", description = "리뷰를 수정한다.")
     @PreAuthorize("@authChecker.canWriteReviewAsMember()")
     @PatchMapping("/{reviewId}")
     public ApiResponse<Long> editReview(
         @PathVariable Long reviewId,
         @AuthenticationPrincipal CustomUserPrincipal principal,
-        @RequestBody @Valid UpdateReviewRequest dto) {
-        Long editedReviewId = reviewService.editReview(reviewId, principal.getId(), dto);
+        @RequestPart(value = "review") @Valid UpdateReviewRequest dto,
+        @Size(max = 10, message = "이미지는 최대 10장까지 업로드할 수 있습니다.")
+        @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles) {
+        Long editedReviewId = reviewService.editReview(reviewId, principal.getId(), dto, imageFiles);
         return ApiResponse.success(editedReviewId);
     }
 

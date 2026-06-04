@@ -2,6 +2,7 @@ package com.example.i_commerce.global.exception;
 
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
+import jakarta.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -55,5 +56,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ApiResponse.error(CommonErrorCode.INTERNAL_SERVER_ERROR, e.getMessage()));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<?>> handleConstraintViolationException(
+        ConstraintViolationException e) {
+
+        String errorMessage = e.getConstraintViolations().iterator().next().getMessage();
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ApiResponse.error(CommonErrorCode.INVALID_INPUT_VALUE, errorMessage));
     }
 }

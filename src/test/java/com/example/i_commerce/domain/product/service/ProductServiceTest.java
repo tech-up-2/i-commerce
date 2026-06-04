@@ -12,17 +12,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
+import com.example.i_commerce.domain.member.entity.Store;
+import com.example.i_commerce.domain.member.service.store.StoreService;
 import com.example.i_commerce.domain.product.application.service.ProductService;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ProductItemRequest;
-import com.example.i_commerce.domain.product.controller.response.CreatedProductResponse;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ProductItemRequest;
+import com.example.i_commerce.domain.product.presentation.response.CreatedProductResponse;
 import com.example.i_commerce.domain.product.entity.Attribute;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.entity.ProductOptionType;
+import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.domain.product.application.validator.ProductAttributeValidator;
@@ -45,6 +48,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class ProductServiceTest {
     @InjectMocks
     private ProductService productService;
+
+    @Mock
+    private StoreService storeService;
 
     @Mock
     private ProductRepository productRepository;
@@ -70,8 +76,12 @@ public class ProductServiceTest {
             Long sellerId = 1L;
             CreateProductRequest request = noneOptionRequest();
             Category category = devicesCategory();
+            Store store = mock(Store.class);
             Map<Long, Attribute> attributeMap = Map.of(1L, colorAttribute());
 
+            given(store.getSellerId()).willReturn(sellerId);
+            given(storeService.isStoreManager(sellerId, store.getSellerId()))
+                .willReturn(true);
             given(categoryRepository.findById(request.categoryId()))
                 .willReturn(Optional.of(category));
             given(attributeValidator.validateAndFetchAttributes(request))
@@ -108,8 +118,12 @@ public class ProductServiceTest {
             Long sellerId = 1L;
             CreateProductRequest request = singleOptionRequest();
             Category category = devicesCategory();
+            Store store = mock(Store.class);
             Map<Long, Attribute> attributeMap = Map.of(1L, colorAttribute());
 
+            given(store.getSellerId()).willReturn(sellerId);
+            given(storeService.isStoreManager(sellerId, store.getSellerId()))
+                .willReturn(true);
             given(categoryRepository.findById(request.categoryId()))
                 .willReturn(Optional.of(category));
             given(attributeValidator.validateAndFetchAttributes(request))
@@ -149,12 +163,16 @@ public class ProductServiceTest {
             Long sellerId = 1L;
             CreateProductRequest request = doubleOptionRequest();
             Category category = devicesCategory();
+            Store store = mock(Store.class);
             Map<Long, Attribute> attributeMap = Map.of(
                 1L, colorAttribute(),
                 3L, volumeAttribute1(),
                 4L, volumeAttribute2()
             );
 
+            given(store.getSellerId()).willReturn(sellerId);
+            given(storeService.isStoreManager(sellerId, store.getSellerId()))
+                .willReturn(true);
             given(categoryRepository.findById(request.categoryId()))
                 .willReturn(Optional.of(category));
             given(attributeValidator.validateAndFetchAttributes(request))

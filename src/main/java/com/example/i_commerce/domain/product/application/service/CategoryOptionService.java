@@ -3,9 +3,9 @@ package com.example.i_commerce.domain.product.application.service;
 
 import com.example.i_commerce.domain.product.application.dto.AlreadyExistsOption;
 import com.example.i_commerce.domain.product.application.dto.CategoryOptionDto;
-import com.example.i_commerce.domain.product.controller.request.AddCategoryOptionRequest;
-import com.example.i_commerce.domain.product.controller.response.AddCategoryOptionResponse;
-import com.example.i_commerce.domain.product.controller.response.CategoryOptionResponse;
+import com.example.i_commerce.domain.product.presentation.request.AddCategoryOptionRequest;
+import com.example.i_commerce.domain.product.presentation.response.AddCategoryOptionResponse;
+import com.example.i_commerce.domain.product.presentation.response.CategoryOptionResponse;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.CategoryOption;
 import com.example.i_commerce.domain.product.entity.Option;

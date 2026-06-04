@@ -14,11 +14,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
 import com.example.i_commerce.domain.product.application.service.StockService;
-import com.example.i_commerce.domain.product.facade.dto.StockDeductCommand;
+import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.domain.product.entity.Stock;
-import com.example.i_commerce.domain.product.entity.StockChangeType;
+import com.example.i_commerce.domain.product.entity.enums.StockChangeType;
 import com.example.i_commerce.domain.product.entity.StockHistory;
-import com.example.i_commerce.domain.product.entity.StockStatus;
+import com.example.i_commerce.domain.product.entity.enums.StockStatus;
 import com.example.i_commerce.domain.product.event.StockDepletedEvent;
 import com.example.i_commerce.domain.product.repository.StockHistoryRepository;
 import com.example.i_commerce.domain.product.repository.StockRepository;

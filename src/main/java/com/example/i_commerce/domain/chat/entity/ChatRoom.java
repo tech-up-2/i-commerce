@@ -39,9 +39,8 @@ public class ChatRoom extends BaseEntity {
     @Builder.Default
     private Boolean isGroupChat = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @Column(name = "product_id")
+    private Long productId;
 
     @Builder.Default
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)

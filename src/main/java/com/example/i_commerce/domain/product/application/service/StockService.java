@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.product.application.service;
 
 
-import com.example.i_commerce.domain.product.facade.dto.StockDeductCommand;
+import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.domain.product.entity.Stock;
 import com.example.i_commerce.domain.product.entity.StockHistory;
 import com.example.i_commerce.domain.product.event.StockDepletedEvent;

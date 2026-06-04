@@ -1,7 +1,7 @@
 package com.example.i_commerce.domain.product.application.dto;
 
 import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.entity.ProductItemStatus;
+import com.example.i_commerce.domain.product.entity.enums.ProductItemStatus;
 import com.example.i_commerce.domain.product.entity.ProductOptionValue;
 import java.util.Comparator;
 import java.util.List;

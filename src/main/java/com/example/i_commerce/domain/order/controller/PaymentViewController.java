@@ -25,10 +25,10 @@ public class PaymentViewController {
     @GetMapping("/checkout")
     public String checkoutPage(
             @AuthenticationPrincipal CustomUserPrincipal member,
-            @RequestParam Long paymentId,
+            @RequestParam Long orderId,
             Model model) {
 
-        PaymentDetailResponse info = paymentService.getPaymentDetails(member.getId(), paymentId);
+        PaymentDetailResponse info = paymentService.getPaymentDetails(member.getId(), orderId);
 
         model.addAttribute("orderId", info.tossOrderId());
         model.addAttribute("customerKey", info.customerKey());

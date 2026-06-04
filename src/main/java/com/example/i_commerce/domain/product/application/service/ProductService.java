@@ -1,12 +1,13 @@
 package com.example.i_commerce.domain.product.application.service;
 
 
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ItemAttributeRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionValueRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ProductItemRequest;
-import com.example.i_commerce.domain.product.controller.response.CreatedProductResponse;
+import com.example.i_commerce.domain.member.service.store.StoreService;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ItemAttributeRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.OptionRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.OptionValueRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ProductItemRequest;
+import com.example.i_commerce.domain.product.presentation.response.CreatedProductResponse;
 import com.example.i_commerce.domain.product.entity.Attribute;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
@@ -32,6 +33,8 @@ public class ProductService {
     private static final int FIRST_OPTION_INDEX = 0;
     private static final int SECOND_OPTION_INDEX = 1;
 
+    private final StoreService storeService;
+
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
@@ -40,7 +43,11 @@ public class ProductService {
 
 
     @Transactional
-    public CreatedProductResponse createProduct(Long sellerId, CreateProductRequest request) {
+    public CreatedProductResponse createProduct(Long userId, CreateProductRequest request) {
+
+        if(!storeService.isStoreManager(userId, request.storeId())) {
+            throw new AppException(ProductErrorCode.PRODUCT_ACCESS_DENIED);
+        }
 
         optionValidator.validateOptions(request);
         Map<Long, Attribute> attributeMap = attributeValidator.validateAndFetchAttributes(request);

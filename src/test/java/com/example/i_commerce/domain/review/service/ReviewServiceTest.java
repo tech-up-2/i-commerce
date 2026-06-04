@@ -10,11 +10,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
+import com.example.i_commerce.domain.order.service.OrderService;
+import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
-import com.example.i_commerce.domain.review.repo.ReviewRepository;
+import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
-import com.example.i_commerce.domain.review.validator.ReviewValidator;
+import com.example.i_commerce.domain.review.validator.ReviewForbiddenWordValidator;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.s3.service.S3ImageService;
 import java.util.List;
@@ -32,11 +34,14 @@ public class ReviewServiceTest {
     @Mock
     private ReviewRepository reviewRepo;
 
+    @Mock
+    private OrderService orderService;
+
     @InjectMocks
     private ReviewService reviewService;
 
     @Mock
-    private ReviewValidator reviewValidator;
+    private ReviewForbiddenWordValidator reviewForbiddenWordValidator;
 
     @Mock
     private S3ImageService s3ImageService;
@@ -48,14 +53,15 @@ public class ReviewServiceTest {
         Long userId = 1L;
         Long orderProductId = 10L;
         Long reviewId = 100L;
+        Long productId = 99L;
 
         CreateReviewRequest request = new CreateReviewRequest("굳굳", 5);
         List<MultipartFile> imageFiles = List.of();
 
-        given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
-            .willReturn(true);
+        given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
 
-        given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(false);
+        OrderProductResponse mockResponse = new OrderProductResponse(productId, userId, OrderStatus.COMPLETED);
+        given(orderService.getOrderProductForReview(orderProductId)).willReturn(mockResponse);
 
         Review mockReview = Review.builder().id(reviewId).build();
         given(reviewRepo.save(any(Review.class))).willReturn(mockReview);
@@ -74,19 +80,21 @@ public class ReviewServiceTest {
         // given
         Long userId = 1L;
         Long orderProductId = 10L;
+        Long productId = 99L;
         CreateReviewRequest request = new CreateReviewRequest("내 돈 내 산 리뷰", 5);
         List<MultipartFile> imageFiles = List.of();
 
-        given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
-            .willReturn(false);
+        given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
+
+        OrderProductResponse mockResponse = new OrderProductResponse(productId, userId, OrderStatus.PENDING);
+        given(orderService.getOrderProductForReview(orderProductId)).willReturn(mockResponse);
 
         // when & then
         assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request, imageFiles))
             .isInstanceOf(AppException.class)
-            .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.NOT_ACTUAL_BUYER);
+            .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.REVIEW_NOT_ALLOWED_STATE);
 
         verify(reviewRepo, never()).save(any(Review.class));
-        verify(reviewRepo, never()).existsByOrderProductIdAndUserId(anyLong(), anyLong());
     }
 
     @Test
@@ -99,10 +107,7 @@ public class ReviewServiceTest {
         CreateReviewRequest request = new CreateReviewRequest("리뷰 또 쓰고 싶다", 5);
         List<MultipartFile> imageFiles = List.of();
 
-        given(reviewRepo.isReviewableStatus(orderProductId, userId, OrderStatus.COMPLETED))
-            .willReturn(true);
-
-        given(reviewRepo.existsByOrderProductIdAndUserId(10L, 1L)).willReturn(true);
+        given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(true);
 
         //when&then
         assertThatThrownBy(() -> reviewService.createReview(orderProductId, userId, request, imageFiles))
@@ -111,13 +116,13 @@ public class ReviewServiceTest {
 
         verify(reviewRepo, never()).save(any(Review.class));
 
+        verify(orderService, never()).getOrderProductForReview(anyLong());
     }
 
     @Test
     @DisplayName("실패: 별점이 1점 미만 혹은 5점 초과면 예외가 발생한다")
     void createReview_Fail_InvalidStarRating(){
         //given
-
         Long userId = 1L;
         Long orderProductId = 10L;
 
@@ -129,8 +134,7 @@ public class ReviewServiceTest {
             .isInstanceOf(AppException.class)
             .hasFieldOrPropertyWithValue("errorCode", ReviewErrorCode.INVALID_STAR_RATING);
 
-        verify(reviewRepo, never()).existsByOrderProductIdAndUserId(anyLong(), anyLong());
+        verify(reviewRepo, never()).existsByOrderProductId(anyLong());
         verify(reviewRepo, never()).save(any(Review.class));
     }
-
 }

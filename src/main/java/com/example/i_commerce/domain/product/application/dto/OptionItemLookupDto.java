@@ -1,6 +1,6 @@
 package com.example.i_commerce.domain.product.application.dto;
 
-import com.example.i_commerce.domain.product.entity.ProductOptionType;
+import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
 import java.util.Collections;
 import java.util.Map;
 import lombok.Builder;

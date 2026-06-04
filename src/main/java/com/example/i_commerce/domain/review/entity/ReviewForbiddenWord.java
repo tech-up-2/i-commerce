@@ -28,4 +28,8 @@ public class ReviewForbiddenWord extends BaseEntity {
 
     @Column(length = 20)
     private String word;
+
+    public ReviewForbiddenWord(String word) {
+        this.word = word;
+    }
 }

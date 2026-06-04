@@ -7,10 +7,10 @@ import com.example.i_commerce.domain.cart.controller.response.AddCartItemRespons
 import com.example.i_commerce.domain.cart.entity.Cart;
 import com.example.i_commerce.domain.cart.entity.CartItem;
 import com.example.i_commerce.domain.cart.exception.CartErrorCode;
-import com.example.i_commerce.domain.cart.infrastructure.ProductClient;
-import com.example.i_commerce.domain.cart.infrastructure.ProductItemInfo;
+import com.example.i_commerce.domain.product.application.dto.ProductItemInfo;
 import com.example.i_commerce.domain.cart.repository.CartItemRepository;
 import com.example.i_commerce.domain.cart.repository.CartRepository;
+import com.example.i_commerce.domain.product.application.service.ProductQueryService;
 import com.example.i_commerce.global.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,12 +23,13 @@ public class CartService {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
-    private final ProductClient productClient;
+    private final ProductQueryService productQueryService;
 
     public AddCartItemResponse addCartItem(Long userId, AddCartItemRequest request) {
 
         ProductItemInfo productItemInfo =
-            productClient.getProductItemInfo(request.productItemId());
+            productQueryService.getProductItemInfoById(request.productItemId());
+
         if(!productItemInfo.isOnSale()) {
             throw new AppException(CartErrorCode.PRODUCT_NOT_AVAILABLE);
         }

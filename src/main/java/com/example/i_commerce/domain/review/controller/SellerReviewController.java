@@ -5,7 +5,6 @@ import com.example.i_commerce.domain.review.facade.ReviewLikeFacade;
 import com.example.i_commerce.domain.review.service.ReviewCommentService;
 import com.example.i_commerce.domain.review.service.ReviewService;
 import com.example.i_commerce.domain.review.service.dto.CreateCommentRequest;
-import com.example.i_commerce.domain.review.service.dto.ReviewCommentManagementResponse;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
 import com.example.i_commerce.domain.review.service.dto.SellerReviewManagementResponse;
 import com.example.i_commerce.domain.review.service.dto.UpdateCommentRequest;
@@ -30,6 +29,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import com.example.i_commerce.global.common.response.SliceResponse;
+import org.springframework.data.domain.Pageable;
 
 @Tag(name = "Seller Review API", description = "판매자 리뷰 관리 API")
 @SecurityRequirement(name = "BearerAuth")
@@ -46,9 +47,9 @@ public class SellerReviewController {
     @Operation(summary = "베스트 리뷰 후보 조회", description = "판매자는 베스트 리뷰 후보를 확인한다.")
     @GetMapping("/best-candidates")
     public ApiResponse<List<ReviewListResponse>> getBestReviewCandidates(
-        @RequestParam Long productOrderId
+        @RequestParam Long productId
     ) {
-        List<ReviewListResponse> responses = reviewService.getBestReviewCandidates(productOrderId);
+        List<ReviewListResponse> responses = reviewService.getBestReviewCandidates(productId);
 
         return ApiResponse.success(responses);
     }
@@ -99,13 +100,13 @@ public class SellerReviewController {
         return ApiResponse.success(editedCommentId);
     }
 
-    @Operation(summary = "내가 단 답글 목록 조회", description = "판매자 본인이 작성한 모든 답글을 조회한다.")
-    @GetMapping("/comments")
-    public ApiResponse<List<SellerReviewManagementResponse>> getMyComments(
-        @AuthenticationPrincipal CustomUserPrincipal principal
+    @Operation(summary = "판매자 상점 리뷰 목록 조회", description = "판매자가 운영하는 상점에 등록된 모든 상품 리뷰를 페이징하여 조회한다.")
+    @GetMapping
+    public ApiResponse<SliceResponse<ReviewListResponse>> getSellerReviews(
+        @AuthenticationPrincipal CustomUserPrincipal principal,
+        Pageable pageable
     ) {
-        List<SellerReviewManagementResponse> responses = reviewCommentService.getReviewsForSeller(principal.getId());
-        return ApiResponse.success(responses);
+        SliceResponse<ReviewListResponse> response = reviewCommentService.getSellerReviews(principal.getId(), pageable);
+        return ApiResponse.success(response);
     }
-
 }

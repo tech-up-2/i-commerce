@@ -12,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -43,6 +44,9 @@ public class Order extends BaseEntity {
     private Integer usedPointAmount;
 
     private Integer totalPayAmount;
+
+    @Version
+    private Long version;
 
     @Column(length = 20)
     private String receiverName;

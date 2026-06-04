@@ -21,14 +21,16 @@ import com.example.i_commerce.domain.order.service.dto.CreateOrderResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse.OrderProductDetail;
 import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse.PaymentInfo;
+import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderSummaryResponse;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.facade.StockFacade;
-import com.example.i_commerce.domain.product.facade.dto.StockDeductCommand;
+import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.exception.ErrorCode;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +52,6 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
     private final DeliveryAddressService deliveryAddressService;
     private final OrderProductRepository orderProductRepository;
-    private final StockFacade stockFacade;
 
     @Transactional
     public ApiResponse<CreateOrderResponse> createOrder(Long memberId, CreateOrderRequest dto) {
@@ -103,16 +104,6 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        List<StockDeductCommand> stockDeductCommands = dto.items().stream()
-                .map(orderItemDto ->
-                        new StockDeductCommand(
-                                orderItemDto.productId(),
-                                orderItemDto.quantity(),
-                                order.getId()))
-                .toList();
-
-        stockFacade.deductStock(stockDeductCommands);
-
         Payment payment = paymentRepository.save(Payment.builder()
                 .order(order)
                 .amount(totalPrice)
@@ -124,7 +115,7 @@ public class OrderService {
 
         String firstProductName = order.getOrderProducts().stream().findFirst().map(OrderProduct::getProductName).orElse("");
 
-        return ApiResponse.success(CreateOrderResponse.of(order, payment, firstProductName));
+        return ApiResponse.success(CreateOrderResponse.of(order, firstProductName));
 
     }
 
@@ -155,17 +146,25 @@ public class OrderService {
     @Transactional
     public void validateOrderOwner(String tossOrderId, Long userId) {
 
-        if (tossOrderId == null || !tossOrderId.contains("_")) {
-            throw new AppException(PaymentErrorCode.INVALID_PAYMENT_REQUEST); // 400 Bad Request
-        }
-
-        Long paymentId = Long.valueOf(tossOrderId.split("_")[1]);
-        Payment payment = paymentRepository.findById(paymentId).orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+        Payment payment = paymentRepository.findByTossOrderIdWithOrder(tossOrderId)
+                .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
         Order order = payment.getOrder();
 
         if (!order.getUserId().equals(userId)) {
             throw new AppException(OrderErrorCode.ORDER_NOT_OWNED);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public OrderProductResponse getOrderProductForReview(Long orderProductId) {
+        OrderProduct orderProduct = orderProductRepository.findByIdWithOrder(orderProductId)
+            .orElseThrow(() -> new AppException(OrderErrorCode.ORDER_PRODUCT_NOT_FOUND));
+
+        return new OrderProductResponse(
+            orderProduct.getProductSkuId(),
+            orderProduct.getOrder().getUserId(),
+            orderProduct.getOrder().getOrderStatus()
+        );
     }
 }

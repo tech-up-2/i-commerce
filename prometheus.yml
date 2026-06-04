@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 5s # 몇 초마다 정보를 수집할 것인지 (수집시간)
+
+# 배포용 springboot가 docker로 실행될 때 사용하는 방식
+#scrape_configs:
+#  - job_name: 'springboot'
+#    metrics_path: '/actuator/prometheus'
+#    static_configs:
+#      - targets: ['springboot:8080']
+# Mac 로컬용
+scrape_configs:
+  - job_name: 'springboot'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8080']

@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.order.controller;
 
+import com.example.i_commerce.domain.order.facade.PaymentFacade;
 import com.example.i_commerce.domain.order.service.PaymentService;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    private final PaymentFacade paymentFacade;
 
     @PreAuthorize("hasRole('MEMBER')")
     @Operation(summary = "결제 완료", description = "토스 페이먼츠에서 카드 인증 후 진짜 결제를 위해 호출되는 API")
@@ -25,7 +26,7 @@ public class PaymentController {
     public ApiResponse<Void> paymentConfirm(
             @RequestBody PaymentConfirmRequest dto
     ) {
-        paymentService.confirmPayment(dto);
+        paymentFacade.confirmPayment(dto);
         return ApiResponse.success();
     }
 
@@ -33,7 +34,7 @@ public class PaymentController {
     @Operation(summary = "결제 취소", description = "결제를 취소한다.")
     @PostMapping("/cancel")
     public ApiResponse<Void> cancelPayment(@RequestBody PaymentCancelRequest dto) {
-        paymentService.cancelPayment(dto);
+        paymentFacade.cancelPayment(dto);
         return ApiResponse.success();
     }
 

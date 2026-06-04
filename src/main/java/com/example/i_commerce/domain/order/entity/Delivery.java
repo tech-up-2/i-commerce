@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,7 +48,15 @@ public class Delivery extends BaseEntity {
     @Column(length = 50)
     private String trackingNo;
 
+    @Version
+    private Long version;
+
     public void changeDeliveryStatus(DeliveryStatus deliveryStatus) {
         this.deliveryStatus = deliveryStatus;
+    }
+
+    public void registerTrackingNumber(String trackingNo) {
+        this.trackingNo = trackingNo;
+        this.changeDeliveryStatus(DeliveryStatus.SHIPPING);
     }
 }
