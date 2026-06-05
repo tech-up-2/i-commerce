@@ -1,13 +1,13 @@
 package com.example.i_commerce.domain.member.service.member.dto;
 
-import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
-import com.example.i_commerce.domain.member.entity.enums.MemberType;
+import com.example.i_commerce.domain.member.tools.AccountRole;
+import com.example.i_commerce.domain.member.tools.AccountStatus;
 
 public record MemberChatInfo(
     Long id,
     String name,
-    MemberType role,
-    MemberStatus status
+    AccountRole role,
+    AccountStatus status
 ) {
 
 }
