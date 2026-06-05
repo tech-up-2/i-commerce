@@ -17,7 +17,6 @@ import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.repository.StarRateCountProjection;
-import com.example.i_commerce.domain.review.service.ReviewService;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
