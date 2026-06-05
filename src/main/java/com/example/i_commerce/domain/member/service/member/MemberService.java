@@ -3,6 +3,7 @@ package com.example.i_commerce.domain.member.service.member;
 import com.example.i_commerce.domain.member.entity.Admin;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.Seller;
+import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.AdminRepository;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
@@ -46,7 +47,9 @@ public class MemberService {
 
         return new MemberChatInfo(
             member.getId(),
-            dataEncryptor.decrypt(member.getName())
+            dataEncryptor.decrypt(member.getName()),
+            member.getRole(),
+            member.getStatus()
         );
     }
 
@@ -57,7 +60,9 @@ public class MemberService {
 
         return new MemberChatInfo(
             seller.getId(),
-            seller.getBusinessName()
+            seller.getBusinessName(),
+            MemberType.SELLER,
+            seller.getSellerStatus()
         );
     }
 
@@ -68,7 +73,9 @@ public class MemberService {
 
         return new MemberChatInfo(
             admin.getId(),
-            dataEncryptor.decrypt(admin.getName())
+            dataEncryptor.decrypt(admin.getName()),
+            admin.getAdminRole(),
+            admin.getAdminStatus()
         );
     }
     // -------

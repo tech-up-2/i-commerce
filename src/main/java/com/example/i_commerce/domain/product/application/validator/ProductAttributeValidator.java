@@ -1,7 +1,6 @@
 package com.example.i_commerce.domain.product.application.validator;
 
 
-import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
 import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ItemAttributeRequest;
 import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ProductItemRequest;
 import com.example.i_commerce.domain.product.entity.Attribute;
@@ -26,37 +25,28 @@ public class ProductAttributeValidator {
     private final AttributeRepository attributeRepository;
     private final CategoryAttributeRepository categoryAttributeRepository;
 
-    public Map<Long, Attribute> validateAndFetchAttributes(CreateProductRequest request) {
-        Set<Long> requestedAttributeIds = collectRequestedAttributeIds(request.items());
-        if (requestedAttributeIds.isEmpty()) {
-            return Map.of();
-        }
-        Set<Long> supportedAttributeIds = fetchSupportedAttributeIds(request.categoryId());
-        validateAttributesSupported(requestedAttributeIds, supportedAttributeIds);
-        return fetchAttributeMap(requestedAttributeIds);
-    }
+    public Map<Long, Attribute> validateAndFetchAttributes(
+        Long categoryId,
+        List<ProductItemRequest> items
+    ) {
 
-    private Set<Long> collectRequestedAttributeIds(List<ProductItemRequest> items) {
-        return items.stream()
+        Set<Long> requestedAttributeIds = items.stream()
             .filter(item -> item.attributes() != null)
             .flatMap(item -> item.attributes().stream())
             .map(ItemAttributeRequest::attributeId)
             .collect(Collectors.toSet());
-    }
 
-    private Set<Long> fetchSupportedAttributeIds(Long categoryId) {
+        if (requestedAttributeIds.isEmpty()) {
+            return Map.of();
+        }
+
         List<CategoryAttribute> categoryAttributes =
             categoryAttributeRepository.findByCategoryIdWithAttribute(categoryId);
 
-        return categoryAttributes.stream()
+        Set<Long> supportedAttributeIds = categoryAttributes.stream()
             .map(ca -> ca.getAttribute().getId())
             .collect(Collectors.toSet());
-    }
 
-    private void validateAttributesSupported(
-        Set<Long> requestedAttributeIds,
-        Set<Long> supportedAttributeIds
-    ) {
         Set<Long> unsupportedAttributes = requestedAttributeIds.stream()
             .filter(id -> !supportedAttributeIds.contains(id))
             .collect(Collectors.toSet());
@@ -64,6 +54,8 @@ public class ProductAttributeValidator {
         if (!unsupportedAttributes.isEmpty()) {
             throw new AppException(ProductErrorCode.NOT_SUPPORTED_ATTRIBUTE);
         }
+
+        return fetchAttributeMap(requestedAttributeIds);
     }
 
     private Map<Long, Attribute> fetchAttributeMap(Set<Long> attributeIds) {

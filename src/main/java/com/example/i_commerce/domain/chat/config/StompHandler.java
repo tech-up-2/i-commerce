@@ -38,6 +38,8 @@ public class StompHandler implements ChannelInterceptor {
             log.info("subscribe 검증");
             String token = getValidToken(accessor);
             TokenPayload payload = jwtTokenUtil.parseToken(token);
+            //ws은 연결마다 세션이 하나씩 있으므로 거기에 memberId나 정보 등을 담아둘 수 있음...
+            accessor.getSessionAttributes().put("memberId", payload.accountId());
             Long memberId = payload.accountId();
             String roomId = accessor.getDestination().split("/")[2];
             if(!chatService.isRoomParticipant(memberId, Long.parseLong(roomId))){
