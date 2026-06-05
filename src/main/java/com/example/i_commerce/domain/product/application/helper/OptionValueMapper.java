@@ -14,10 +14,6 @@ public class OptionValueMapper {
         return new OptionValueMapper();
     }
 
-    public static OptionValueMapper empty() {
-        return new OptionValueMapper();
-    }
-
     public void put(Integer optionOrder, String value, ProductOptionValue optionValue) {
         map.put(new OptionKey(optionOrder, value), optionValue);
     }
