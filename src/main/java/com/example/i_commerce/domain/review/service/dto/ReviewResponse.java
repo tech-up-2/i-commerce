@@ -16,6 +16,8 @@ import lombok.Getter;
 @Builder
 public class ReviewResponse {
 
+    private Long reviewId;
+
     private Long userId;
 
     private String content;
@@ -41,6 +43,7 @@ public class ReviewResponse {
             : Collections.emptyList();
 
         return ReviewResponse.builder()
+            .reviewId(review.getId())
             .userId(review.getUserId())
             .content(review.getContent())
             .starRate(review.getStarRate())
