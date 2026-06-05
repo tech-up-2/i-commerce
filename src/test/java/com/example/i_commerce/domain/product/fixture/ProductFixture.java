@@ -6,7 +6,9 @@ import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
 import com.example.i_commerce.domain.product.entity.ProductOptionValue;
 import com.example.i_commerce.domain.product.entity.enums.ProductStatus;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
 import java.util.List;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class ProductFixture {
 
@@ -66,6 +68,46 @@ public class ProductFixture {
             .optionType(ProductOptionType.DOUBLE)
             .items(List.of(defaultItem))
             .options(List.of(optionValue1, optionValue2))
+            .build();
+    }
+
+    public static Product createProduct(Long id, Long storeId, ProductOptionType optionType) {
+        Product product = Product.builder()
+            .storeId(storeId)
+            .category(CategoryFixture.createRootWithId(1L))
+            .name("테스트 상품")
+            .description("테스트 상품 설명")
+            .optionType(optionType)
+            .status(ProductStatus.ON_SALE)
+            .build();
+        ReflectionTestUtils.setField(product, "id", id);
+        return product;
+    }
+
+    public static CreateProductRequest createProductRequest(
+        Long storeId,
+        Long categoryId,
+        ProductOptionType optionType
+    ) {
+        return CreateProductRequest.builder()
+            .storeId(storeId)
+            .name("테스트 상품")
+            .description("테스트 상품 설명")
+            .categoryId(categoryId)
+            .productOptionType(optionType)
+            .mainImageUrl("http://image.com/main.jpg")
+            .imageUrls(List.of())
+            .options(List.of())
+            .items(List.of(createProductItemRequest()))
+            .build();
+    }
+
+    public static CreateProductRequest.ProductItemRequest createProductItemRequest() {
+        return CreateProductRequest.ProductItemRequest.builder()
+            .sku("SKU-001")
+            .price(10000)
+            .stock(100)
+            .isDefault(true)
             .build();
     }
 
