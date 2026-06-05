@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.member;
+package com.example.i_commerce.domain.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
