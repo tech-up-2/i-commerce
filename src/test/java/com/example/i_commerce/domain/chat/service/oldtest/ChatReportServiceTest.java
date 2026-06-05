@@ -9,12 +9,16 @@ import com.example.i_commerce.domain.chat.entity.enums.ChatReportReason;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatReportRepository;
 import com.example.i_commerce.domain.chat.service.ChatReportService;
+import com.example.i_commerce.domain.chat.service.ChatService;
 import com.example.i_commerce.domain.chat.service.dto.ChatReportRequest;
+import com.example.i_commerce.domain.chat.service.fixture.ChatMemberFixture;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.service.member.MemberService;
+import com.example.i_commerce.domain.member.service.member.dto.MemberChatInfo;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
@@ -39,13 +43,15 @@ public class ChatReportServiceTest {
     @Mock
     private ChatReportRepository chatReportRepository;
     @Mock
-    private MemberRepository memberRepository;
-    @Mock
     private ChatMessageRepository chatMessageRepository;
+    @Mock
+    private MemberService memberService;
 
     private Member member;
     private ChatRoom chatRoom;
     private ChatMessage chatMessage;
+    private MemberChatInfo memberChatInfo;
+
 
     @BeforeEach
     public void init() {
@@ -54,18 +60,9 @@ public class ChatReportServiceTest {
         SecurityContextHolder.getContext().setAuthentication(
             new UsernamePasswordAuthenticationToken(customUserPrincipal, null, List.of()));
 
-        member = Member.builder()
-            .id(1L)
-            .emailHash("user1@test.com")
-            .password("1234")
-            .name("테스트 유저1".getBytes())
-            .sex(Gender.MALE)
-            .birthday("20050505".getBytes())
-            .phoneNumber("01011111111".getBytes())
-            .point(0)
-            .status(MemberStatus.ACTIVE)
-            .role(MemberType.CUSTOMER)
-            .build();
+        member = ChatMemberFixture.createMember(1L, "user1@naver.com");
+        memberChatInfo = new MemberChatInfo
+            (member.getId(), "user1", member.getRole(), member.getStatus());
         chatRoom = ChatRoom.builder()
             .id(1L)
             .name("테스트 채팅방")
@@ -83,7 +80,7 @@ public class ChatReportServiceTest {
     @DisplayName("신고가 정상적으로 생성됩니다.")
     public void createChatReport() {
         ChatReportRequest request = new ChatReportRequest(1L, ChatReportReason.SWEARWORD);
-        when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
+        when(memberService.getMemberChatInfo(1L)).thenReturn(memberChatInfo);
         when(chatMessageRepository.findById(1L)).thenReturn(Optional.of(chatMessage));
         when(chatReportRepository.existsByReporterIdAndChatMessageId(1L,
             chatMessage.getId())).thenReturn(false);

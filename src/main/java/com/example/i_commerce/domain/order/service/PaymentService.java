@@ -102,7 +102,7 @@ public class PaymentService {
                 .map(op -> new StockDeductCommand(op.getProductSkuId(), op.getCount(), order.getId()))
                 .toList();
 
-        return PaymentConfirmPrepareDto.of(payment, order.getId(), commands);
+        return PaymentConfirmPrepareDto.of(payment, commands);
     }
 
     @Transactional

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
@@ -25,8 +26,9 @@ public class StompController {
     기존 RequestParam, PathVariable과 같은 매핑 역할을 하는 어노테이션
      */
     @MessageMapping("/{roomId}")
-    public void sendMessage(@DestinationVariable Long roomId, ChatMessageSendRequest request) {
+    public void sendMessage(@DestinationVariable Long roomId, ChatMessageSendRequest request, SimpMessageHeaderAccessor headerAccessor) {
         chatService.saveMessage(roomId, request);
+        Long memberId = (Long) headerAccessor.getSessionAttributes().get("memberId");
         messagingTemplate.convertAndSend("/topic/" + roomId, request);
     }
 }

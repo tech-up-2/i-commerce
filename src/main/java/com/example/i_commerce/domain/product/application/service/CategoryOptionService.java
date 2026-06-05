@@ -100,7 +100,7 @@ public class CategoryOptionService {
 
 
     @Transactional
-    public void deleteOption(Long categoryId, Long categoryOptionId) {
+    public void deleteCategoryOption(Long categoryId, Long categoryOptionId) {
 
         CategoryOption categoryOption = categoryOptionRepository
             .findByIdAndCategoryId(categoryOptionId, categoryId)

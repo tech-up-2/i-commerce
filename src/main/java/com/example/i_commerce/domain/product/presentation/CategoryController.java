@@ -52,7 +52,7 @@ public class CategoryController {
     @Operation(summary = "특정 카테고리 조회", description = "특정 카테고리를 조회합니다.")
     @GetMapping("/{categoryId}")
     public ApiResponse<CategoryResponse> getCategories(@PathVariable Long categoryId) {
-        CategoryResponse res = categoryService.getCategoryById(categoryId);
+        CategoryResponse res = categoryService.getCategory(categoryId);
         return ApiResponse.success(res);
     }
 
