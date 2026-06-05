@@ -1,9 +1,7 @@
 package com.example.i_commerce.domain.product.application.validator;
 
 
-import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
 import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.OptionRequest;
-import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.OptionValueRequest;
 import com.example.i_commerce.domain.product.entity.CategoryOption;
 import com.example.i_commerce.domain.product.entity.Option;
 import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
@@ -23,22 +21,28 @@ public class ProductOptionValidator {
     private static final int MAX_OPTION_COUNT = 2;
     private final CategoryOptionRepository categoryOptionRepository;
 
-    public void validateOptions(CreateProductRequest request) {
+    public void validateOptions(
+        Long categoryId,
+        ProductOptionType productOptionType,
+        List<OptionRequest> options
+    ) {
 
-        if(request.productOptionType() == ProductOptionType.NONE) {
+        if(productOptionType == ProductOptionType.NONE) {
             return;
         }
 
-        List<OptionRequest> requests = request.options();
+        if (options.size() > MAX_OPTION_COUNT) {
+            throw new AppException(ProductErrorCode.EXCEEDED_MAX_OPTION);
+        }
 
         Set<Long> availableOptions = categoryOptionRepository
-            .findAllByCategoryId(request.categoryId())
+            .findAllByCategoryId(categoryId)
             .stream()
             .map(CategoryOption::getOption)
             .map(Option::getId)
             .collect(Collectors.toSet());
 
-        List<Long> invalidOptionIds = requests.stream()
+        List<Long> invalidOptionIds = options.stream()
             .map(OptionRequest::optionId)
             .filter(id -> !availableOptions.contains(id))
             .toList();
@@ -47,12 +51,6 @@ public class ProductOptionValidator {
             throw new AppException(ProductErrorCode.NOT_SUPPORTED_OPTION);
         }
 
-    }
-
-    private void validateOptionCount(List<OptionValueRequest> options) {
-        if (options.size() > MAX_OPTION_COUNT) {
-            throw new AppException(ProductErrorCode.EXCEEDED_MAX_OPTION);
-        }
     }
 
 }

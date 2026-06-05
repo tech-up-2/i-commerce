@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.product.entity.service;
+package com.example.i_commerce.domain.product.application.helper;
 
 import com.example.i_commerce.domain.product.entity.ProductOptionValue;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
@@ -10,6 +10,10 @@ public class OptionValueMapper {
 
     private final Map<OptionKey, ProductOptionValue> map = new HashMap<>();
 
+    public static OptionValueMapper create() {
+        return new OptionValueMapper();
+    }
+
     public static OptionValueMapper empty() {
         return new OptionValueMapper();
     }
@@ -18,7 +22,7 @@ public class OptionValueMapper {
         map.put(new OptionKey(optionOrder, value), optionValue);
     }
 
-    public ProductOptionValue get(Integer optionOrder, String value) {
+    public ProductOptionValue getOrThrow(Integer optionOrder, String value) {
         ProductOptionValue optionValue = map.get(new OptionKey(optionOrder, value));
         if (optionValue == null) {
             throw new AppException(ProductErrorCode.OPTION_NOT_FOUND);
