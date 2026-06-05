@@ -147,10 +147,6 @@ public class IntegrationTestSupport {
         return loginAsAdmin(AdminRole.MASTER, AdminStatus.ACTIVE);
     }
 
-    public CustomUserPrincipal loginAsSuspendedMaster() {
-        return loginAsAdmin(AdminRole.MASTER, AdminStatus.SUSPENDED);
-    }
-
     public CustomUserPrincipal loginAsWithdrawMaster() {
         return loginAsAdmin(AdminRole.MASTER, AdminStatus.WITHDRAWN);
     }
@@ -160,10 +156,6 @@ public class IntegrationTestSupport {
         return loginAsAdmin(AdminRole.ADMIN, AdminStatus.ACTIVE);
     }
 
-    public CustomUserPrincipal loginAsSuspendedAdmin() {
-        return loginAsAdmin(AdminRole.ADMIN, AdminStatus.SUSPENDED);
-    }
-
     public CustomUserPrincipal loginAsWithdrawAdmin() {
         return loginAsAdmin(AdminRole.ADMIN, AdminStatus.WITHDRAWN);
     }
@@ -171,10 +163,6 @@ public class IntegrationTestSupport {
     //Operator
     public CustomUserPrincipal loginAsActiveOperator() {
         return loginAsAdmin(AdminRole.OPERATOR, AdminStatus.ACTIVE);
-    }
-
-    public CustomUserPrincipal loginAsSuspendedOperator() {
-        return loginAsAdmin(AdminRole.OPERATOR, AdminStatus.SUSPENDED);
     }
 
     public CustomUserPrincipal loginAsWithdrawOperator() {
