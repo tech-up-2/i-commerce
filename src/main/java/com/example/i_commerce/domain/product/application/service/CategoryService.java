@@ -1,6 +1,10 @@
 package com.example.i_commerce.domain.product.application.service;
 
 
+import static com.example.i_commerce.domain.product.entity.policy.CategoryPolicy.DEFAULT_TREE_DEPTH;
+import static com.example.i_commerce.domain.product.entity.policy.CategoryPolicy.MAX_DEPTH;
+import static com.example.i_commerce.domain.product.entity.policy.CategoryPolicy.RECURSIVE_DEPTH_LIMIT;
+
 import com.example.i_commerce.domain.product.application.mapper.CategoryMapper;
 import com.example.i_commerce.domain.product.presentation.request.CreateCategoryRequest;
 import com.example.i_commerce.domain.product.presentation.response.CreateCategoryResponse;
@@ -20,10 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CategoryService {
 
-    private static final int MAX_DEPTH = 5;
-    private static final int DEFAULT_TREE_DEPTH = 3;
-    private static final int RECURSIVE_DEPTH_LIMIT = 5;
-
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final CategoryMapper categoryMapper;
@@ -41,7 +41,7 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public CategoryResponse getCategoryById(Long id) {
+    public CategoryResponse getCategory(Long id) {
         List<CategoryTreeRow> rows =
             categoryRepository.findCategoryTreeById(id, DEFAULT_TREE_DEPTH);
 
@@ -51,6 +51,7 @@ public class CategoryService {
 
         return categoryMapper.toTree(rows);
     }
+
 
     @Transactional
     public CreateCategoryResponse createCategory(CreateCategoryRequest request) {
