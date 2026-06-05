@@ -1,17 +1,15 @@
 package com.example.i_commerce.domain.member.entity;
 
 import com.example.i_commerce.domain.member.entity.enums.LoginFailReason;
+import com.example.i_commerce.domain.member.entity.enums.LoginResult;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
@@ -32,23 +30,22 @@ public class AdminLoginHistory extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_id", nullable = false)
-    private Admin admin;
+    @Column(nullable = true, name = "admin_id")
+    private Long adminId;
 
-    @Builder.Default
-    @Column(nullable = false)
-    private Boolean loginResult = false;
-
-    @Column(length = 50)
-    private String ipAddress;
-
-    @Column(nullable = false)
-    private LocalDateTime loginAt;
-
+    //로그인 성공여부
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private LoginFailReason failReason; // 회원 실패 사유와 동일한 Enum 사용 가능
+    private LoginResult loginResult;
 
-    private LocalDateTime logoutAt;
+    @Column(length = 45)
+    private String ipAddress;
+
+    @Column(nullable = true)
+    private LocalDateTime loginAt;
+
+    //로그인 실패 사유
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private LoginFailReason failReason; // 회원 실패 사유와 동일한 Enum 사용
 }

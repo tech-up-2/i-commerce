@@ -42,7 +42,20 @@ public enum MemberErrorCode implements ErrorCode {
 
     // --- 409
     DUPLICATED_EMAIL(HttpStatus.CONFLICT, "USR-40901", "이미 가입된 이메일입니다."),
-    ALREADY_APPLIED_SELLER(HttpStatus.CONFLICT, "USR-40902", "이미 판매자 등록이 되어 있습니다.");
+    ALREADY_APPLIED_SELLER(HttpStatus.CONFLICT, "USR-40902", "이미 판매자 등록이 되어 있습니다."),
+
+    // --- 423
+    ADMIN_LOCKED(
+        HttpStatus.LOCKED,
+        "USR-42301",
+        "관리자 계정이 잠금 상태입니다."
+    ),
+    // --- 429
+    LOGIN_TEMPORARILY_BLOCKED(
+        HttpStatus.TOO_MANY_REQUESTS,
+        "USR-42901",
+        "로그인 실패 횟수 초과로 일시적으로 로그인이 제한되었습니다."
+    );
 
     private final HttpStatus httpStatus;
     private final String code;

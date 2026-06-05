@@ -53,7 +53,7 @@ public class CategoryOptionController {
         @PathVariable Long categoryId,
         @PathVariable Long categoryOptionId
     ) {
-        categoryOptionService.deleteOption(categoryId, categoryOptionId);
+        categoryOptionService.deleteCategoryOption(categoryId, categoryOptionId);
         return ApiResponse.success();
     }
 
