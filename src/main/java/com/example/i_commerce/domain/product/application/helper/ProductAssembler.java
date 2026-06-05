@@ -26,6 +26,10 @@ public class ProductAssembler {
     ) {
         OptionValueMapper mapper = OptionValueMapper.create();
 
+        if (optionRequests == null) {
+            return mapper;
+        }
+
         for (OptionRequest option : optionRequests) {
             for (OptionValueRequest value : option.values()) {
                 ProductOptionValue optionValue = ProductOptionValue.of(

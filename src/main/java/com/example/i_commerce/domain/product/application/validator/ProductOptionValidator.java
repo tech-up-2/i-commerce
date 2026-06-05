@@ -31,6 +31,10 @@ public class ProductOptionValidator {
             return;
         }
 
+        if (options == null) {
+            throw new AppException(ProductErrorCode.OPTION_NOT_FOUND);
+        }
+
         if (options.size() > MAX_OPTION_COUNT) {
             throw new AppException(ProductErrorCode.EXCEEDED_MAX_OPTION);
         }
