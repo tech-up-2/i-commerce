@@ -194,6 +194,7 @@ public class Review extends BaseEntity {
     public void cancelBestStatus() {
         this.isBest = false;
         this.bestStatus = ReviewIsBestStatus.CANDIDATE;
+        this.isExcluded = false;
     }
 
     public void increaseLikeCount() {
