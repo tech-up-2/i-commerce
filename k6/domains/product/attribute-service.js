@@ -1,27 +1,11 @@
+
+
 import http from 'k6/http';
+import { buildParams } from '../../lib/http-helper.js';
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
 const ATTRIBUTE_BASE_PATH = `${BASE_URL}/api/v1/attributes`;
 
-/**
- * 공통 파라미터 생성
- *
- * @param {string|null} token   - Bearer 토큰
- * @param {string}      tagName - 메트릭 태그명
- * @returns {Object} k6 params 객체
- */
-function buildParams(token, tagName) {
-  const headers = { 'Content-Type': 'application/json' };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  return {
-    headers,
-    tags: { name: tagName },
-  };
-}
 
 /**
  * [POST] /api/v1/attributes
