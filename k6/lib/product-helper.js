@@ -25,7 +25,7 @@ import {
 
 /**
  * 테스트용 사전 데이터 세팅
- * 카테고리, 옵션(2개), 속성을 생성하고 카테고리에 연결합니다.
+ * 카테고리, 옵션(2개), 속성을 생성하고 카테고리에 연결
  *
  * @param {string} adminToken
  * @returns {Object|null}

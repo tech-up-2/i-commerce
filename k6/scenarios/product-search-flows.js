@@ -19,8 +19,8 @@ import { check, sleep } from 'k6';
 import { searchProducts } from '../domains/product/product-query-service.js';
 import {
   createTestProduct,
-  cleanupProductTestData,
-} from './product-create-flows.js';
+  cleanupTestProduct,
+} from '../lib/product-helper.js';
 
 /**
  * SliceResponse 공통 구조 검증 헬퍼
@@ -369,7 +369,7 @@ export function searchWithInvalidKeywordFlow(token) {
  */
 export function productSearchFullScenario(adminToken, sellerToken, storeId) {
 
-  // ── 사전 준비: 검색 대상 상품 생성 ─────────────────────────────
+  // 사전 준비: 검색 대상 상품 생성
   console.log('[Scenario] 사전 준비 시작 (검색 대상 상품 생성)');
 
   const result = createTestProduct(adminToken, sellerToken, storeId, 'SINGLE');
@@ -384,35 +384,33 @@ export function productSearchFullScenario(adminToken, sellerToken, storeId) {
 
   console.log(`[Scenario] 사전 준비 완료 | searchKeyword: ${searchKeyword}`);
 
-  // 검색 엔진 미사용(DB 직접 조회)이므로 인덱싱 대기 불필요
-  // 생성 직후 DB 반영을 위한 최소 대기만 유지
   sleep(0.3);
 
-  // CASE 1: keyword 검색 (로그인) ────────────────────────────
+  // CASE 1: keyword 검색 (로그인)
   console.log('\n[Scenario] ===== 케이스 1: keyword 검색 (로그인) =====');
   searchByKeywordAuthFlow(sellerToken, searchKeyword);
 
-  // CASE 2: keyword 검색 (비로그인) ──────────────────────────
+  // CASE 2: keyword 검색 (비로그인)
   console.log('\n[Scenario] ===== 케이스 2: keyword 검색 (비로그인) =====');
   searchByKeywordGuestFlow(searchKeyword);
 
-  // CASE 3: 비로그인 2페이지 접근 → 403 + PRD-40301 ──────────
+  // CASE 3: 비로그인 2페이지 접근
   console.log('\n[Scenario] ===== 케이스 3: 비로그인 2페이지 접근 (에러 검증) =====');
   searchGuestPageLimitFlow(searchKeyword);
 
-  // CASE 4: categoryId 필터 검색 ─────────────────────────────
+  // CASE 4: categoryId 필터 검색
   console.log('\n[Scenario] ===== 케이스 4: categoryId 필터 검색 =====');
   searchByCategoryFlow(sellerToken, testData.categoryId);
 
-  // CASE 5: 가격 범위 필터 검색 ──────────────────────────────
+  // CASE 5: 가격 범위 필터 검색
   console.log('\n[Scenario] ===== 케이스 5: 가격 범위 필터 검색 =====');
   searchByPriceRangeFlow(sellerToken, 5000, 15000);
 
-  // CASE 6: attributeIds 필터 검색 ───────────────────────────
+  // CASE 6: attributeIds 필터 검색
   console.log('\n[Scenario] ===== 케이스 6: attributeIds 필터 검색 =====');
   searchByAttributesFlow(sellerToken, [testData.attributeId]);
 
-  // CASE 7: 정렬 타입별 검색 ─────────────────────────────────
+  // CASE 7: 정렬 타입별 검색
   console.log('\n[Scenario] ===== 케이스 7: 정렬 타입별 검색 =====');
   searchBySortTypeFlow(sellerToken);
 
@@ -426,6 +424,6 @@ export function productSearchFullScenario(adminToken, sellerToken, storeId) {
 
   // 사후 정리
   console.log('\n[Scenario] 사후 정리 시작 (관리자 토큰)');
-  cleanupProductTestData(adminToken, testData);
+  cleanupTestProduct(adminToken, testData);
   console.log('[Scenario] 완료');
 }

@@ -10,13 +10,18 @@
  */
 import { check, sleep } from 'k6';
 import { getProductDetail } from '../domains/product/product-query-service.js';
+
 import {
-  setupProductTestData,
-  cleanupProductTestData,
+  setupTestData,
+  cleanupTestProduct,
+} from '../lib/product-helper.js';
+
+import {
   createProductNoneFlow,
   createProductSingleFlow,
   createProductDoubleFlow,
 } from './product-create-flows.js';
+
 
 /**
  * 공통 응답 기본 구조 검증 헬퍼
@@ -456,7 +461,7 @@ export function productDetailFullScenario(adminToken, sellerToken, storeId) {
   // 사전 준비: 카테고리/옵션/속성 세팅
   console.log('[Scenario] 사전 준비 시작 (관리자 토큰)');
 
-  const testData = setupProductTestData(adminToken);
+  const testData = setupTestData(adminToken);
 
   if (!testData) {
     console.error('[Scenario] 사전 준비 실패. 시나리오를 중단합니다.');
@@ -480,7 +485,7 @@ export function productDetailFullScenario(adminToken, sellerToken, storeId) {
 
   if (!noneProductId || !singleProductId || !doubleProductId) {
     console.error('[Scenario] 상품 생성 실패. 시나리오를 중단합니다.');
-    cleanupProductTestData(adminToken, testData);
+    cleanupTestProduct(adminToken, testData);
     return;
   }
 
@@ -505,6 +510,6 @@ export function productDetailFullScenario(adminToken, sellerToken, storeId) {
 
   // 사후 정리
   console.log('\n[Scenario] 사후 정리 시작 (관리자 토큰)');
-  cleanupProductTestData(adminToken, testData);
+  cleanupTestProduct(adminToken, testData);
   console.log('[Scenario] 완료');
 }
