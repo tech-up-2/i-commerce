@@ -247,10 +247,7 @@ public class ReviewServiceUnitTest {
 
         given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
 
-        UpdateReviewRequest request = UpdateReviewRequest.builder()
-            .content("쓰다보니 불편해요")
-            .starRate(2)
-            .build();
+        UpdateReviewRequest request = new UpdateReviewRequest(userId, "쓰다보니 불편해요", 2, null);
 
         MockMultipartFile mockFile = new MockMultipartFile(
             "imageFiles",
