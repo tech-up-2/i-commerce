@@ -155,6 +155,13 @@ public class AuthChecker {
             SecurityAuthority.ADMIN_ADMIN);
     }
 
+    public boolean canManageAttribute() {
+        return isAdmin()
+            && has(SecurityAuthority.STATUS_ACTIVE)
+            && hasAny(SecurityAuthority.ADMIN_MASTER,
+            SecurityAuthority.ADMIN_ADMIN);
+    }
+
     // 리뷰 관리
     public boolean canManageReviewAsAdmin() {
         return isAdmin()
