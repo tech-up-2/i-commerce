@@ -5,5 +5,15 @@ export function getAuthTokenFromEnv() {
   return __ENV.TEST_TOKEN || null;
 }
 
-export default { getAuthTokenFromEnv };
+export function getAdminToken() {
+  const token = __ENV.ADMIN_TOKEN || null;
+
+  if (!token) {
+    console.error('[Auth] 관리자 토큰이 없습니다.');
+  }
+
+  return token;
+}
+
+export default { getAuthTokenFromEnv, getAdminToken };
 
