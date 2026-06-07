@@ -256,6 +256,10 @@ public class ReviewService {
     public List<ReviewListResponse> getBestReviewCandidates(Long productId, Long sellerId) {
         Long storeId = productQueryService.getStoreIdByProductId(productId);
 
+        if (storeId == null) {
+            throw new AppException(ReviewErrorCode.PRODUCT_NOT_FOUND);
+        }
+
         if (!storeService.isStoreManager(sellerId, storeId)) {
             throw new AppException(CommonErrorCode.INVALID_PERMISSION);
         }

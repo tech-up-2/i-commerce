@@ -47,9 +47,10 @@ public class SellerReviewController {
     @Operation(summary = "베스트 리뷰 후보 조회", description = "판매자는 베스트 리뷰 후보를 확인한다.")
     @GetMapping("/best-candidates")
     public ApiResponse<List<ReviewListResponse>> getBestReviewCandidates(
-        @RequestParam Long productId
+        @RequestParam Long productId,
+        @AuthenticationPrincipal CustomUserPrincipal principal
     ) {
-        List<ReviewListResponse> responses = reviewService.getBestReviewCandidates(productId);
+        List<ReviewListResponse> responses = reviewService.getBestReviewCandidates(productId, principal.getId());
 
         return ApiResponse.success(responses);
     }
