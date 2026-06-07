@@ -2,11 +2,14 @@ package com.example.i_commerce.domain.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertThrows;
 
 import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
+import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.repository.SellerRepository;
+import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
 import com.example.i_commerce.domain.member.service.seller.SellerService;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerInfoResponse;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerRequest;
@@ -138,6 +141,17 @@ public class SellerServiceTest extends IntegrationTestSupport {
     }
 
     @Test
+    @DisplayName("판매자 신청 실패 - 존재하지 않는 회원")
+    void applyForSeller_fail_membernotfound() {
+
+        SellerRequest request = createSellerRequest("kt마켓");
+
+        // when & then
+        assertThatThrownBy(() -> sellerService.applyForSeller(null, request))
+            .isInstanceOf(AppException.class);
+    }
+
+    @Test
     @DisplayName("판매자 정보 조회 성공")
     void getSellerInfo_success() {
         // given
@@ -193,6 +207,84 @@ public class SellerServiceTest extends IntegrationTestSupport {
         // when & then
         assertThatThrownBy(() -> sellerService.updateSeller(memberId, request))
             .isInstanceOf(AppException.class);
+    }
+
+    @Test
+    @DisplayName("판매자 탈퇴 테스트")
+    void deleteSeller_success() {
+        CustomUserPrincipal principal = loginAsApprovedSeller();
+
+        WithDrawRequest request = new WithDrawRequest("password123!");
+
+        sellerService.deleteSeller(principal.getId(), request);
+
+        Seller seller = sellerRepository.findById(principal.getId()).orElseThrow();
+
+        assertThat(seller.getSellerStatus()).isEqualTo(SellerStatus.WITHDRAW);
+        assertThat(seller.getDeletedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("판매자 탈퇴 테스트 - 판매자 없음")
+    void deleteSeller_fail_sellernotfound() {
+        WithDrawRequest request = new WithDrawRequest("password123!");
+
+        AppException exception = assertThrows(AppException.class,
+            () -> sellerService.deleteSeller(member.getId(), request));
+
+        assertThat(exception.getErrorCode()).isEqualTo(MemberErrorCode.SELLER_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("판매자 탈퇴 실패 - 이미 탈퇴한 판매자")
+    void deleteSeller_fail_alreadyDeletedSeller() {
+        // given
+        WithDrawRequest request = new WithDrawRequest("password123!");
+
+        sellerService.deleteSeller(seller.getId(), request);
+
+        // when
+        AppException exception = assertThrows(
+            AppException.class,
+            () -> sellerService.deleteSeller(member.getId(), request)
+        );
+
+        // then
+        assertThat(exception.getErrorCode())
+            .isEqualTo(MemberErrorCode.SELLER_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("판매자 탈퇴 실패 - 존재하지 않는 회원")
+    void deleteSeller_fail_membernotfound() {
+        // given
+        WithDrawRequest request = new WithDrawRequest("password123!");
+
+        // when
+        AppException exception = assertThrows(
+            AppException.class,
+            () -> sellerService.deleteSeller(null, request)
+        );
+
+        // then
+        assertThat(exception.getErrorCode())
+            .isEqualTo(MemberErrorCode.USER_NOT_FOUND);
+    }
+
+    @Test
+    @DisplayName("판매자 탈퇴 실패 - 비밀번호 불일치")
+    void deleteSeller_fail_invalidPassword() {
+        WithDrawRequest request = new WithDrawRequest("wrongPassword");
+
+        // when
+        AppException exception = assertThrows(
+            AppException.class,
+            () -> sellerService.deleteSeller(seller.getId(), request)
+        );
+
+        // then
+        assertThat(exception.getErrorCode())
+            .isEqualTo(MemberErrorCode.INVALID_PASSWORD);
     }
 
     private SellerRequest createSellerRequest(String businessName) {
