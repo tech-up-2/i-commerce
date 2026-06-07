@@ -58,24 +58,27 @@ public class SellerReviewController {
     @Operation(summary = "베스트 리뷰 후보 제외", description = "판매자는 추천된 베스트 리뷰 후보에서 특정 리뷰를 제외한다.")
     @PostMapping("/best-candidates/{reviewId}/exclude")
     public ApiResponse<Void> excludeFromBest(
-        @PathVariable Long reviewId) {
-        reviewLikeFacade.excludeFromBest(reviewId);
+        @PathVariable Long reviewId,
+        @AuthenticationPrincipal CustomUserPrincipal principal) {
+        reviewLikeFacade.excludeFromBest(reviewId, principal.getId());
         return ApiResponse.success();
     }
 
     @Operation(summary = "베스트 리뷰 선정", description = "판매자는 베스트 리뷰를 선정한다.")
     @PostMapping("/{reviewId}/best")
     public ApiResponse<Void> approveBestReview(
-        @PathVariable Long reviewId) {
-        reviewLikeFacade.approveBestReview(reviewId);
+        @PathVariable Long reviewId,
+        @AuthenticationPrincipal CustomUserPrincipal principal) {
+        reviewLikeFacade.approveBestReview(reviewId, principal.getId());
         return ApiResponse.success();
     }
 
     @Operation(summary = "베스트 리뷰 선정 취소", description = "판매자는 베스트 리뷰 선정을 취소한다.")
     @DeleteMapping("/{reviewId}/best")
     public ApiResponse<Void> cancelBestReview(
-        @PathVariable Long reviewId) {
-        reviewLikeFacade.cancelBestReview(reviewId);
+        @PathVariable Long reviewId
+    ,@AuthenticationPrincipal CustomUserPrincipal principal) {
+        reviewLikeFacade.cancelBestReview(reviewId, principal.getId());
         return ApiResponse.success();
     }
 

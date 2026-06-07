@@ -6,6 +6,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.example.i_commerce.domain.member.service.store.StoreService;
+import com.example.i_commerce.domain.product.application.service.ProductQueryService;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewLike;
 import com.example.i_commerce.domain.review.entity.enums.ReviewIsBestStatus;
@@ -30,6 +32,12 @@ public class ReviewLikeServiceUnitTest {
 
     @Mock
     private ReviewLikeRepository reviewLikeRepo;
+
+    @Mock
+    private ProductQueryService productQueryService;
+
+    @Mock
+    private StoreService storeService;
 
     @Test
     @DisplayName("좋아요를 누르면 추가된다.")
@@ -88,18 +96,25 @@ public class ReviewLikeServiceUnitTest {
     void approveBestReview() {
         //given
         Long reviewId = 1L;
+        Long sellerId = 10L;
+        Long productId= 99L;
+        Long storeId = 100L;
 
         Review mockReview = Review.builder()
             .id(reviewId)
             .isBest(false)
+            .productId(productId)
             .bestStatus(ReviewIsBestStatus.CANDIDATE)
             .isExcluded(false)
             .build();
 
         given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
 
+        given(productQueryService.getStoreIdByProductId(productId)).willReturn(storeId);
+        given(storeService.isStoreManager(sellerId, storeId)).willReturn(true);
+
         //when
-        reviewLikeService.approveBestReview(reviewId);
+        reviewLikeService.approveBestReview(reviewId, sellerId);
 
         //then
         assertThat(mockReview.getIsBest()).isTrue();
@@ -113,18 +128,25 @@ public class ReviewLikeServiceUnitTest {
     void cancelBestReview() {
         //given
         Long reviewId = 1L;
+        Long sellerId = 10L;
+        Long productId= 99L;
+        Long storeId = 100L;
 
         Review mockReview = Review.builder()
             .id(reviewId)
             .isBest(true)
+            .productId(productId)
             .bestStatus(ReviewIsBestStatus.BEST)
             .isExcluded(false)
             .build();
 
         given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
 
+        given(productQueryService.getStoreIdByProductId(productId)).willReturn(storeId);
+        given(storeService.isStoreManager(sellerId, storeId)).willReturn(true);
+
         //when
-        reviewLikeService.cancelBestReview(reviewId);
+        reviewLikeService.cancelBestReview(reviewId, sellerId);
 
         //then
         assertThat(mockReview.getIsBest()).isFalse();
@@ -138,18 +160,25 @@ public class ReviewLikeServiceUnitTest {
     void excludeReviewFromBest() {
         //given
         Long reviewId = 1L;
+        Long sellerId = 10L;
+        Long productId = 99L;
+        Long storeId = 100L;
 
         Review mockReview = Review.builder()
             .id(reviewId)
             .isBest(false)
+            .productId(productId)
             .bestStatus(ReviewIsBestStatus.CANDIDATE)
             .isExcluded(false)
             .build();
 
         given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
 
+        given(productQueryService.getStoreIdByProductId(productId)).willReturn(storeId);
+        given(storeService.isStoreManager(sellerId, storeId)).willReturn(true);
+
         //when
-        reviewLikeService.excludeReviewFromBest(reviewId);
+        reviewLikeService.excludeReviewFromBest(reviewId, sellerId);
 
         //then
         assertThat(mockReview.getIsBest()).isFalse();

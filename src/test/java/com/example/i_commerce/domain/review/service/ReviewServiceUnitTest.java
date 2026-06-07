@@ -10,9 +10,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.example.i_commerce.domain.member.service.store.StoreService;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
+import com.example.i_commerce.domain.product.application.service.ProductQueryService;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
@@ -59,6 +61,12 @@ public class ReviewServiceUnitTest {
 
     @Mock
     private S3ImageService s3ImageService;
+
+    @Mock
+    private ProductQueryService productQueryService;
+
+    @Mock
+    private StoreService storeService;
 
     @Test
     @DisplayName("OrderStatus가 COMPLETED인 사용자가 리뷰를 작성한다.")
@@ -306,9 +314,14 @@ public class ReviewServiceUnitTest {
     void getBestReviewCandidates() {
         //given
         Long productId = 1L;
+        Long sellerId = 10L;
+        Long storeId = 100L;
 
         Review excludedReview = mock(Review.class);
         given(excludedReview.isExcluded()).willReturn(true);
+
+        given(productQueryService.getStoreIdByProductId(productId)).willReturn(storeId);
+        given(storeService.isStoreManager(sellerId, storeId)).willReturn(true);
 
         Review lowScoreReview = mock(Review.class);
         given(lowScoreReview.getId()).willReturn(100L);
@@ -324,7 +337,7 @@ public class ReviewServiceUnitTest {
         given(reviewRepo.findAllByProductIdAndDeletedAtIsNull(productId)).willReturn(reviews);
 
         //when
-        List<ReviewListResponse> result = reviewService.getBestReviewCandidates(productId);
+        List<ReviewListResponse> result = reviewService.getBestReviewCandidates(productId, sellerId);
 
         //then
         assertThat(result).hasSize(2);
