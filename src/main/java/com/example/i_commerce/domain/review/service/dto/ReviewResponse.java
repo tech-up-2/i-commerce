@@ -67,6 +67,7 @@ public class ReviewResponse {
             : Collections.emptyList();
 
         return ReviewResponse.builder()
+            .reviewId(review.getId())
             .userId(review.getUserId())
             .content(review.getContent())
             .starRate(review.getStarRate())
