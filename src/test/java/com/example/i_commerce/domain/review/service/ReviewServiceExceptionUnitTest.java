@@ -8,9 +8,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.example.i_commerce.domain.member.service.store.StoreService;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
+import com.example.i_commerce.domain.product.application.service.ProductQueryService;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
@@ -45,6 +47,12 @@ public class ReviewServiceExceptionUnitTest {
 
     @Mock
     private OrderService orderService;
+
+    @Mock
+    private ProductQueryService productQueryService;
+
+    @Mock
+    private StoreService storeService;
 
 
     @Test
@@ -265,4 +273,24 @@ public class ReviewServiceExceptionUnitTest {
         assertThat(exception.getErrorCode()).isEqualTo(CommonErrorCode.UNAUTHORIZED);
     }
 
+    @Test
+    @DisplayName("실패: 자신의 상점이 아닌 다른 상점의 리뷰의 베스트 후보를 확인하려한다.")
+    void notStoreManager() {
+        // given
+        Long hackerSellerId = 99L;
+        Long productId = 100L;
+        Long storeId = 500L;
+
+        given(productQueryService.getStoreIdByProductId(productId)).willReturn(storeId);
+
+        given(storeService.isStoreManager(hackerSellerId, storeId)).willReturn(false);
+
+        // when
+        AppException exception = assertThrows(AppException.class,
+            () ->reviewService.getBestReviewCandidates(productId, hackerSellerId)
+        );
+
+        // then
+        assertThat(exception.getErrorCode()).isEqualTo(CommonErrorCode.INVALID_PERMISSION);
+    }
 }
