@@ -49,7 +49,26 @@ export function setupTestData(adminToken) {
   createOption(adminToken, { name: `smoke_option2_${__VU}_${Date.now()}`, inputType: 'RADIO' });
   sleep(0.3);
 
-  const allOptions = JSON.parse(getAllOptions(adminToken).body).data;
+  const allOptionsRes = getAllOptions(adminToken);
+
+  if (allOptionsRes.status !== 200) {
+    console.error(`[Setup] 옵션 목록 조회 실패 | status: ${allOptionsRes.status}`);
+    deleteOption(adminToken, option1.id);
+    deleteOption(adminToken, option2.id);
+    deleteCategory(adminToken, categoryId);
+    return null;
+  }
+
+  let allOptions;
+  try {
+    allOptions = JSON.parse(allOptionsRes.body).data;
+  } catch (e) {
+    console.error(`[Setup] 옵션 목록 파싱 실패: ${e}`);
+    deleteOption(adminToken, option1.id);
+    deleteOption(adminToken, option2.id);
+    deleteCategory(adminToken, categoryId);
+    return null;
+  }
 
   const option1 = allOptions
   .filter((o) => o.name.startsWith('smoke_option1') && o.inputType === 'SELECT')
@@ -71,10 +90,34 @@ export function setupTestData(adminToken) {
   createAttribute(adminToken, { key: attrKey, values: ['면', '폴리에스터'] });
   sleep(0.3);
 
-  const allAttr = JSON.parse(getAllAttributes(adminToken).body).data;
+  const allAttrRes = getAllAttributes(adminToken);
+
+  if (allAttrRes.status !== 200) {
+    console.error(`[Setup] 속성 조회 실패 | status: ${allAttrRes.status}`);
+    deleteOption(adminToken, option1.id);
+    deleteOption(adminToken, option2.id);
+    deleteCategory(adminToken, categoryId);
+    return null;
+  }
+
+  let allAttr;
+  try {
+    allAttr = JSON.parse(allAttrRes.body).data;
+  } catch (e) {
+    console.error(`[Setup] 속성 목록 파싱 실패: ${e}`);
+    deleteOption(adminToken, option1.id);
+    deleteOption(adminToken, option2.id);
+    deleteCategory(adminToken, categoryId);
+    return null;
+  }
+
   const attrGroup = allAttr
   .filter((g) => g.key === attrKey)
-  .sort((a, b) => b.values[0].id - a.values[0].id)[0];
+  .sort((a, b) => {
+    const aId = a.values?.[0]?.id || 0;
+    const bId = b.values?.[0]?.id || 0;
+    return bId - aId;
+  })[0];
 
   if (!attrGroup || attrGroup.values.length === 0) {
     console.error('[Setup] 속성 id 추출 실패');
