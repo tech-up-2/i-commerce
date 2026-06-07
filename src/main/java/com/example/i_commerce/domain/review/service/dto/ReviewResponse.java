@@ -34,7 +34,31 @@ public class ReviewResponse {
 
     private boolean isUpdated;
 
+    private List<CommentResponse> comments;
+
     public static ReviewResponse from(Review review) {
+
+        List<String> extractedUrls = review.getImages() != null ?
+            review.getImages().stream()
+                .map(ReviewImage::getImageUrl)
+                .toList()
+            : Collections.emptyList();
+
+        return ReviewResponse.builder()
+            .reviewId(review.getId())
+            .userId(review.getUserId())
+            .content(review.getContent())
+            .starRate(review.getStarRate())
+            .imageUrls(extractedUrls)
+            .isBest(Boolean.TRUE.equals(review.getIsBest()))
+            .likeCount(review.getLikeCount())
+            .createdAt(review.getCreatedAt())
+            .isUpdated(Boolean.TRUE.equals(review.getIsUpdated()))
+            .comments(Collections.emptyList())
+            .build();
+    }
+
+    public static ReviewResponse of(Review review, List<CommentResponse> comments) {
 
         List<String> extractedUrls = review.getImages() != null ?
             review.getImages().stream()
@@ -52,6 +76,7 @@ public class ReviewResponse {
             .likeCount(review.getLikeCount())
             .createdAt(review.getCreatedAt())
             .isUpdated(Boolean.TRUE.equals(review.getIsUpdated()))
+            .comments(comments)
             .build();
     }
 

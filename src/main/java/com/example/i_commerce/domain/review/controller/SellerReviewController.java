@@ -82,28 +82,6 @@ public class SellerReviewController {
         return ApiResponse.success();
     }
 
-    @Operation(summary = "리뷰 답글 생성", description = "판매자는 특정 리뷰에 답글을 한 번 달 수 있다.")
-    @PostMapping("/{reviewId}/comment")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Void> createComment(
-        @PathVariable Long reviewId,
-        @AuthenticationPrincipal CustomUserPrincipal principal,
-        @RequestBody @Valid CreateCommentRequest request) {
-        reviewCommentService.createComment(reviewId, principal.getId(), request);
-        return ApiResponse.success();
-    }
-
-    @Operation(summary = "리뷰 답글 수정", description = "판매자는 자신이 단 답글을 수정할 수 있다.")
-    @PatchMapping("/comments/{commentId}")
-    public ApiResponse<Long> editComment(
-        @PathVariable Long commentId,
-        @AuthenticationPrincipal CustomUserPrincipal principal,
-        @RequestBody @Valid UpdateCommentRequest request
-    ) {
-        Long editedCommentId = reviewCommentService.editComment(commentId, principal.getId(), request);
-        return ApiResponse.success(editedCommentId);
-    }
-
     @Operation(summary = "판매자 상점 리뷰 목록 조회", description = "판매자가 운영하는 상점에 등록된 모든 상품 리뷰를 페이징하여 조회한다.")
     @GetMapping
     public ApiResponse<SliceResponse<ReviewListResponse>> getSellerReviews(
