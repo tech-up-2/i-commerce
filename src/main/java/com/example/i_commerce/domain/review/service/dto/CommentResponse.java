@@ -30,7 +30,7 @@ public class CommentResponse {
             .userId(comment.getUserId())
             .content(comment.getContent())
             .createdAt(comment.getCreatedAt())
-            .isUpdated(comment.getUpdatedAt() != null && !comment.getCreatedAt().equals(comment.getUpdatedAt()))
+            .isUpdated(comment.getUpdatedAt() != null && !comment.getUpdatedAt().equals(comment.getCreatedAt()))
             .build();
     }
 }
