@@ -16,6 +16,8 @@ import lombok.Getter;
 @Builder
 public class ReviewResponse {
 
+    private Long reviewId;
+
     private Long userId;
 
     private String content;
