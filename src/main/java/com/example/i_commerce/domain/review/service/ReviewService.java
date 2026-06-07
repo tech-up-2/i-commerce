@@ -1,9 +1,11 @@
 package com.example.i_commerce.domain.review.service;
 
+import com.example.i_commerce.domain.member.service.store.StoreService;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
+import com.example.i_commerce.domain.product.application.service.ProductQueryService;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
@@ -39,6 +41,8 @@ public class ReviewService {
     private final ReviewForbiddenWordValidator reviewForbiddenWordValidator;
     private final S3ImageService s3ImageService;
     private final OrderService orderService;
+    private final StoreService storeService;
+    private final ProductQueryService productQueryService;
 
     @Transactional
     public Long createReview(Long orderProductId, Long userId, CreateReviewRequest dto, List<MultipartFile> imageFiles) {
@@ -217,8 +221,15 @@ public class ReviewService {
     }
 
     @Transactional
-    public List<ReviewListResponse> getBestReviewCandidates(Long productId) {
+    public List<ReviewListResponse> getBestReviewCandidates(Long productId, Long sellerId) {
+        Long storeId = productQueryService.getStoreIdByProductId(productId);
+
+        if (!storeService.isStoreManager(sellerId, storeId)) {
+            throw new AppException(CommonErrorCode.INVALID_PERMISSION);
+        }
+
         List<Review> reviews = reviewRepo.findAllByProductIdAndDeletedAtIsNull(productId);
+
         reviews.removeIf(Review::isExcluded);
 
         reviews.sort((r1, r2) -> Double.compare(r2.calculateRecommendationScore(),
