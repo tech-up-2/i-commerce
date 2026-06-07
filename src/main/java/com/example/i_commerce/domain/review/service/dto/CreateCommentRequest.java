@@ -13,4 +13,6 @@ public class CreateCommentRequest {
 
     private String content;
 
+    private Long parentId;
+
 }
