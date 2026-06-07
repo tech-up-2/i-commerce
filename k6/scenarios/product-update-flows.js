@@ -16,10 +16,10 @@
  * 초기 상태: ON_SALE (createProduct 직후 기본값)
  */
 import { check, sleep } from 'k6';
-import { updateProduct, changeProductStatus } from '../domains/product/product-command-service.js';
+import { createProduct, updateProduct, changeProductStatus }
+  from '../domains/product/product-command-service.js';
 import { setupTestData, cleanupTestData } from '../lib/product-helper.js';
 import { buildNoneProductPayload } from '../lib/product-payload-builder.js';
-import { createProduct } from '../domains/product/product-command-service.js';
 
 /**
  * 상품 기본 정보 수정 플로우
