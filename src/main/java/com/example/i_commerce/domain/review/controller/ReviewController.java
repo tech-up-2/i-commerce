@@ -141,7 +141,7 @@ public class ReviewController {
     }
 
     @Operation(summary = "리뷰 답글 생성", description = "사용자는 특정 리뷰에 답글을 달 수 있다.")
-    @PostMapping("/{reviewId}/comment")
+    @PostMapping("/{reviewId}/comments")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<Void> createComment(
         @PathVariable Long reviewId,
