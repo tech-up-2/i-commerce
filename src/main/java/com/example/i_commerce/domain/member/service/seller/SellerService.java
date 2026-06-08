@@ -32,7 +32,7 @@ public class SellerService {
         Long memberId,
         SellerRequest dto
     ) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         Seller seller = sellerRepository.findById(memberId)
@@ -124,15 +124,15 @@ public class SellerService {
 
     @Transactional
     public void deleteSeller(Long memberId, WithDrawRequest dto) {
-        Seller seller = sellerRepository.findById(memberId)
-            .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
-
-        Member member = memberRepository.findById(seller.getId())
+        Member member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
             throw new AppException(MemberErrorCode.INVALID_PASSWORD);
         }
+
+        Seller seller = sellerRepository.findByIdAndDeletedAtIsNull(member.getId())
+            .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
 
         seller.delete();
 
