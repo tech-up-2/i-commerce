@@ -1,14 +1,17 @@
-package com.example.i_commerce.domain.order.facade;
+package com.example.i_commerce.domain.order.unit.facade;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
-import com.example.i_commerce.domain.order.client.TossPaymentClient;
+import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
+import com.example.i_commerce.domain.order.facade.PaymentFacade;
+import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.AutoPaymentCancelService;
 import com.example.i_commerce.domain.order.service.PaymentService;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelPreparedDto;
@@ -21,6 +24,7 @@ import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,6 +39,9 @@ class PaymentFacadeTest {
 
     @Mock
     PaymentService paymentService;
+
+    @Mock
+    PaymentRepository paymentRepository;
 
     @Mock
     AutoPaymentCancelService autoPaymentCancelService;
@@ -82,6 +89,7 @@ class PaymentFacadeTest {
     @DisplayName("결제 승인 실패: 토스 API 성공 후 재고 부족 시 자동 취소 API를 호출하고 결제 실패 상태를 기록한다")
     void confirmPayment_Fail_OutOfStock() {
         Map<String, Object> responseBody = new HashMap<>();
+        Payment mockPayment = Payment.builder().build();
         responseBody.put("paymentKey", tossOrderId);
 
         given(paymentService.validateAndPrepareConfirm(confirmRequestDto)).willReturn(confirmPrepareDto);

@@ -10,6 +10,7 @@ import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
 import com.example.i_commerce.domain.product.event.OrderCancelledEvent;
 import com.example.i_commerce.domain.product.event.OrderCompletedEvent;
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,6 @@ public class PaymentFacade {
 
             try {
                 publisher.publishEvent(new OrderCompletedEvent(target.commands()));
-
                 paymentService.completePaymentSuccess(target.tossOrderId(), pgTid, previousStatus, response.toString());
             } catch (AppException e) {
                 autoPaymentCancelService.autoCancelPayment(new PaymentCancelRequest(target.tossOrderId(), dto.amount(), pgTid, "재고 부족으로 인한 자동 취소"));
@@ -56,7 +56,6 @@ public class PaymentFacade {
                 try {
                     publisher.publishEvent(new OrderCompletedEvent(target.commands()));
                     paymentService.handleTimeoutSuccess(target.tossOrderId());
-                    throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
                 } catch (AppException ex) {
                     log.error("[비상] 타임아웃 대피 중 재고 부족 발생! 망취소 처리합니다.");
                     try {
@@ -66,8 +65,13 @@ public class PaymentFacade {
                     throw ex;
                 }
             }
-            throw e;
+
+            if(e.getErrorCode() == ProductErrorCode.INSUFFICIENT_STOCK) {
+                throw e;
+            }
+            throw new AppException(PaymentErrorCode.PAYMENT_UNKNOWN_HOLD);
         }
+
     }
 
     public void cancelPayment(PaymentCancelRequest dto) {

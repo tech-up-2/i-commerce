@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.order.service;
+package com.example.i_commerce.domain.order.unit.service;
 
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -20,6 +20,7 @@ import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.DeliveryRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.event.dto.DeliveryCancelRequestEvent;
+import com.example.i_commerce.domain.order.service.DeliveryService;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;

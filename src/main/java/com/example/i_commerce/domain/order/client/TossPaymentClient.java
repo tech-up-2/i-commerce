@@ -59,12 +59,11 @@ public class TossPaymentClient implements PaymentClient {
         } catch (WebClientRequestException e) {
             throw new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT);
         } catch (WebClientResponseException e) {
-//            int statusCode = e.getStatusCode().value();
-//            if (statusCode == 404) {
-//                throw new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND);
-//            }
             if (e.getStatusCode().is4xxClientError()) {
                 throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_FAILED);
+            }
+            if (e.getStatusCode().is5xxServerError()) {
+                throw new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT);
             }
             throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_FAILED);
         }
