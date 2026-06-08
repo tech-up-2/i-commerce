@@ -112,6 +112,10 @@ public class StoreService {
         long storeAddressCount = storeAddressRepository.countByStoreIdAndDeletedAtIsNull(
             store.getId());
 
+        if (storeAddressCount >= 20) {// 판매자당 최대 배송지 갯수
+            throw new AppException(MemberErrorCode.STORE_ADDRESS_LIMIT_EXCEEDED);
+        }
+
         //첫 배송지면 무조건 기본 배송지, 첫 배송지가 아니면 요청값이 true일 때만 기본 배송지
         boolean isDefault = storeAddressCount == 0 || Boolean.TRUE.equals(dto.isDefault());
 

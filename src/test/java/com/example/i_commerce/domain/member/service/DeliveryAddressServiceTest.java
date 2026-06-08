@@ -40,6 +40,15 @@ class DeliveryAddressServiceTest extends IntegrationTestSupport {
         member = loginAsActiveMaleMember();
     }
 
+    /*
+    배송지 목록 조회
+     */
+    @Test
+    @DisplayName("배송지 목록 조회")
+    void showDeliveryAddresses() throws Exception {
+        
+    }
+
     @Test
     @DisplayName("배송지 등록 성공")
     void createDeliveryAddress_success() {
