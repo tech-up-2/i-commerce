@@ -115,7 +115,7 @@ public class OrderService {
 
         String firstProductName = order.getOrderProducts().stream().findFirst().map(OrderProduct::getProductName).orElse("");
 
-        return ApiResponse.success(CreateOrderResponse.of(order, firstProductName));
+        return ApiResponse.success(CreateOrderResponse.of(order, payment.getTossOrderId(), firstProductName));
 
     }
 

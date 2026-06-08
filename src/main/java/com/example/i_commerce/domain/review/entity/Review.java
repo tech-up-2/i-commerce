@@ -79,6 +79,7 @@ public class Review extends BaseEntity {
     @Builder.Default
     private Long version = 0L;
 
+    @Builder.Default
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewComment> comments = new ArrayList<>();
 
@@ -194,6 +195,7 @@ public class Review extends BaseEntity {
     public void cancelBestStatus() {
         this.isBest = false;
         this.bestStatus = ReviewIsBestStatus.CANDIDATE;
+        this.isExcluded = false;
     }
 
     public void increaseLikeCount() {
