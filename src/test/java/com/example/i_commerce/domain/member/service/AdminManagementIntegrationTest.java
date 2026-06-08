@@ -157,6 +157,116 @@ class AdminManagementIntegrationTest extends IntegrationTestSupport {
         )).isEqualTo(1L);
     }
 
+    @Test
+    @DisplayName("관리자 로그인 실패 - 상태")
+    void adminLogin_fail_withdrawnAdmin() {
+        // given
+        createAdmin(
+            "withdrawn-admin@test.com",
+            "admin123!",
+            "탈퇴관리자",
+            AdminRole.ADMIN,
+            AdminStatus.WITHDRAWN
+        );
+        createAdmin(
+            "locked-admin@test.com",
+            "admin123!",
+            "잠긴관리자",
+            AdminRole.ADMIN,
+            AdminStatus.LOCKED
+        );
+
+        LoginRequest request = new LoginRequest(
+            "withdrawn-admin@test.com",
+            "admin123!"
+        );
+        LoginRequest request2 = new LoginRequest(
+            "locked-admin@test.com",
+            "admin123!"
+        );
+
+        // when
+        AppException exception = assertThrows(
+            AppException.class,
+            () -> adminService.login(request)
+        );
+        AppException exception2 = assertThrows(
+            AppException.class,
+            () -> adminService.login(request2)
+        );
+
+        // then
+        assertAll(
+            () -> assertThat(exception.getErrorCode())
+                .isEqualTo(MemberErrorCode.WITHDRAWN_MEMBER),
+            () -> assertThat(exception2.getErrorCode())
+                .isEqualTo(MemberErrorCode.ADMIN_LOCKED)
+        );
+    }
+
+    @Test
+    @DisplayName("관리자 로그인 실패 - 비밀번호 불일치")
+    void adminLogin_fail_invalidPassword() {
+        // given
+        Admin admin = createAdmin(
+            "wrong-password-admin@test.com",
+            "admin123!",
+            "비밀번호틀림관리자",
+            AdminRole.ADMIN,
+            AdminStatus.ACTIVE
+        );
+
+        LoginRequest request = new LoginRequest(
+            "wrong-password-admin@test.com",
+            "wrongPassword123!"
+        );
+
+        // when
+        AppException exception = assertThrows(
+            AppException.class,
+            () -> adminService.login(request)
+        );
+
+        // then
+        assertThat(exception.getErrorCode()).isEqualTo(MemberErrorCode.INVALID_PASSWORD);
+    }
+
+    @Test
+    @DisplayName("관리자 로그인 실패 - 비밀번호 5회 실패 시 계정이 잠긴다")
+    void adminLogin_fail_passwordMismatchFiveTimes_thenLocked() {
+        // given
+        Admin admin = createAdmin(
+            "lock-after-fail@test.com",
+            "admin123!",
+            "잠금대상관리자",
+            AdminRole.ADMIN,
+            AdminStatus.ACTIVE
+        );
+
+        LoginRequest request = new LoginRequest(
+            "lock-after-fail@test.com",
+            "wrongPassword123!"
+        );
+
+        // when
+        for (int i = 0; i < 5; i++) {
+            AppException exception = assertThrows(
+                AppException.class,
+                () -> adminService.login(request)
+            );
+
+            assertThat(exception.getErrorCode())
+                .isEqualTo(MemberErrorCode.INVALID_PASSWORD);
+        }
+
+        // then
+        Admin lockedAdmin = adminRepository.findById(admin.getId())
+            .orElseThrow();
+
+        assertThat(lockedAdmin.getAdminStatus())
+            .isEqualTo(AdminStatus.LOCKED);
+    }
+
 
     /*
     관리자 생성 테스트
@@ -345,7 +455,7 @@ class AdminManagementIntegrationTest extends IntegrationTestSupport {
     }
 
     /*
-    관리자 권한 변경 테스트
+    관리자 권한, 상태 변경 테스트
      */
 
     @Test
@@ -398,6 +508,32 @@ class AdminManagementIntegrationTest extends IntegrationTestSupport {
             .isEqualTo(MemberErrorCode.LAST_ACTIVE_MASTER_REQUIRED);
         assertThat(exception2.getErrorCode())
             .isEqualTo(MemberErrorCode.LAST_ACTIVE_MASTER_REQUIRED);
+    }
+
+    @Test
+    @DisplayName("다른 관리자의 권한 변경")
+    void updateAdminStatus_success() {
+        // given
+        AdminCreateRequest request = new AdminCreateRequest(
+            "adminRole-target@test.com",
+            "admin123!",
+            "상태변경대상",
+            AdminRole.ADMIN
+        );
+
+        AdminCreateResponse createResponse = adminService.createAdmin(request);
+
+        AdminStatusUpdateRequest updateRequest = new AdminStatusUpdateRequest(
+            AdminStatus.LOCKED
+        );
+
+        // when
+        AdminUpdateResponse response = adminService.updateAdminStatus(
+            createResponse.adminId(),
+            updateRequest
+        );
+
+        assertThat(response.adminStatus()).isEqualTo(AdminStatus.LOCKED);
     }
 
     @Test

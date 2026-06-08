@@ -64,7 +64,7 @@ public class AdminService {
 
         if (adminOptional.isEmpty()) {
             // 로그인 실패 기록
-            loginLogService.writeMemberLoginHistory(null,
+            loginLogService.writeAdminLoginHistory(null,
                 LoginResult.FAILURE, null, LocalDateTime.now(),
                 LoginFailReason.INVALID_CREDENTIALS);
 
