@@ -83,6 +83,10 @@ public class ReviewLikeService {
     private void validateStoreManager(Review review, Long sellerId) {
         Long storeId = productQueryService.getStoreIdByProductId(review.getProductId());
 
+        if (storeId == null) {
+            throw new AppException(ReviewErrorCode.PRODUCT_NOT_FOUND);
+        }
+
         if (!storeService.isStoreManager(sellerId, storeId)) {
             throw new AppException(CommonErrorCode.INVALID_PERMISSION);
         }
