@@ -62,7 +62,7 @@ public class ReviewServiceExceptionUnitTest {
         Long orderProductId = 1L;
         Long userId = 10L;
 
-        CreateReviewRequest request = new CreateReviewRequest(3, "그냥 그래요");
+        CreateReviewRequest request = new CreateReviewRequest("그냥 그래요", 3);
         List<MultipartFile> imageFiles = new ArrayList<>();
 
         given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(true);
@@ -85,7 +85,7 @@ public class ReviewServiceExceptionUnitTest {
         Long realUserId = 10L;
         Long fakeUserId = 100L;
 
-        CreateReviewRequest request = new CreateReviewRequest(3, "그냥 그래요");
+        CreateReviewRequest request = new CreateReviewRequest("그냥 그래요", 3);
         List<MultipartFile> imageFiles = new ArrayList<>();
 
         given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
@@ -110,7 +110,7 @@ public class ReviewServiceExceptionUnitTest {
         Long productId = 1L;
         Long userId = 10L;
 
-        CreateReviewRequest request = new CreateReviewRequest(3, "그냥 그래요");
+        CreateReviewRequest request = new CreateReviewRequest("그냥 그래요", 3);
         List<MultipartFile> imageFiles = new ArrayList<>();
 
 
@@ -212,7 +212,7 @@ public class ReviewServiceExceptionUnitTest {
         Long orderProductId = 1L;
         Long userId = 10L;
 
-        CreateReviewRequest request = new CreateReviewRequest(7, "그냥 그래요");
+        CreateReviewRequest request = new CreateReviewRequest("그냥 그래요", 7);
         List<MultipartFile> imageFiles = new ArrayList<>();
 
         //when

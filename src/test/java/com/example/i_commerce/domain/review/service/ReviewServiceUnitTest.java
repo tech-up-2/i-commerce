@@ -83,7 +83,7 @@ public class ReviewServiceUnitTest {
         Long orderProductId = 10L;
         Long productId = 20L;
 
-        CreateReviewRequest request = new CreateReviewRequest(5,"좋아요");
+        CreateReviewRequest request = new CreateReviewRequest("좋아요",5);
 
         given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
 
@@ -116,7 +116,7 @@ public class ReviewServiceUnitTest {
     @DisplayName("작성된 리뷰를 슬라이싱, 옵션 검색한다.")
     void searchReviews() {
         //given
-        SearchReviewRequest request = new SearchReviewRequest(5, "옵션1", "강아지");
+        SearchReviewRequest request = new SearchReviewRequest("옵션1", "강아지", 5);
         Pageable pageable = PageRequest.of(0, 10);
 
         Review mockReview = Review.builder()
