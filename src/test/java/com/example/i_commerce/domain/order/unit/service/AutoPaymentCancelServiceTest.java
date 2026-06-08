@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.order.service;
+package com.example.i_commerce.domain.order.unit.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -14,6 +14,7 @@ import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
+import com.example.i_commerce.domain.order.service.AutoPaymentCancelService;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.global.exception.AppException;

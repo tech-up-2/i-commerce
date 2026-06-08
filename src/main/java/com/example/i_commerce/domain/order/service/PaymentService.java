@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.order.service;
 
+import com.example.i_commerce.domain.order.client.PaymentClient;
 import com.example.i_commerce.domain.order.entity.Delivery;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
@@ -19,14 +20,17 @@ import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentDetailResponse;
 import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.global.exception.AppException;
+import io.github.resilience4j.retry.annotation.Retry;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 @Slf4j
@@ -37,6 +41,7 @@ public class PaymentService {
     private final OrderRepository orderRepository;
     private final DeliveryRepository deliveryRepository;
     private final ApplicationEventPublisher publisher;
+    private final PaymentClient paymentClient;
 
     @Transactional
     public PaymentDetailResponse getPaymentDetails(Long userId, Long orderId) {
@@ -140,7 +145,6 @@ public class PaymentService {
         payment.changePayStatus(PaymentStatus.FAILED);
         payment.getOrder().changeOrderStatus(OrderStatus.CANCELLED);
     }
-
     //-----------------------------------
     // 결제 취소 - 에러 핸들링
     //-----------------------------------
@@ -211,4 +215,38 @@ public class PaymentService {
         order.getDeliveries().forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.DELIVERY_HOLD));
     }
 
+    @Retry(name = "tossConfirmRetry", fallbackMethod = "checkPaymentStatus")
+    public Map<String, Object> requestConfirm(PaymentConfirmRequest dto) {
+        return paymentClient.requestConfirm(dto);
+    }
+
+    public Map<String, Object> checkPaymentStatus(PaymentConfirmRequest dto, Exception e) {
+
+        if (e instanceof WebClientResponseException responseException) {
+            if (responseException.getStatusCode().is4xxClientError()) {
+                throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
+            }
+        }
+        Map<String, Object> statusMap;
+
+        try {
+            statusMap = paymentClient.checkPaymentStatus(dto.paymentKey());
+        } catch (Exception ex) {
+            throw new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT);
+        }
+
+        String status = (String) statusMap.get("status");
+        if ("DONE".equals(status)) {
+            return statusMap;
+        }else if ("IN_PROGRESS".equals(status)) {
+            log.warn("[결제 보류] 상태가 IN_PROGRESS 입니다. 망취소 로직으로 전환합니다.");
+            throw new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT);
+        }
+
+        throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
+    }
+
+    public Map<String, Object> requestCanceled(PaymentCancelRequest dto) {
+        return paymentClient.requestCanceled(dto);
+    }
 }

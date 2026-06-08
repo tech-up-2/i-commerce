@@ -1,5 +1,5 @@
 
-package com.example.i_commerce.domain.order.service;
+package com.example.i_commerce.domain.order.unit.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,6 +20,7 @@ import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.repository.OrderProductRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
+import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest.OrderItemDto;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderResponse;

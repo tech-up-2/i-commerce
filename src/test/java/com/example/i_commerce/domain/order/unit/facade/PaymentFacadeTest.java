@@ -1,14 +1,17 @@
-package com.example.i_commerce.domain.order.facade;
+package com.example.i_commerce.domain.order.unit.facade;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
-import com.example.i_commerce.domain.order.client.TossPaymentClient;
+import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
+import com.example.i_commerce.domain.order.facade.PaymentFacade;
+import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.AutoPaymentCancelService;
 import com.example.i_commerce.domain.order.service.PaymentService;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelPreparedDto;
@@ -21,6 +24,7 @@ import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,10 +41,10 @@ class PaymentFacadeTest {
     PaymentService paymentService;
 
     @Mock
-    AutoPaymentCancelService autoPaymentCancelService;
+    PaymentRepository paymentRepository;
 
     @Mock
-    TossPaymentClient tossPaymentClient;
+    AutoPaymentCancelService autoPaymentCancelService;
 
     @Mock
     ApplicationEventPublisher publisher;
@@ -73,7 +77,7 @@ class PaymentFacadeTest {
         responseBody.put("paymentKey", paymentKey);
 
         given(paymentService.validateAndPrepareConfirm(confirmRequestDto)).willReturn(confirmPrepareDto);
-        given(tossPaymentClient.requestConfirm(confirmRequestDto)).willReturn(responseBody);
+        given(paymentService.requestConfirm(confirmRequestDto)).willReturn(responseBody);
 
         paymentFacade.confirmPayment(confirmRequestDto);
 
@@ -85,10 +89,11 @@ class PaymentFacadeTest {
     @DisplayName("결제 승인 실패: 토스 API 성공 후 재고 부족 시 자동 취소 API를 호출하고 결제 실패 상태를 기록한다")
     void confirmPayment_Fail_OutOfStock() {
         Map<String, Object> responseBody = new HashMap<>();
+        Payment mockPayment = Payment.builder().build();
         responseBody.put("paymentKey", tossOrderId);
 
         given(paymentService.validateAndPrepareConfirm(confirmRequestDto)).willReturn(confirmPrepareDto);
-        given(tossPaymentClient.requestConfirm(confirmRequestDto)).willReturn(responseBody);
+        given(paymentService.requestConfirm(confirmRequestDto)).willReturn(responseBody);
         doThrow(new AppException(ProductErrorCode.INSUFFICIENT_STOCK)).when(publisher).publishEvent(any(OrderCompletedEvent.class));
 
         assertThatThrownBy(() -> paymentFacade.confirmPayment(confirmRequestDto))
@@ -104,7 +109,7 @@ class PaymentFacadeTest {
     @DisplayName("타임아웃 대피소 작동: 토스 API 호출 중 타임아웃 발생 시 재고 차감을 시도하고 결제 보류(UNKNOWN_HOLD)로 진입한다")
     void confirmPayment_Timeout_SafeRoute_Success() {
         given(paymentService.validateAndPrepareConfirm(confirmRequestDto)).willReturn(confirmPrepareDto);
-        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(tossPaymentClient).requestConfirm(confirmRequestDto);
+        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(paymentService).requestConfirm(confirmRequestDto);
 
         assertThatThrownBy(() -> paymentFacade.confirmPayment(confirmRequestDto))
                 .isInstanceOf(AppException.class)
@@ -118,14 +123,14 @@ class PaymentFacadeTest {
     @DisplayName("타임아웃 대피소 비상: 타임아웃 대피 중 재고까지 부족하면 토스 장부 망취소를 호출하고 결제 실패를 기록한다")
     void confirmPayment_Timeout_SafeRoute_Fail_OutOfStock() {
         given(paymentService.validateAndPrepareConfirm(confirmRequestDto)).willReturn(confirmPrepareDto);
-        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(tossPaymentClient).requestConfirm(confirmRequestDto);
+        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(paymentService).requestConfirm(confirmRequestDto);
         doThrow(new AppException(ProductErrorCode.INSUFFICIENT_STOCK)).when(publisher).publishEvent(any(OrderCompletedEvent.class));
 
         assertThatThrownBy(() -> paymentFacade.confirmPayment(confirmRequestDto))
                 .isInstanceOf(AppException.class)
                 .hasMessage(ProductErrorCode.INSUFFICIENT_STOCK.getMessage());
 
-        verify(tossPaymentClient).requestCanceled(any(PaymentCancelRequest.class));
+        verify(paymentService).requestCanceled(any(PaymentCancelRequest.class));
         verify(paymentService).handleTimeoutFailed(confirmRequestDto.tossOrderId());
     }
 
@@ -139,7 +144,7 @@ class PaymentFacadeTest {
         responseBody.put("paymentKey", paymentKey);
 
         given(paymentService.validateAndPrepareCancel(cancelRequestDto)).willReturn(cancelPreparedDto);
-        given(tossPaymentClient.requestCanceled(cancelRequestDto)).willReturn(responseBody);
+        given(paymentService.requestCanceled(cancelRequestDto)).willReturn(responseBody);
 
         paymentFacade.cancelPayment(cancelRequestDto);
 
@@ -152,7 +157,7 @@ class PaymentFacadeTest {
     @DisplayName("타임아웃 대피소 작동: 토스 API 호출 중 타임아웃 발생 시 결제 취소 보류(CANCEL_UNKNOWN_HOLD)로 진입한다")
     void cancelPayment_Fail_InvalidDeliveryStatus() {
         given(paymentService.validateAndPrepareCancel(cancelRequestDto)).willReturn(cancelPreparedDto);
-        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(tossPaymentClient).requestCanceled(cancelRequestDto);
+        doThrow(new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT)).when(paymentService).requestCanceled(cancelRequestDto);
 
         assertThatThrownBy(() -> paymentFacade.cancelPayment(cancelRequestDto))
                 .isInstanceOf(AppException.class)

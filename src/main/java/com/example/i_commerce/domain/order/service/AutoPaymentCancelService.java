@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.order.service;
 
+import com.example.i_commerce.domain.order.client.PaymentClient;
 import com.example.i_commerce.domain.order.client.TossPaymentClient;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
@@ -25,7 +26,7 @@ public class AutoPaymentCancelService {
 
     private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher publisher;
-    private final TossPaymentClient tossPaymentClient;
+    private final PaymentClient tossPaymentClient;
 
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
