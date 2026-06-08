@@ -2,6 +2,8 @@ package com.example.i_commerce.domain.member.service.auth;
 
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.Seller;
+import com.example.i_commerce.domain.member.entity.enums.LoginFailReason;
+import com.example.i_commerce.domain.member.entity.enums.LoginResult;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
@@ -18,12 +20,15 @@ import com.example.i_commerce.domain.member.service.auth.dto.SignUpResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserInfoResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserUpdateRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
+import com.example.i_commerce.domain.member.service.loginHistory.LoginLogService;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
 import com.example.i_commerce.global.security.jwt.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,6 +45,7 @@ public class AuthService {
     private final EmailHashEncoder emailHashEncoder;
     private final JwtTokenUtil jwtTokenUtil;
     private final SellerRepository sellerRepository;
+    private final LoginLogService loginLogService;
 
     //회원 가입
     @Transactional
@@ -74,14 +80,34 @@ public class AuthService {
     //로그인
     @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest dto) {
-        Member member = memberRepository.findByEmailHash(emailHashEncoder.encode(dto.email()))
-            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+        String emailHash = emailHashEncoder.encode(dto.email());
 
-        if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
-            throw new AppException(MemberErrorCode.INVALID_PASSWORD);
+        Optional<Member> memberOptional = memberRepository.findByEmailHash(emailHash);
+
+        if (memberOptional.isEmpty()) {
+            // 로그인 실패 기록
+            loginLogService.writeMemberLoginHistory(null,
+                LoginResult.FAILURE, null, LocalDateTime.now(),
+                LoginFailReason.INVALID_CREDENTIALS
+            );
+
+            throw new AppException(MemberErrorCode.USER_NOT_FOUND);
         }
 
-        validateLoginStatus(member);// status상태 검즘
+        Member member = memberOptional.get();
+
+        validateLoginStatus(member);// status상태 검증
+        //emailblacklist 검사 하는 코드
+        loginLogService.validateNotBlocked(emailHash);
+
+        if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
+            //로그인 실패 기록
+            loginLogService.writeMemberLoginHistory(member.getId(), LoginResult.FAILURE, null,
+                LocalDateTime.now(), LoginFailReason.PASSWORD_MISMATCH);
+            //로그인 실패시 절차
+            loginLogService.userLoginFailedSequence(emailHash);
+            throw new AppException(MemberErrorCode.INVALID_PASSWORD);
+        }
 
         String email = dataEncryptor.decrypt(member.getEmailEncrypted());
 
@@ -113,6 +139,10 @@ public class AuthService {
         }
 
         String accessToken = jwtTokenUtil.createToken(payload);
+
+        //로그인 성공 기록
+        loginLogService.writeMemberLoginHistory(member.getId(),
+            LoginResult.SUCCESS, null, LocalDateTime.now(), null);
 
         return new LoginResponse(
             member.getId(),

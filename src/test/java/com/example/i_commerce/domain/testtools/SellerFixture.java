@@ -31,7 +31,7 @@ public class SellerFixture {
         return Seller.builder()
             .member(member)
             .businessName(businessName)
-            .businessNumber("1235467890")
+            .businessNumber("123-54-67890")
             .mailOrderRegistrationNumber("2025-서울용산-01075")
             .ownerName(dataEncryptor.decrypt(member.getName()))
             .phoneNumber("021234567")

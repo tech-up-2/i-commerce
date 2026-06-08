@@ -9,7 +9,7 @@ public record SellerRequest(
     @NotBlank
     String businessName,
 
-    @Schema(description = "사업자번호", example = "1235467890")
+    @Schema(description = "사업자번호", example = "123-54-67890")
     @NotBlank
     String businessNumber,// '-' 없이 10자리 포함하면 12자리
 

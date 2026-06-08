@@ -66,10 +66,6 @@ public class Seller extends BaseEntity {
     @Column(nullable = false)//암호화
     private byte[] depositorName;
 
-//    @Builder.Default
-//    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Store> stores = new ArrayList<>();
-
     public void update(
         String businessName,
         String businessNumber,
