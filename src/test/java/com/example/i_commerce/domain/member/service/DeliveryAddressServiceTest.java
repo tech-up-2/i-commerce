@@ -223,7 +223,7 @@ class DeliveryAddressServiceTest extends IntegrationTestSupport {
      */
     @Test
     @DisplayName("배송지 수정 성공")
-    void updatdAddress_success() throws Exception {
+    void updateAddress_success() throws Exception {
         DeliveryAddressRequest request = new DeliveryAddressRequest(
             "배송지",
             "홍길동",

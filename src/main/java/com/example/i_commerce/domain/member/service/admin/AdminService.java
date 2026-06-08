@@ -54,7 +54,7 @@ public class AdminService {
     private final SellerRepository sellerRepository;
     private final LoginLogService loginLogService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AdminLoginResponse login(LoginRequest dto) {
 
         //email을 key로 변환
