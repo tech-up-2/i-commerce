@@ -76,8 +76,8 @@ public class SellerReviewController {
     @Operation(summary = "베스트 리뷰 선정 취소", description = "판매자는 베스트 리뷰 선정을 취소한다.")
     @DeleteMapping("/{reviewId}/best")
     public ApiResponse<Void> cancelBestReview(
-        @PathVariable Long reviewId
-    ,@AuthenticationPrincipal CustomUserPrincipal principal) {
+        @PathVariable Long reviewId,
+        @AuthenticationPrincipal CustomUserPrincipal principal) {
         reviewLikeFacade.cancelBestReview(reviewId, principal.getId());
         return ApiResponse.success();
     }
