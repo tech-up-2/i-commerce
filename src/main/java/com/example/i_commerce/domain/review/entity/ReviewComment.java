@@ -49,6 +49,7 @@ public class ReviewComment extends BaseEntity {
     @JoinColumn(name = "parent_id")
     private ReviewComment parent;
 
+    @Builder.Default
     @OneToMany(mappedBy = "parent", orphanRemoval = true)
     private List<ReviewComment> children = new ArrayList<>();
 
