@@ -2,7 +2,7 @@ package com.example.i_commerce.domain.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
@@ -99,6 +99,7 @@ public class SellerServiceTest extends IntegrationTestSupport {
         assertThat(response.sellerId()).isEqualTo(customUserPrincipal.getId());
         assertThat(seller.getBusinessName()).isEqualTo(request.businessName());
         assertThat(seller.getSellerStatus()).isEqualTo(SellerStatus.PENDING);
+        assertThat(seller.getDeletedAt()).isNull();
     }
 
     @Test

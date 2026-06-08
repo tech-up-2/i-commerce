@@ -149,17 +149,17 @@ public class StoreService {
         Long sellerId,
         StoreAddressRequest dto
     ) {
-        Store store = storeRepository.findByIdAndSellerIdAndDeletedAtIsNull(storeId, sellerId)
+        storeRepository.findByIdAndSellerIdAndDeletedAtIsNull(storeId, sellerId)
             .orElseThrow(() -> new AppException(MemberErrorCode.STORE_NOT_FOUND));
 
         StoreAddress address = storeAddressRepository
-            .findStoreAddressByIdAndStoreIdAndDeletedAtIsNull(addressId, store.getId())
+            .findStoreAddressByIdAndStoreIdAndDeletedAtIsNull(addressId, storeId)
             .orElseThrow(() -> new AppException(MemberErrorCode.STORE_ADDRESS_NOT_FOUND));
 
         boolean isDefault = Boolean.TRUE.equals(dto.isDefault());
 
         if (isDefault && !address.getIsDefault()) {
-            clearDefaultAddresses(store.getId());
+            clearDefaultAddresses(storeId);
             address.changeDefault(true);
         }
 
@@ -192,14 +192,14 @@ public class StoreService {
     //기본주소 설정
     @Transactional
     public void changeDefault(Long addressId, Long storeId, Long sellerId) {
-        Store store = storeRepository.findByIdAndSellerIdAndDeletedAtIsNull(storeId, sellerId)
+        storeRepository.findByIdAndSellerIdAndDeletedAtIsNull(storeId, sellerId)
             .orElseThrow(() -> new AppException(MemberErrorCode.STORE_NOT_FOUND));
 
         StoreAddress address = storeAddressRepository
-            .findStoreAddressByIdAndStoreIdAndDeletedAtIsNull(addressId, store.getId())
+            .findStoreAddressByIdAndStoreIdAndDeletedAtIsNull(addressId, storeId)
             .orElseThrow(() -> new AppException(MemberErrorCode.STORE_ADDRESS_NOT_FOUND));
 
-        clearDefaultAddresses(store.getId());
+        clearDefaultAddresses(storeId);
         address.changeDefault(true);
     }
 

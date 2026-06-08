@@ -1,8 +1,8 @@
 package com.example.i_commerce.domain.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -184,6 +184,7 @@ class AuthServiceTest extends IntegrationTestSupport {
         readySignal.await();
         startSignal.countDown();
         doneSignal.await();
+        executorService.shutdown();
 
         String emailHash = emailHashEncoder.encode(request.email());
 
@@ -213,7 +214,8 @@ class AuthServiceTest extends IntegrationTestSupport {
 
         LoginResponse response = authService.login(loginRequest);
 
-        assertThat(response.memberId()).isNotNull();
+        assertThat(response.memberId()).isGreaterThan(0L);
+        ;
         assertThat(response.email()).isEqualTo("login@test.com");
         assertThat(response.accessToken()).isNotNull();
         assertThat(userLoginHistoryRepository.countByMemberId(response.memberId())).isNotNull();
@@ -263,10 +265,6 @@ class AuthServiceTest extends IntegrationTestSupport {
         );
 
         assertThat(exception.getErrorCode()).isEqualTo(MemberErrorCode.INVALID_PASSWORD);
-//        assertThat(userLoginHistoryRepository.countByLoginResultAndFailReason(
-//            LoginResult.FAILURE,
-//            LoginFailReason.PASSWORD_MISMATCH
-//        )).isEqualTo(1L);
     }
 
     @Test
@@ -343,7 +341,7 @@ class AuthServiceTest extends IntegrationTestSupport {
 
     @Test
     @DisplayName("판매자 회원 로그인")
-    void Seller_login() throws Exception {
+    void seller_login() throws Exception {
         Member member = MemberFixture.createMember(
             MemberStatus.ACTIVE,
             Gender.MALE,
