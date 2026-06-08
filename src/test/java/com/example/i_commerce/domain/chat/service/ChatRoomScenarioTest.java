@@ -252,7 +252,7 @@ public class ChatRoomScenarioTest {
         when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
         when(chatParticipantRepository.findByChatRoomAndMemberId(groupChatRoom, myMemberId)).thenReturn(Optional.empty());
 
-        ApiResponse<Void> response = chatRoomService.joinGroupRoom(member.getId());
+        ApiResponse<Void> response = chatRoomService.joinGroupRoom(groupChatRoom.getId());
         Assertions.assertEquals(response.code(), "SUCCESS");
     }
     @Test
@@ -317,7 +317,7 @@ public class ChatRoomScenarioTest {
 
     }
     @Test
-    @DisplayName("시나리오 16 [성공]: 그룹 채팅방에서 정상적으로 퇴장합니다.")
+    @DisplayName("시나리오 17 [성공]: 그룹 채팅방에서 정상적으로 퇴장합니다.")
     void groupRoom_Leave_Success_Delete() {
         Long myMemberId = member.getId();
         Long productId = product.getId();

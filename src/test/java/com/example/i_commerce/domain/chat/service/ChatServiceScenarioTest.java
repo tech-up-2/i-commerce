@@ -182,7 +182,7 @@ public class ChatServiceScenarioTest {
         ChatMessage message = ChatMessage.builder()
             .id(1L)
             .memberId(myMemberId)
-            .chatRoom(chatRoom)
+            .chatRoom(groupChatRoom)
             .content("안녕하세요 메시지 조회 테스트입니다.")
             .isBlind(false)
             .build();
