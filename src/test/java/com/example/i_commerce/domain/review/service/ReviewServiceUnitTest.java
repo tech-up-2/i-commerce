@@ -16,9 +16,12 @@ import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
 import com.example.i_commerce.domain.product.application.service.ProductQueryService;
 import com.example.i_commerce.domain.review.entity.Review;
+import com.example.i_commerce.domain.review.entity.ReviewComment;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
+import com.example.i_commerce.domain.review.repository.ReviewCommentRepository;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.repository.StarRateCountProjection;
+import com.example.i_commerce.domain.review.service.dto.CommentResponse;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
@@ -28,6 +31,7 @@ import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.domain.review.validator.ReviewForbiddenWordValidator;
 import com.example.i_commerce.global.common.response.SliceResponse;
 import com.example.i_commerce.global.s3.service.S3ImageService;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -67,6 +71,9 @@ public class ReviewServiceUnitTest {
 
     @Mock
     private StoreService storeService;
+
+    @Mock
+    private ReviewCommentRepository reviewCommentRepo;
 
     @Test
     @DisplayName("OrderStatus가 COMPLETED인 사용자가 리뷰를 작성한다.")
@@ -219,11 +226,29 @@ public class ReviewServiceUnitTest {
 
         Review mockReview = Review.builder()
             .id(reviewId)
-            .content("좋아요")
+            .userId(1L)
+            .content("강아지가 쓰기 좋아요")
             .starRate(4)
             .build();
 
+        ReviewComment parentComment = ReviewComment.builder()
+            .id(10L)
+            .userId(3L)
+            .content("고양이도 쓰기 좋을까요")
+            .parent(null)
+            .build();
+
+        ReviewComment childComment = ReviewComment.builder()
+            .id(20L)
+            .userId(4L)
+            .content("1번에(고양이..) 대한 대댓글!")
+            .parent(parentComment)
+            .build();
+
         given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+
+        given(reviewCommentRepo.findByReviewId(reviewId))
+            .willReturn(List.of(parentComment, childComment));
 
         //when
         ReviewResponse result = reviewService.viewDetailReview(reviewId);
@@ -231,11 +256,19 @@ public class ReviewServiceUnitTest {
         //then
         assertThat(result).isNotNull();
         assertThat(result.getReviewId()).isEqualTo(reviewId);
-
-        assertThat(result.getContent()).isEqualTo("좋아요");
+        assertThat(result.getContent()).isEqualTo("강아지가 쓰기 좋아요");
         assertThat(result.getStarRate()).isEqualTo(4);
 
+        List<CommentResponse> comments = result.getComments();
+        assertThat(comments).hasSize(1);
+        assertThat(comments.get(0).getCommentId()).isEqualTo(10L);
+
+        assertThat(comments.get(0).getChildren()).hasSize(1);
+        assertThat(comments.get(0).getChildren().get(0).getCommentId()).isEqualTo(20L);
+
         verify(reviewRepo, times(1)).findById(reviewId);
+        verify(reviewCommentRepo, times(1)).findByReviewId(reviewId);
+
     }
 
     @Test
