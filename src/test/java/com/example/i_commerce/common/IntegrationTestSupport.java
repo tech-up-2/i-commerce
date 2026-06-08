@@ -1,13 +1,18 @@
 package com.example.i_commerce.common;
 
-import com.example.i_commerce.domain.order.repository.DeliveryRepository;
-import com.example.i_commerce.domain.order.repository.OrderProductRepository;
-import com.example.i_commerce.domain.order.repository.OrderRepository;
-import com.example.i_commerce.domain.order.repository.PaymentRepository;
+import com.example.i_commerce.domain.member.entity.Member;
+import com.example.i_commerce.domain.member.entity.enums.Gender;
+import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.tools.DataEncryptor;
+import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
+import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -19,13 +24,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public abstract class IntegrationTestSupport {
 
     @Autowired
-    protected DeliveryRepository deliveryRepository;
+    protected DataEncryptor dataEncryptor;
     @Autowired
-    protected PaymentRepository paymentRepository;
-    @Autowired
-    protected OrderRepository orderRepository;
-    @Autowired
-    protected OrderProductRepository orderProductRepository;
+    protected MemberRepository memberRepository;
 
     static final PostgreSQLContainer<?> postgresContainer;
 
@@ -38,7 +39,6 @@ public abstract class IntegrationTestSupport {
         postgresContainer.start();
     }
 
-
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgresContainer::getJdbcUrl);
@@ -47,12 +47,24 @@ public abstract class IntegrationTestSupport {
         registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
     }
 
-    @AfterEach
-    void tearDown() {
-        orderProductRepository.deleteAllInBatch(); // 💡 추가: 주문 상품 먼저 삭제
-        deliveryRepository.deleteAllInBatch();
-        paymentRepository.deleteAllInBatch();
+    protected CustomUserPrincipal loginAsMember() {
+        String uniqueId = UUID.randomUUID().toString().substring(0, 8);
 
-        orderRepository.deleteAllInBatch();
+        Member member = Member.builder()
+                .name(dataEncryptor.encrypt("테스트회원"))
+                .phoneNumber(dataEncryptor.encrypt("010-1234-5678"))
+                .emailHash("hashedEmail" + uniqueId)
+                .emailEncrypted(dataEncryptor.encrypt("test@example.com"))
+                .password("password")
+                .sex(Gender.MALE)
+                .birthday(dataEncryptor.encrypt("20431123"))
+                .build();
+        memberRepository.save(member);
+
+        return new CustomUserPrincipal(
+                PrincipalType.MEMBER,
+                member.getId(),
+                List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))
+        );
     }
 }
