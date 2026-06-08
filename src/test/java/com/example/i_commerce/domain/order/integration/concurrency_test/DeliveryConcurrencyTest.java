@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.order.concurrency_test;
+package com.example.i_commerce.domain.order.integration.concurrency_test;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,8 +34,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+@SpringBootTest
 class DeliveryConcurrencyTest extends IntegrationTestSupport {
 
     @Autowired

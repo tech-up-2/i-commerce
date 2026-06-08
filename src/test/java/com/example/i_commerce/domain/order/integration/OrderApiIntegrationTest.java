@@ -1,6 +1,5 @@
 package com.example.i_commerce.domain.order.integration;
 
-// ...removed RestTemplate/Mockito stubs; replaced with MockWebServer enqueues
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -8,36 +7,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.i_commerce.common.IntegrationTestSupport;
-import com.example.i_commerce.domain.member.entity.DeliveryAddress;
-import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.entity.enums.Gender;
-import com.example.i_commerce.domain.member.repository.DeliveryAddressRepository;
-import com.example.i_commerce.domain.member.repository.MemberRepository;
-import com.example.i_commerce.domain.member.tools.DataEncryptor;
+import com.example.i_commerce.common.OrderIntegrationTestSupport;
 import com.example.i_commerce.domain.order.client.PaymentClient;
-import com.example.i_commerce.domain.order.repository.OrderRepository;
-import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.PaymentService;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest;
 import com.example.i_commerce.domain.order.service.dto.CreateOrderRequest.OrderItemDto;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentDetailResponse;
-import com.example.i_commerce.domain.product.entity.Category;
-import com.example.i_commerce.domain.product.entity.Product;
-import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.entity.enums.ProductItemStatus;
-import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
-import com.example.i_commerce.domain.product.entity.enums.ProductStatus;
-import com.example.i_commerce.domain.product.entity.Stock;
-import com.example.i_commerce.domain.product.entity.enums.StockStatus;
-import com.example.i_commerce.domain.product.repository.CategoryRepository;
-import com.example.i_commerce.domain.product.repository.ProductItemRepository;
-import com.example.i_commerce.domain.product.repository.ProductRepository;
-import com.example.i_commerce.domain.product.repository.StockRepository;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
-import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -50,48 +28,32 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import com.example.i_commerce.domain.order.config.TestWebClientConfig;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.i_commerce.domain.order.client.TossPaymentClient;
 
 
+@SpringBootTest
 @Transactional
-class OrderApiIntegrationTest extends IntegrationTestSupport {
+class OrderApiIntegrationTest extends OrderIntegrationTestSupport {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private PaymentClient tossPaymentClient;
     @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private MemberRepository memberRepository;
-    @Autowired
-    private DeliveryAddressRepository deliveryAddressRepository;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private ProductItemRepository productItemRepository;
-    @Autowired
-    private CategoryRepository categoryRepository;
-    @Autowired
-    private StockRepository stockRepository;
-    @Autowired
-    private DataEncryptor dataEncryptor;
-    @Autowired
     private PaymentService paymentService;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private static MockWebServer mockWebServer;
 
     @BeforeAll
     static void startServer() throws IOException {
         mockWebServer = new MockWebServer();
-        mockWebServer.start(8089); // @TestPropertySource에 지정한 포트와 일치시킵니다.
+        mockWebServer.start(0);
     }
 
     @AfterAll
@@ -103,30 +65,9 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
 
     @BeforeEach
     void setUp() {
-        // 시나리오 테스트 시작 전, 혹시 남아있을 가짜 응답 대기열을 완전히 비워줍니다.
         mockWebServer.setDispatcher(new okhttp3.mockwebserver.QueueDispatcher());
-        // 테스트의 TossPaymentClient가 MockWebServer를 바라보도록 WebClient를 교체합니다.
         WebClient targetWebClient = TestWebClientConfig.createTestWebClient(mockWebServer.url("/").toString());
         ReflectionTestUtils.setField(tossPaymentClient, "tossWebClient", targetWebClient);
-    }
-
-    protected CustomUserPrincipal loginAsMember() {
-        Member member = Member.builder()
-            .name(dataEncryptor.encrypt("테스트회원"))
-            .phoneNumber(dataEncryptor.encrypt("010-1234-5678"))
-            .emailHash("hashedEmail")
-            .emailEncrypted(dataEncryptor.encrypt("test@example.com"))
-            .password("password")
-            .sex(Gender.MALE)
-            .birthday(dataEncryptor.encrypt("20431123"))
-            .build();
-        memberRepository.save(member);
-
-        return new CustomUserPrincipal(
-            PrincipalType.MEMBER,
-            member.getId(),
-            List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))
-        );
     }
 
     @Test
@@ -135,70 +76,11 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
 
         CustomUserPrincipal testPrincipal = loginAsMember();
 
-        DeliveryAddress address = DeliveryAddress.builder()
-            .memberId(testPrincipal.getId())
-            .label("집")
-            .recipientName(dataEncryptor.encrypt("홍길동"))
-            .recipientPhone(dataEncryptor.encrypt("01012345678"))
-            .zipCode(dataEncryptor.encrypt("12345"))
-            .roadAddress(dataEncryptor.encrypt("서울특별시 강남구 테헤란로"))
-            .detailAddress(dataEncryptor.encrypt("101호"))
-            .build();
+        CommerceTestSet commerceTestSet = saveDefaultCommerceTestSet(testPrincipal.getId());
 
-        DeliveryAddress savedAddress = deliveryAddressRepository.save(address);
-
-        Category category = categoryRepository.save(Category.builder()
-            .name("전자기기")
-            .depth(0)
-            .build()
-        );
-
-        Product product = productRepository.save(Product.builder()
-            .name("최고급 맥북 프로")
-            .storeId(1L)
-            .optionType(ProductOptionType.NONE)
-            .status(ProductStatus.ON_SALE)
-            .category(category)
-            .build());
-
-        ProductItem item1 = ProductItem.builder()
-            .product(product)
-            .price(1500000)
-            .status(ProductItemStatus.ON_SALE)
-            .sku("asdf")
-            .mainImageUrl("")
-            .displayOptionName("")
-            .build();
-
-        ProductItem item2 = ProductItem.builder()
-            .product(product)
-            .price(50000)
-            .status(ProductItemStatus.ON_SALE)
-            .sku("qwer")
-            .mainImageUrl("")
-            .displayOptionName("")
-            .build();
-
-        productItemRepository.saveAll(List.of(item1, item2));
-
-        Stock stock1 = stockRepository.save(Stock.builder()
-            .productItem(item1)
-            .quantity(5)
-            .status(StockStatus.IN_STOCK)
-            .build()
-        );
-
-        Stock stock2 = stockRepository.save(Stock.builder()
-            .productItem(item2)
-            .quantity(5)
-            .status(StockStatus.IN_STOCK)
-            .build()
-        );
-
-        OrderItemDto orderItemDto1 = new OrderItemDto(item1.getId(), 2);
-        OrderItemDto orderItemDto2 = new OrderItemDto(item2.getId(), 1);
-        CreateOrderRequest createOrderRequest = new CreateOrderRequest(savedAddress.getId(),
-            List.of(orderItemDto1, orderItemDto2));
+        OrderItemDto orderItemDto1 = new OrderItemDto(commerceTestSet.items().getFirst().getId(), 2);
+        OrderItemDto orderItemDto2 = new OrderItemDto(commerceTestSet.items().get(1).getId(), 1);
+        CreateOrderRequest createOrderRequest = new CreateOrderRequest(commerceTestSet.address().getId(), List.of(orderItemDto1, orderItemDto2));
 
         String jsonContent = objectMapper.writeValueAsString(createOrderRequest);
 
@@ -221,10 +103,10 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
         String paymentKey = "toss_1_123";
         mockWebServer.enqueue(new MockResponse()
             .setResponseCode(200)
-            .setHeader(org.springframework.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .setBody("{\"paymentKey\": \"" + paymentKey + "\"}"));
 
-        Long orderId =  dataNode.path("orderId").asLong();
+        long orderId =  dataNode.path("orderId").asLong();
 
         PaymentDetailResponse paymentDetailResponse = paymentService.getPaymentDetails(testPrincipal.getId(), orderId);
         // 사이 프론트 생략
@@ -236,7 +118,7 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
 
         jsonContent = objectMapper.writeValueAsString(paymentConfirmRequest);
 
-        mvcResult = mockMvc.perform(post("/api/v1/payments/confirm")
+        mockMvc.perform(post("/api/v1/payments/confirm")
                 .with(user(testPrincipal))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonContent))
@@ -270,7 +152,7 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
         responseBody = mvcResult.getResponse().getContentAsString();
         root = objectMapper.readTree(responseBody);
         dataNode = root.path("data");
-        Long paymentId = dataNode.path("paymentInfo").path("paymentId").asLong();
+        dataNode.path("paymentInfo").path("paymentId").asLong();
 
         // 결제 취소
         PaymentCancelRequest paymentCancelRequest = new PaymentCancelRequest(tossOrderId, 10000,
@@ -281,10 +163,10 @@ class OrderApiIntegrationTest extends IntegrationTestSupport {
         // 결제 취소: MockWebServer에 취소 응답을 준비합니다.
         mockWebServer.enqueue(new MockResponse()
             .setResponseCode(200)
-            .setHeader(org.springframework.http.HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .setBody("{\"paymentKey\": \"" + paymentKey + "\"}"));
 
-        mvcResult = mockMvc.perform(post("/api/v1/payments/cancel")
+        mockMvc.perform(post("/api/v1/payments/cancel")
                 .with(user(testPrincipal))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonContent))
