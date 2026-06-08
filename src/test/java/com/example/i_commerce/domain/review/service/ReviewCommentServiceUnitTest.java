@@ -143,4 +143,38 @@ public class ReviewCommentServiceUnitTest {
         verify(productQueryService, times(1)).getProductIdsByStoreIds(List.of(storeId));
         verify(reviewRepo, times(1)).findAllByProductIdIn(productIds, pageable);
     }
+
+    @Test
+    @DisplayName("기존 답글에 대댓글을 성공적으로 작성하고 저장한다.")
+    void createChildComment() {
+        // given
+        Long reviewId = 1L;
+        Long userId = 3L;
+        Long parentId = 10L;
+
+        CreateCommentRequest request = new CreateCommentRequest("동의합니다", parentId);
+
+        Review mockReview = Review.builder()
+            .id(reviewId)
+            .build();
+
+        ReviewComment mockParentComment = ReviewComment.builder()
+            .id(parentId)
+            .review(mockReview)
+            .build();
+
+        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        willDoNothing().given(reviewForbiddenWordValidator).validateContent(request.getContent());
+        given(reviewCommentRepo.findById(parentId)).willReturn(Optional.of(mockParentComment));
+
+        // when
+        reviewCommentService.createComment(reviewId, userId, request);
+
+        // then
+        verify(reviewRepo, times(1)).findById(reviewId);
+        verify(reviewForbiddenWordValidator, times(1)).validateContent(request.getContent());
+        verify(reviewCommentRepo, times(1)).findById(parentId);
+
+        verify(reviewCommentRepo, times(1)).save(any(ReviewComment.class));
+    }
 }
