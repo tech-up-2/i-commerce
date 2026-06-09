@@ -38,38 +38,37 @@ public class ReviewCommentService {
     private final ProductQueryService productQueryService;
 
     @Transactional
-    public void createComment(Long reviewId, Long sellerId, CreateCommentRequest request) {
+    public void createComment(Long reviewId, Long userId, CreateCommentRequest request) {
 
         Review review = reviewRepo.findById(reviewId)
             .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
 
-        Long storeId = productQueryService.getStoreIdByProductId(review.getProductId());
-
-        if (storeId == null) {
-            throw new AppException(ReviewErrorCode.PRODUCT_NOT_FOUND);
-        }
-
-        if (!storeService.isStoreManager(sellerId, storeId)) {
-            throw new AppException(CommonErrorCode.INVALID_PERMISSION);
-        }
-
-        if (reviewCommentRepo.existsByReviewId(reviewId)) {
-            throw new AppException(ReviewErrorCode.ALREADY_COMMENTED);
-        }
-
         reviewForbiddenWordValidator.validateContent(request.getContent());
-        ReviewComment comment = ReviewComment.of(review, sellerId, request);
 
-        reviewCommentRepo.save(comment);
+        if (request.getParentId() == null) {
+            ReviewComment comment = ReviewComment.of(review, userId, request);
+            reviewCommentRepo.save(comment);
+
+        } else {
+            ReviewComment parent = reviewCommentRepo.findById(request.getParentId())
+                .orElseThrow(() -> new AppException(ReviewErrorCode.COMMENT_NOT_FOUND));
+
+            if (!parent.getReview().getId().equals(reviewId)) {
+                throw new AppException(CommonErrorCode.INVALID_PERMISSION);
+            }
+
+            ReviewComment child = ReviewComment.ofChild(review, userId, request, parent);
+            reviewCommentRepo.save(child);
+        }
     }
 
     @Transactional
-    public Long editComment(Long commentId, Long sellerId, UpdateCommentRequest request) {
+    public Long editComment(Long commentId, Long userId, UpdateCommentRequest request) {
 
         ReviewComment comment = reviewCommentRepo.findById(commentId)
             .orElseThrow(() -> new AppException(ReviewErrorCode.COMMENT_NOT_FOUND));
 
-        if (!comment.getSellerId().equals(sellerId)) {
+        if (!comment.getUserId().equals(userId)) {
             throw new AppException(CommonErrorCode.INVALID_PERMISSION);
         }
 
