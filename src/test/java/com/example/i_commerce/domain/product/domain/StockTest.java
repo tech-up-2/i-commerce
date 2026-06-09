@@ -285,10 +285,10 @@ public class StockTest {
             stock.markUnavailable();
             assertThat(stock.getStatus()).isEqualTo(StockStatus.UNAVAILABLE);
 
-            // when - 중복 호출
+            // when
             stock.markUnavailable();
 
-            // then - 상태 변화 없음
+            // then
             assertThat(stock.getStatus()).isEqualTo(StockStatus.UNAVAILABLE);
         }
 
