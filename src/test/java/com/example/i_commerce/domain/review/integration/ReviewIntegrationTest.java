@@ -104,25 +104,4 @@ public class ReviewIntegrationTest extends ReviewIntegrationTestSupport {
 
         verify(s3ImageService, times(1)).uploadImage(any(), any());
     }
-
-    protected CustomUserPrincipal loginAsMember() {
-        String uniqueId = UUID.randomUUID().toString().substring(0, 8);
-
-        Member member = Member.builder()
-            .name(dataEncryptor.encrypt("홍길동"))
-            .phoneNumber(dataEncryptor.encrypt("010-1234-5678"))
-            .emailHash("hashedEmail" + uniqueId)
-            .emailEncrypted(dataEncryptor.encrypt("buyer@test.com"))
-            .password("password")
-            .sex(Gender.MALE)
-            .birthday(dataEncryptor.encrypt("2000-01-01"))
-            .build();
-        memberRepository.save(member);
-
-        return new CustomUserPrincipal(
-            PrincipalType.MEMBER,
-            member.getId(),
-            List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))
-        );
-    }
 }
