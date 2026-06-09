@@ -44,6 +44,8 @@ public enum ProductErrorCode implements ErrorCode {
     STOCK_ALREADY_INITIALIZED(HttpStatus.CONFLICT, "PRD-40905", "재고가 이미 초기화되었습니다."),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "PRD-40906", "재고가 충분하지 않습니다."),
     CATEGORY_HAS_PRODUCTS(HttpStatus.CONFLICT, "PRD-40907", "하위 상품이 존재하는 카테고리는 삭제할 수 없습니다."),
+    STOCK_ALREADY_RESTORED(HttpStatus.CONFLICT, "PRD-40908", "이미 취소 처리된 주문입니다."),
+    STOCK_UNAVAILABLE(HttpStatus.CONFLICT, "PRD-40909", "사용할 수 없는 재고입니다.")
 
     ;
 
