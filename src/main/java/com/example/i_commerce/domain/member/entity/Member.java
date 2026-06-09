@@ -112,4 +112,8 @@ public class Member extends BaseEntity {
     public void isSeller() {
         this.isSeller = true;
     }
+
+    public void isNotSeller() {
+        this.isSeller = false;
+    }
 }
