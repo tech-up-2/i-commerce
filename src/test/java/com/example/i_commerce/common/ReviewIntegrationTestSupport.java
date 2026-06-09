@@ -75,6 +75,7 @@ public abstract class ReviewIntegrationTestSupport extends IntegrationTestSuppor
         Category category = categoryRepository.save(
             Category.builder()
                 .name("가방/잡화")
+                .depth(1)
                 .build()
         );
 

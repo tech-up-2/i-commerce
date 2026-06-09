@@ -15,6 +15,7 @@ import software.amazon.awssdk.services.s3.model.ListBucketsResponse;
 
 @Slf4j
 @Configuration
+@Profile("!test")
 public class S3Config {
     @Value("${spring.cloud.aws.region.static}")
     private String region;
