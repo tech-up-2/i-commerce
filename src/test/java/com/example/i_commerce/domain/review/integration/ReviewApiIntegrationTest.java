@@ -17,11 +17,11 @@ import com.example.i_commerce.global.security.principal.CustomUserPrincipal.Prin
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MediaType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -109,5 +109,20 @@ public class ReviewApiIntegrationTest extends ReviewIntegrationTestSupport {
             .andExpect(jsonPath("$.data.content").isArray())
             .andExpect(jsonPath("$.data.content[0].reviewId").value(generatedReviewId))
             .andExpect(jsonPath("$.data.content[0].content").value("캐리어가 튼튼해요"));
+
+        //리뷰 세부 조회
+        mockMvc.perform(get("/api/v1/reviews/{reviewId}", generatedReviewId)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("SUCCESS"))
+
+            .andExpect(jsonPath("$.data.content").value("캐리어가 튼튼해요"))
+            .andExpect(jsonPath("$.data.starRate").value(5))
+
+            .andExpect(jsonPath("$.data.imageUrls").isArray())
+            .andExpect(jsonPath("$.data.imageUrls[0]").value("https://i-commerce-s3.com/reviews/test.jpg"));
     }
+
 }
