@@ -1,6 +1,9 @@
 package com.example.i_commerce.domain.chat.service.fixture;
 
+import com.example.i_commerce.domain.member.entity.Admin;
 import com.example.i_commerce.domain.member.entity.Member;
+import com.example.i_commerce.domain.member.entity.enums.AdminRole;
+import com.example.i_commerce.domain.member.entity.enums.AdminStatus;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
@@ -41,6 +44,17 @@ public class ChatMemberFixture {
             .point(0)
             .status(MemberStatus.ACTIVE)
             .role(MemberType.SELLER)
+            .build();
+    }
+    public static Admin createAdmin(Long id,String email) {
+
+        return Admin.builder()
+            .id(id)
+            .adminRole(AdminRole.MASTER)
+            .adminStatus(AdminStatus.ACTIVE)
+            .name("테스트 어드민".getBytes())
+            .emailHash(email)
+            .password("admin")
             .build();
     }
 

@@ -130,7 +130,7 @@ public class ChatRoomService {
         Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndMemberId(
             chatRoom, member.id());
         if (participant.isPresent()) {
-            throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
+            throw new AppException(ChatErrorCode.ALREADY_PARTICIPANT);
         }
         addParticipantToRoom(chatRoom, member.id());
         return ApiResponse.success();
