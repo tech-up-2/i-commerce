@@ -54,7 +54,7 @@ public class AdminService {
     private final SellerRepository sellerRepository;
     private final LoginLogService loginLogService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AdminLoginResponse login(LoginRequest dto) {
 
         //email을 key로 변환
@@ -64,7 +64,7 @@ public class AdminService {
 
         if (adminOptional.isEmpty()) {
             // 로그인 실패 기록
-            loginLogService.writeMemberLoginHistory(null,
+            loginLogService.writeAdminLoginHistory(null,
                 LoginResult.FAILURE, null, LocalDateTime.now(),
                 LoginFailReason.INVALID_CREDENTIALS);
 

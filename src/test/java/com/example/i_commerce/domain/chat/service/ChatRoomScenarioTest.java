@@ -1,8 +1,10 @@
 package com.example.i_commerce.domain.chat.service;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.example.i_commerce.domain.chat.entity.ChatParticipant;
 import com.example.i_commerce.domain.chat.entity.ChatRoom;
 import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
@@ -231,8 +233,104 @@ public class ChatRoomScenarioTest {
     @Test
     @DisplayName("시나리오 10 [예외]: 이미 만들어져있는 상품의 그룹채팅방을 다시 생성하려고 시도 ")
     void getCreateGroupRoom_Fail_Duplication(){
+        Long myMemberId = member.getId();
+        Long productId = product.getId();
+        when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(chatRoomRepository.existsByProductIdAndIsGroupChat(productId, true)).thenReturn(true);
+        AppException exception = Assertions.assertThrows(AppException.class,
+            () -> {chatRoomService.createGroupRoom(productId);});
+
+        Assertions.assertEquals(exception.getErrorCode(), ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
+    }
+    @Test
+    @DisplayName("시나리오 11 [성공]: 개설된 상품 그룹 채팅방에 새로운 유저가 정상적으로 참여할 수 있습니다.")
+    void groupChatRoom_Join_Success() {
+        Long myMemberId = member.getId();
+        Long productId = product.getId();
+        when(chatRoomRepository.findById(productId)).thenReturn(Optional.of(groupChatRoom));
+        when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
+        when(chatParticipantRepository.findByChatRoomAndMemberId(groupChatRoom, myMemberId)).thenReturn(Optional.empty());
+
+        ApiResponse<Void> response = chatRoomService.joinGroupRoom(groupChatRoom.getId());
+        Assertions.assertEquals(response.code(), "SUCCESS");
+    }
+    @Test
+    @DisplayName("시나리오 12 [예외]: 존재하지 않는 채팅방에 입장을 시도합니다.")
+    void groupRoom_Fail_NotFound(){
+
+        Long productId = product.getId();
+        when(chatRoomRepository.findById(productId)).thenReturn(Optional.empty());
+        AppException exception = Assertions.assertThrows(AppException.class,
+            () -> {chatRoomService.joinGroupRoom(productId);});
+
+        Assertions.assertEquals(exception.getErrorCode(), ChatErrorCode.CHAT_ROOM_NOT_FOUND);
+    }
+    @Test
+    @DisplayName("시나리오 13 [예외]: 이미 참여중인 그룹 채팅방에 다시 입장을 시도합니다.")
+    void groupRoom_Join_Fail_Duplication(){
+        Long myMemberId = member.getId();
+        Long productId = product.getId();
+
+        when(chatRoomRepository.findById(productId)).thenReturn(Optional.of(groupChatRoom));
+        when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
+        when(chatParticipantRepository.findByChatRoomAndMemberId(groupChatRoom, myMemberId)).thenReturn(Optional.of(mock(
+            ChatParticipant.class)));
+        AppException exception = Assertions.assertThrows(AppException.class,
+            () -> {chatRoomService.joinGroupRoom(productId);});
+        Assertions.assertEquals(exception.getErrorCode(), ChatErrorCode.ALREADY_PARTICIPANT);
+    }
+
+    @Test
+    @DisplayName("시나리오 14 [성공]: 그룹 채팅방에서 정상적으로 퇴장합니다.")
+    void groupRoom_Leave_Success() {
+        Long myMemberId = member.getId();
+        Long productId = product.getId();
+        when(chatRoomRepository.findById(productId)).thenReturn(Optional.of(groupChatRoom));
+        when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
+        when(chatParticipantRepository.findByChatRoomAndMemberId(groupChatRoom, myMemberId))
+            .thenReturn(Optional.of(mock(ChatParticipant.class)));
+        ApiResponse<Void> response = chatRoomService.leaveGroupRoom(productId);
+        Assertions.assertEquals(response.code(), "SUCCESS");
+    }
+
+    @Test
+    @DisplayName("시나리오 15 [예외]: 그룹 채팅방에 참여하지 않은 유저가 퇴장을 요청합니다.")
+    void groupRoom_Leave_Fail_NotParticipant(){
+        Long myMemberId = member.getId();
+        Long productId = product.getId();
+        when(chatRoomRepository.findById(productId)).thenReturn(Optional.of(groupChatRoom));
+        when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
+        when(chatParticipantRepository.findByChatRoomAndMemberId(groupChatRoom, myMemberId)).thenReturn(Optional.empty());
+        AppException exception = Assertions.assertThrows(AppException.class,
+            () -> {chatRoomService.leaveGroupRoom(productId);});
+        Assertions.assertEquals(exception.getErrorCode(), ChatErrorCode.NOT_A_ROOM_MEMBER);
+    }
+    @Test
+    @DisplayName("시나리오 16 [예외]: 존재하지 않는 그룹채팅방에 퇴장 요청을 합니다.")
+    void groupRoom_Leave_Fail_NotFoundRoom(){
+        Long productId = product.getId();
+        when(chatRoomRepository.findById(productId)).thenReturn(Optional.empty());
+        AppException exception = Assertions.assertThrows(AppException.class,
+            () -> {chatRoomService.leaveGroupRoom(productId);});
+        Assertions.assertEquals(exception.getErrorCode(), ChatErrorCode.CHAT_ROOM_NOT_FOUND);
 
     }
+    @Test
+    @DisplayName("시나리오 17 [성공]: 그룹 채팅방에서 정상적으로 퇴장합니다.")
+    void groupRoom_Leave_Success_Delete() {
+        Long myMemberId = member.getId();
+        Long productId = product.getId();
+        when(chatRoomRepository.findById(productId)).thenReturn(Optional.of(groupChatRoom));
+        when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
+        when(chatParticipantRepository.findByChatRoomAndMemberId(groupChatRoom, myMemberId))
+            .thenReturn(Optional.of(mock(ChatParticipant.class)));
+        when(chatParticipantRepository.findByChatRoom(groupChatRoom))
+            .thenReturn(List.of());
+        ApiResponse<Void> response = chatRoomService.leaveGroupRoom(productId);
+        Assertions.assertEquals(response.code(), "SUCCESS");
+    }
+
 }
 
 

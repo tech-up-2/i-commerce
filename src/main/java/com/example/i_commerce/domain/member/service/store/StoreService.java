@@ -112,7 +112,7 @@ public class StoreService {
         long storeAddressCount = storeAddressRepository.countByStoreIdAndDeletedAtIsNull(
             store.getId());
 
-        if (storeAddressCount >= 20) {// 판매자당 최대 배송지 갯수
+        if (storeAddressCount >= 20) {// 최대 상점 주소 갯수
             throw new AppException(MemberErrorCode.STORE_ADDRESS_LIMIT_EXCEEDED);
         }
 
