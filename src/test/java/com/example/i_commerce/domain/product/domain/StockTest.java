@@ -221,8 +221,8 @@ public class StockTest {
         }
 
         @Test
-        @DisplayName("UNAVAILABLE 상태에서 복구하면 IN_STOCK 상태로 변경된다.")
-        void restore_success_changesStatus_fromUnavailableToInStock() {
+        @DisplayName("UNAVAILABLE 상태에서 복구해도 상태는 변경되지 않는다.")
+        void restore_success_notChangeStatus() {
             // given
             Stock stock = Stock.of(productItem, 5);
             stock.markUnavailable();
@@ -232,8 +232,7 @@ public class StockTest {
             stock.restore(3, 100L);
 
             // then
-            assertThat(stock.getStatus()).isEqualTo(StockStatus.IN_STOCK);
-            assertThat(stock.isOutOfStock()).isFalse();
+            assertThat(stock.getStatus()).isEqualTo(StockStatus.UNAVAILABLE);
         }
 
         @Test

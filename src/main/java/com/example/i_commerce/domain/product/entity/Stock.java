@@ -79,7 +79,9 @@ public class Stock extends BaseEntity {
 
     public void restore(int amount, Long orderId) {
         this.quantity += amount;
-        this.status = StockStatus.IN_STOCK;
+        if (this.status != StockStatus.UNAVAILABLE) {
+            this.status = StockStatus.IN_STOCK;
+        }
         this.histories.add(StockHistory.ofRestore(this, amount, orderId));
     }
 
