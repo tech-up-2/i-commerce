@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 public interface StockHistoryRepository extends JpaRepository<StockHistory, Long> {
 
     @Query("""
-    SELECT CASE WHEN COUNT(sh) > 0 THEN TRUE ELSE FALSE END
+    SELECT COUNT(sh) > 0
     FROM StockHistory sh
     WHERE sh.orderId = :orderId
     AND sh.changeType = 'RESTORE'
