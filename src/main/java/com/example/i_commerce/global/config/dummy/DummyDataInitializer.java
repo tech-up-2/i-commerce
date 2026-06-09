@@ -39,31 +39,43 @@ import org.springframework.transaction.annotation.Transactional;
 public class DummyDataInitializer implements CommandLineRunner {
 
     private static final String PASSWORD = "password123!";
-
     // 필요하면 이 숫자만 조절하면 됨
     private static final int MEMBER_COUNT_PER_STATUS = 250;
     private static final int SELLER_COUNT_PER_STATUS = 25;
     private static final int ADMIN_COUNT_PER_ROLE = 3;
-
     private static final int DELIVERY_ADDRESS_COUNT_PER_MEMBER = 2;
     private static final int STORE_COUNT_PER_SELLER = 2;
     private static final int STORE_ADDRESS_COUNT_PER_STORE = 3;
-
     private final MemberRepository memberRepository;
     private final SellerRepository sellerRepository;
     private final StoreRepository storeRepository;
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final StoreAddressRepository storeAddressRepository;
     private final AdminRepository adminRepository;
-
     private final PasswordEncoder passwordEncoder;
     private final EmailHashEncoder emailHashEncoder;
     private final DataEncryptor dataEncryptor;
+    private String encodedPassword;
+    private byte[] encryptedBirthday;
+    private byte[] encryptedPhoneNumber;
+    private byte[] encryptedZipCode;
+    private byte[] encryptedRecipientPhone;
+    private byte[] encryptedBankName;
+    private byte[] encryptedBankAccount;
 
     @Override
     @Transactional
     public void run(String... args) {
         log.info("더미 데이터 생성을 시작합니다.");
+
+        this.encodedPassword = passwordEncoder.encode(PASSWORD);
+        this.encryptedBirthday = dataEncryptor.
+            encrypt(LocalDate.of(1999, 1, 1).toString());
+        this.encryptedPhoneNumber = dataEncryptor.encrypt("01012345678");
+        this.encryptedZipCode = dataEncryptor.encrypt("12345");
+        this.encryptedRecipientPhone = dataEncryptor.encrypt("01012345678");
+        this.encryptedBankName = dataEncryptor.encrypt("국민은행");
+        this.encryptedBankAccount = dataEncryptor.encrypt("12345678901234");
 
         createMembers();
         createSellers();
@@ -174,11 +186,11 @@ public class DummyDataInitializer implements CommandLineRunner {
                 Member member = Member.builder()
                     .emailHash(emailHash)
                     .emailEncrypted(dataEncryptor.encrypt(email))
-                    .password(passwordEncoder.encode(PASSWORD))
+                    .password(encodedPassword)
                     .name(dataEncryptor.encrypt(name))
                     .sex(gender)
-                    .birthday(dataEncryptor.encrypt(LocalDate.of(1999, 1, 1).toString()))
-                    .phoneNumber(dataEncryptor.encrypt("01012345678"))
+                    .birthday(encryptedBirthday)
+                    .phoneNumber(encryptedPhoneNumber)
                     .role(memberType)
                     .status(memberStatus)
                     .isSeller(isSeller)
@@ -201,8 +213,8 @@ public class DummyDataInitializer implements CommandLineRunner {
                 .memberId(member.getId())
                 .label(memberName + "의 배송지" + i)
                 .recipientName(dataEncryptor.encrypt(memberName))
-                .recipientPhone(dataEncryptor.encrypt("01012345678"))
-                .zipCode(dataEncryptor.encrypt("12345"))
+                .recipientPhone(encryptedRecipientPhone)
+                .zipCode(encryptedZipCode)
                 .roadAddress(dataEncryptor.encrypt("서울특별시 강남구 테헤란로 " + i))
                 .jibunAddress(dataEncryptor.encrypt("서울특별시 강남구 역삼동 " + i))
                 .detailAddress(dataEncryptor.encrypt(i + "층"))
@@ -238,8 +250,8 @@ public class DummyDataInitializer implements CommandLineRunner {
                             ? LocalDateTime.now()
                             : null
                     )
-                    .bankName(dataEncryptor.encrypt("국민은행"))
-                    .bankAccount(dataEncryptor.encrypt("12345678901234"))
+                    .bankName(encryptedBankName)
+                    .bankAccount(encryptedBankAccount)
                     .depositorName(dataEncryptor.encrypt(memberName))
                     .build();
 
@@ -320,7 +332,7 @@ public class DummyDataInitializer implements CommandLineRunner {
         Admin admin = Admin.builder()
             .emailHash(emailHash)
             .emailEncrypted(dataEncryptor.encrypt(email))
-            .password(passwordEncoder.encode(PASSWORD))
+            .password(encodedPassword)
             .name(dataEncryptor.encrypt(name))
             .adminRole(role)
             .adminStatus(status)

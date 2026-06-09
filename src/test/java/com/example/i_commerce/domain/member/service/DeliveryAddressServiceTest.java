@@ -433,7 +433,10 @@ class DeliveryAddressServiceTest extends IntegrationTestSupport {
 
         deliveryAddressService.changeDefaultAddress(deliveryAddress.id(), member.getId());
 
-        assertThat(deliveryAddress.isDefault()).isTrue();
+        DeliveryAddress updatedAddress = deliveryAddressRepository.
+            findById(deliveryAddress.id()).orElseThrow();
+        
+        assertThat(updatedAddress.getIsDefault()).isTrue();
     }
 
     @Test
