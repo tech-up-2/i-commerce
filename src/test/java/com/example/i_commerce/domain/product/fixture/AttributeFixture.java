@@ -4,47 +4,45 @@ import com.example.i_commerce.domain.product.entity.Attribute;
 import java.util.List;
 
 public class AttributeFixture {
-    public static Attribute colorAttribute() {
+
+    public static Attribute.AttributeBuilder defaultAttribute() {
         return Attribute.builder()
-            .id(1L)
-            .key("색상")
-            .value("빨강")
+            .key("소재")
+            .value("면");
+    }
+
+    public static Attribute createAttributeWithId(Long id, String key, String value) {
+        return defaultAttribute()
+            .id(id)
+            .key(key)
+            .value(value)
             .build();
     }
 
-    public static Attribute materialAttribute() {
-        return Attribute.builder()
-            .id(2L)
-            .key("재질")
+    public static List<Attribute> defaultAttributes() {
+        Attribute attribute1 = defaultAttribute()
             .value("면")
             .build();
+        Attribute attribute2 = defaultAttribute()
+            .value("폴리에스터")
+            .build();
+        return List.of(attribute1, attribute2);
     }
 
-    public static Attribute volumeAttribute1() {
+    public static Attribute createAttribute(String key, String value) {
         return Attribute.builder()
-            .id(3L)
-            .key("용량")
-            .value("256GB")
+            .key(key)
+            .value(value)
             .build();
     }
 
-    public static Attribute volumeAttribute2() {
-        return Attribute.builder()
-            .id(4L)
-            .key("용량")
-            .value("512GB")
-            .build();
+    public static List<Attribute> createAttributes(
+        String key,
+        List<String> values
+    ) {
+        return values.stream()
+            .map(value -> createAttribute(key, value))
+            .toList();
     }
 
-    public static List<Attribute> basicAttribute() {
-        return List.of(colorAttribute(), materialAttribute());
-    }
-
-    public static Attribute createAttribute(Long id, String name, String code) {
-        return Attribute.builder()
-            .id(id)
-            .key(name)
-            .value(code)
-            .build();
-    }
 }

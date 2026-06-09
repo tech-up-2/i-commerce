@@ -79,8 +79,9 @@ public class Review extends BaseEntity {
     @Builder.Default
     private Long version = 0L;
 
-    @OneToOne(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ReviewComment comment;
+    @Builder.Default
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewComment> comments = new ArrayList<>();
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
@@ -194,6 +195,7 @@ public class Review extends BaseEntity {
     public void cancelBestStatus() {
         this.isBest = false;
         this.bestStatus = ReviewIsBestStatus.CANDIDATE;
+        this.isExcluded = false;
     }
 
     public void increaseLikeCount() {

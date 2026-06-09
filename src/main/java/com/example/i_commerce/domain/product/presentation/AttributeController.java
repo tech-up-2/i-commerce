@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +27,7 @@ public class AttributeController {
     private final AttributeService attributeService;
 
     @Operation(summary = "속성 생성", description = "제공할 속성을 생성합니다.")
+    @PreAuthorize("@authChecker.canManageAttribute()")
     @PostMapping
     public ApiResponse<Void> createAttribute(
         @Valid @RequestBody CreateAttributeRequest request

@@ -12,8 +12,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,25 +35,42 @@ public class ReviewComment extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id", nullable = false)
     private Review review;
 
-    @Column(nullable = false, length = 50)
-    private Long sellerId;
+    @Column(nullable = false)
+    private Long userId;
 
     @Column(columnDefinition = "TEXT")
     private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private ReviewComment parent;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "parent", orphanRemoval = true)
+    private List<ReviewComment> children = new ArrayList<>();
 
     public void update(String newContent) {
         this.content = newContent;
     }
 
-    public static ReviewComment of(Review review, Long sellerId, CreateCommentRequest request) {
+    public static ReviewComment of(Review review, Long userId, CreateCommentRequest request) {
         return ReviewComment.builder()
             .review(review)
-            .sellerId(sellerId)
+            .userId(userId)
             .content(request.getContent())
+            .build();
+    }
+
+    public static ReviewComment ofChild(Review review, Long userId, CreateCommentRequest request, ReviewComment parent) {
+        return ReviewComment.builder()
+            .review(review)
+            .userId(userId)
+            .content(request.getContent())
+            .parent(parent)
             .build();
     }
 }

@@ -17,4 +17,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findAllByDeletedAtIsNull();//나중에 변경 필요
 
     Optional<Member> findByIdAndDeletedAtIsNull(Long id);
+
+    int countByEmailHash(String emailHash);
 }
