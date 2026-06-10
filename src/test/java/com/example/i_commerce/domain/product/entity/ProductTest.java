@@ -129,7 +129,7 @@ public class ProductTest {
 
         @Test
         @DisplayName("예외 발생 시 기존 아이템 목록이 변하지 않는다.")
-        void addItem_success_itemsUnchanged() {
+        void addItem_fail_itemsUnchanged() {
             // given
             Product product = createProduct();
             ProductItem item1 = createMockItem("SKU-001");

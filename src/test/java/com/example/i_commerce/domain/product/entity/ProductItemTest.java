@@ -164,7 +164,7 @@ public class ProductItemTest {
 
         @Test
         @DisplayName("재고 초기화 실패 시 기존 재고가 변하지 않는다.")
-        void initStock_success_stockUnchanged() {
+        void initStock_fail_stockUnchanged() {
             // given
             ProductItem item = createProductItem();
             item.initStock(100);

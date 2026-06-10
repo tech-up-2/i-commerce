@@ -36,7 +36,7 @@ public class ProductItemStatusTest {
 
         @Test
         @DisplayName("허용되지 않은 상태로 전이 시 예외가 발생한다.")
-        void validateTransition_fali_invalidStatusTransition() {
+        void validateTransition_fail_invalidStatusTransition() {
             AppException exception = assertThrows(AppException.class, () ->
                 ProductItemStatus.OUT_OF_STOCK
                     .validateTransition(ProductItemStatus.ON_SALE));
