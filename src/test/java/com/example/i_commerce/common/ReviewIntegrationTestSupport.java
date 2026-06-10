@@ -19,6 +19,7 @@ import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
 import com.example.i_commerce.domain.product.entity.enums.ProductStatus;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
+import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public abstract class ReviewIntegrationTestSupport extends IntegrationTestSuppor
         Member buyer = memberRepository.save(createMember("buyer@test.com", "홍길동", MemberType.CUSTOMER));
         Member seller = memberRepository.save(createMember("seller@test.com", "김철수", MemberType.SELLER));
 
-        Store store = storeRepository.save(createStore("구름스토어", seller.getId()));
+        Store store = storeRepository.saveAndFlush(createStore("구름스토어", seller.getId()));
 
         Product product = createProductWithDefaultItem("여행용 캐리어", store.getId());
         ProductItem productItem = product.getItems().get(0);
@@ -45,7 +46,19 @@ public abstract class ReviewIntegrationTestSupport extends IntegrationTestSuppor
         Order order = createOrderWithProduct(buyer.getId(), product, productItem);
         OrderProduct orderProduct = order.getOrderProducts().get(0);
 
-        return new ReviewTestSet(buyer, seller, store, product, productItem, order, orderProduct);
+        Review review = reviewRepository.save(
+            Review.builder()
+                .orderProductId(orderProduct.getId())
+                .productId(product.getId())
+                .userId(buyer.getId())
+                .content("캐리어가 아주 튼튼하고 좋네요!")
+                .starRate(5)
+                .likeCount(0L)
+                .reportCount(0L)
+                .build()
+        );
+
+        return new ReviewTestSet(buyer, seller, store, product, productItem, order, orderProduct, review);
     }
 
     private Member createMember(String email, String name, MemberType role) {
@@ -137,6 +150,7 @@ public abstract class ReviewIntegrationTestSupport extends IntegrationTestSuppor
         Product product,
         ProductItem productItem,
         Order order,
-        OrderProduct orderProduct
+        OrderProduct orderProduct,
+        Review review
     ) {}
 }
