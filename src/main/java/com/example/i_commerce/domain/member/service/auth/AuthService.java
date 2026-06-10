@@ -78,7 +78,7 @@ public class AuthService {
     }
 
     //로그인
-    @Transactional(readOnly = true)
+    @Transactional
     public LoginResponse login(LoginRequest dto) {
         String emailHash = emailHashEncoder.encode(dto.email());
 

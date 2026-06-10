@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.product.fixture;
 
+import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.entity.enums.ProductItemStatus;
 import com.example.i_commerce.domain.product.entity.ProductOptionValue;
@@ -25,22 +26,15 @@ public class ProductItemFixture {
             .build();
     }
 
-    public static ProductItem createDoubleOptionItem(
-        ProductOptionValue ov1,
-        ProductOptionValue ov2
+    public static ProductItem createItemWithStock(
+        Product product, String sku, int stockQuantity
     ) {
-        return defaultProductItem()
-            .optionValue1(ov1)
-            .optionValue2(ov2)
+        ProductItem item = defaultProductItem()
+            .sku(sku)
             .build();
-    }
-
-    public static ProductItem createSingleOptionItem(
-        ProductOptionValue ov1
-    ) {
-        return defaultProductItem()
-            .optionValue1(ov1)
-            .build();
+        product.addItem(item);
+        item.initStock(stockQuantity);
+        return item;
     }
 
 }

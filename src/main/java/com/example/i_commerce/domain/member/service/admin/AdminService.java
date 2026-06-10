@@ -54,7 +54,7 @@ public class AdminService {
     private final SellerRepository sellerRepository;
     private final LoginLogService loginLogService;
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AdminLoginResponse login(LoginRequest dto) {
 
         //email을 key로 변환
@@ -64,7 +64,7 @@ public class AdminService {
 
         if (adminOptional.isEmpty()) {
             // 로그인 실패 기록
-            loginLogService.writeMemberLoginHistory(null,
+            loginLogService.writeAdminLoginHistory(null,
                 LoginResult.FAILURE, null, LocalDateTime.now(),
                 LoginFailReason.INVALID_CREDENTIALS);
 
@@ -169,6 +169,10 @@ public class AdminService {
         Long adminId,
         AdminRoleUpdateRequest request
     ) {
+        if (request == null || request.adminRole() == null) {
+            throw new AppException(MemberErrorCode.INVALID_ROLE);
+        }
+
         Admin admin = findActiveAdmin(adminId);
 
         validateAtLeastOneActiveMasterAfterRoleChange(admin, request.adminRole());
@@ -184,6 +188,10 @@ public class AdminService {
         Long adminId,
         AdminStatusUpdateRequest request
     ) {
+        if (request == null || request.adminStatus() == null) {
+            throw new AppException(MemberErrorCode.INVALID_STATUS);
+        }
+
         Admin admin = findActiveAdmin(adminId);
 
         validateAtLeastOneActiveMasterAfterStatusChange(admin, request.adminStatus());
@@ -263,6 +271,10 @@ public class AdminService {
         Long userId,
         AdminMemberStatusUpdateRequest request
     ) {
+        if (request == null || request.memberStatus() == null) {
+            throw new AppException(MemberErrorCode.INVALID_STATUS);
+        }
+
         Member member = findMember(userId);
 
         member.changeStatus(request.memberStatus());
@@ -282,6 +294,10 @@ public class AdminService {
         Long sellerId,
         AdminSellerStatusUpdateRequest request
     ) {
+        if (request == null || request.sellerStatus() == null) {
+            throw new AppException(MemberErrorCode.INVALID_STATUS);
+        }
+
         Seller seller = findSellerWithMember(sellerId);
 
         if (request.sellerStatus() == SellerStatus.APPROVED) {
