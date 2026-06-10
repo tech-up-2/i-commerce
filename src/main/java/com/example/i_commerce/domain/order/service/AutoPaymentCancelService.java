@@ -42,7 +42,7 @@ public class AutoPaymentCancelService {
             order.changeOrderStatus(OrderStatus.CANCELLED);
 
             publisher.publishEvent(new PaymentStatusChangedEvent(
-                    payment, PaymentStatus.READY, dto.cancelReason(), PaymentStatus.FAILED, dto.paymentKey(), response.toString()));
+                    payment.getId(), PaymentStatus.READY, dto.cancelReason(), PaymentStatus.FAILED, dto.paymentKey(), response.toString()));
         } catch (AppException e) {
             if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
                 log.error("[자동 취소 실패] 자동 취소 시도 중 타임아웃 발생. 토스 장부 확인 불가.");
