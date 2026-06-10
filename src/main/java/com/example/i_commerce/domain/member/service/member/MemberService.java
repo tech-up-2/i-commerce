@@ -39,7 +39,6 @@ public class MemberService {
         );
     }
 
-    // --- 채팅 ---
     @Transactional(readOnly = true)
     public MemberChatInfo getMemberChatInfo(Long memberId) {
         Member member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
@@ -48,7 +47,7 @@ public class MemberService {
         return new MemberChatInfo(
             member.getId(),
             dataEncryptor.decrypt(member.getName()),
-            member.getRole(),
+            MemberType.CUSTOMER,
             member.getStatus()
         );
     }

@@ -1,7 +1,8 @@
-package com.example.i_commerce.domain.chat.service;
+package com.example.i_commerce.domain.chat.unit.service;
 
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
-import com.example.i_commerce.domain.chat.service.fixture.ChatMemberFixture;
+import com.example.i_commerce.domain.chat.service.ChatRoomService;
+import com.example.i_commerce.domain.chat.unit.service.fixture.ChatMemberFixture;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;

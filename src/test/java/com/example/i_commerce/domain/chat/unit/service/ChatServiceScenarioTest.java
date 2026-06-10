@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.chat.service;
+package com.example.i_commerce.domain.chat.unit.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -13,12 +13,13 @@ import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
 import com.example.i_commerce.domain.chat.repository.ChatStatusRepository;
+import com.example.i_commerce.domain.chat.service.ChatService;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendRequest;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
 import com.example.i_commerce.domain.chat.service.dto.GroupChatListResponse;
 import com.example.i_commerce.domain.chat.service.dto.MyChatListResponse;
-import com.example.i_commerce.domain.chat.service.fixture.ChatMemberFixture;
-import com.example.i_commerce.domain.chat.service.fixture.ChatRoomFixture;
+import com.example.i_commerce.domain.chat.unit.service.fixture.ChatMemberFixture;
+import com.example.i_commerce.domain.chat.unit.service.fixture.ChatRoomFixture;
 import com.example.i_commerce.domain.chat.util.ChatHealthCheck;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
@@ -163,7 +164,7 @@ public class ChatServiceScenarioTest {
             .build();
         when(chatParticipantRepository.findByChatRoom(singleChatRoom)).thenReturn(List.of(participant, otherParticipant));
 
-        ApiResponse<Void> response = chatService.saveMessage(RoomId, chatMessageSendRequest);
+        ApiResponse<Void> response = chatService.saveMessage(RoomId, chatMessageSendRequest, myMemberId);
         Assertions.assertEquals(response.code(), "SUCCESS");
 
     }
@@ -250,11 +251,12 @@ public class ChatServiceScenarioTest {
     @Test
     @DisplayName("시나리오 11 [예외]: 존재하지 않는 채팅방에 메시지 저장 요청할 수 없습니다.")
     void messageSave_Fail_RoomNotFound() {
+        Long myMemberId = member.getId();
         Long RoomId = groupChatRoom.getId();
         when(chatRoomRepository.findById(RoomId)).thenReturn(Optional.empty());
         ChatMessageSendRequest request = new ChatMessageSendRequest("안녕하세요", member.getId());
         AppException exception = Assertions.assertThrows(AppException.class,
-            () -> chatService.saveMessage(RoomId, request));
+            () -> chatService.saveMessage(RoomId, request, myMemberId));
         Assertions.assertEquals(exception.getErrorCode(), ChatErrorCode.CHAT_ROOM_NOT_FOUND);
     }
 

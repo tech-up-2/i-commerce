@@ -27,8 +27,9 @@ public class StompController {
      */
     @MessageMapping("/{roomId}")
     public void sendMessage(@DestinationVariable Long roomId, ChatMessageSendRequest request, SimpMessageHeaderAccessor headerAccessor) {
-        chatService.saveMessage(roomId, request);
+//       StompHandler에서 세션에 넣어둔 값을 꺼내어 사용할 수 있도록 함.
         Long memberId = (Long) headerAccessor.getSessionAttributes().get("memberId");
+        chatService.saveMessage(roomId, request, memberId);
         messagingTemplate.convertAndSend("/topic/" + roomId, request);
     }
 }

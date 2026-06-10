@@ -53,7 +53,7 @@ public class StompHandler implements ChannelInterceptor {
         if(bearerToken == null || !bearerToken.startsWith("Bearer ")){
             throw new AppException(ChatErrorCode.INVALID_STOMP_TOKEN_HEADER);
         }
-        return bearerToken.substring(7);
+        return   bearerToken.substring(7);
     }
 
 }

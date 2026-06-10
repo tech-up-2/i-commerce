@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.chat.service;
+package com.example.i_commerce.domain.chat.unit.service;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -9,14 +9,15 @@ import com.example.i_commerce.domain.chat.entity.ChatRoom;
 import com.example.i_commerce.domain.chat.exception.ChatErrorCode;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
-import com.example.i_commerce.domain.chat.service.fixture.ChatMemberFixture;
-import com.example.i_commerce.domain.chat.service.fixture.ChatRoomFixture;
+import com.example.i_commerce.domain.chat.service.ChatRoomService;
+import com.example.i_commerce.domain.chat.unit.service.fixture.ChatMemberFixture;
+import com.example.i_commerce.domain.chat.unit.service.fixture.ChatRoomFixture;
 import com.example.i_commerce.domain.chat.util.ChatHealthCheck;
 import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
 import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.service.member.MemberService;
 import com.example.i_commerce.domain.member.service.member.dto.MemberChatInfo;
+import com.example.i_commerce.domain.member.service.member.dto.MemberOrderInfo;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
@@ -36,7 +37,6 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.A;
 
 @ExtendWith(MockitoExtension.class)
 public class ChatRoomScenarioTest {
@@ -106,7 +106,7 @@ public class ChatRoomScenarioTest {
 
         //      When
         when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
-        when(memberService.getMemberChatInfo(otherMemberId)).thenReturn(otherChatInfo);
+        when(memberService.getSellerChatInfo(otherMemberId)).thenReturn(otherChatInfo);
 
         when(chatRoomRepository.findByRoomKey(roomKey)).thenReturn(Optional.empty());
         when(chatRoomNameGenerator.getPrivateRoomName(any(), any())).thenReturn(PrivateRoomName);
@@ -125,7 +125,7 @@ public class ChatRoomScenarioTest {
         Long otherMemberId = member3.getId();
 
         when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
-        when(memberService.getMemberChatInfo(otherMemberId)).thenReturn(otherChatInfo);
+        when(memberService.getSellerChatInfo(otherMemberId)).thenReturn(otherChatInfo);
         when(chatRoomRepository.findByRoomKey(roomKey)).thenReturn(Optional.of(singleChatRoom));
 
         ApiResponse<Long> response = chatRoomService.getOrCreatePrivateRoom(otherMemberId);
@@ -140,7 +140,7 @@ public class ChatRoomScenarioTest {
         Long myMemberId = 1L;
         Long otherMemberId = member2.getId();
         when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
-        when(memberService.getMemberChatInfo(otherMemberId)).thenReturn(memberChatInfo2);
+        when(memberService.getSellerChatInfo(otherMemberId)).thenReturn(memberChatInfo2);
 
         AppException exception = Assertions.assertThrows(AppException.class,
             () -> {
@@ -154,7 +154,7 @@ public class ChatRoomScenarioTest {
     void getCreatePrivateRoom_Fail_EqualMember() {
         Long myMemberId = 1L;
         when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
-
+        when(memberService.getSellerChatInfo(myMemberId)).thenReturn(memberChatInfo);
         AppException exception = Assertions.assertThrows(AppException.class,
             () -> {
                 chatRoomService.getOrCreatePrivateRoom(myMemberId);
