@@ -148,7 +148,8 @@ public class ChatServiceScenarioTest {
         Long myMemberId = member.getId();
         Long otherMemberId = otherMember.getId();
         Long RoomId = singleChatRoom.getId();
-        ChatMessageSendRequest chatMessageSendRequest = new ChatMessageSendRequest("안녕하세요 테스트 메시지입니다.", myMemberId);
+        ChatMessageSendRequest chatMessageSendRequest = new ChatMessageSendRequest(
+            "안녕하세요 테스트 메시지입니다.", myMemberId);
 
         when(chatRoomRepository.findById(RoomId)).thenReturn(Optional.of(singleChatRoom));
         when(memberService.getMemberChatInfo(myMemberId)).thenReturn(memberChatInfo);
@@ -162,12 +163,15 @@ public class ChatServiceScenarioTest {
             .chatRoom(singleChatRoom)
             .memberId(otherMemberId)
             .build();
-        when(chatParticipantRepository.findByChatRoom(singleChatRoom)).thenReturn(List.of(participant, otherParticipant));
+        when(chatParticipantRepository.findByChatRoom(singleChatRoom)).thenReturn(
+            List.of(participant, otherParticipant));
 
-        ApiResponse<Void> response = chatService.saveMessage(RoomId, chatMessageSendRequest, myMemberId);
+        ApiResponse<Void> response = chatService.saveMessage(RoomId, chatMessageSendRequest,
+            myMemberId);
         Assertions.assertEquals(response.code(), "SUCCESS");
 
     }
+
     @Test
     @DisplayName("시나리오 6 [성공]: 정상적으로 채팅 내용을 불러올수 있습니다.")
     void read_Message_Success() {
@@ -179,7 +183,8 @@ public class ChatServiceScenarioTest {
             .chatRoom(groupChatRoom)
             .memberId(myMemberId)
             .build();
-        when(chatParticipantRepository.findByChatRoom(groupChatRoom)).thenReturn(List.of(participant));
+        when(chatParticipantRepository.findByChatRoom(groupChatRoom)).thenReturn(
+            List.of(participant));
         ChatMessage message = ChatMessage.builder()
             .id(1L)
             .memberId(myMemberId)
@@ -194,9 +199,11 @@ public class ChatServiceScenarioTest {
             .content("비속어")
             .isBlind(true)
             .build();
-        when(chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(groupChatRoom)).thenReturn(List.of(message, message2));
+        when(chatMessageRepository.findByChatRoomOrderByCreatedAtAsc(groupChatRoom)).thenReturn(
+            List.of(message, message2));
 
-        ApiResponse<List<ChatMessageSendResponse>> response = chatService.getChatHistory(chatRoomId);
+        ApiResponse<List<ChatMessageSendResponse>> response = chatService.getChatHistory(
+            chatRoomId);
         Assertions.assertEquals(response.code(), "SUCCESS");
         Assertions.assertNotNull(response.data());
         Assertions.assertEquals(2, response.data().size());
@@ -204,6 +211,7 @@ public class ChatServiceScenarioTest {
         Assertions.assertEquals(response.data().get(1).message(), "관리자에 의해 가려진 메시지입니다");
 
     }
+
     @Test
     @DisplayName("시나리오 8 [성공]: 유저가 해당 채팅방의 참여자가 맞으면 true를 반환합니다.")
     void isRoomParticipant_True() {
@@ -237,6 +245,7 @@ public class ChatServiceScenarioTest {
 
         Assertions.assertFalse(result);
     }
+
     @Test
     @DisplayName("시나리오 10 [예외]: 존재하지 않는 채팅방에 참여 여부를 조회합니다.")
     void isRoomParticipant_Fail_NotFound() {
@@ -248,6 +257,7 @@ public class ChatServiceScenarioTest {
             () -> chatService.isRoomParticipant(myMemberId, roomId));
         Assertions.assertEquals(exception.getErrorCode(), ChatErrorCode.CHAT_ROOM_NOT_FOUND);
     }
+
     @Test
     @DisplayName("시나리오 11 [예외]: 존재하지 않는 채팅방에 메시지 저장 요청할 수 없습니다.")
     void messageSave_Fail_RoomNotFound() {
