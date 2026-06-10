@@ -38,7 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @AutoConfigureMockMvc
-public class ReviewIntegrationTest extends ReviewIntegrationTestSupport {
+public class ReviewUploadIntegrationTest extends ReviewIntegrationTestSupport {
 
     @Autowired
     private MockMvc mockMvc;
