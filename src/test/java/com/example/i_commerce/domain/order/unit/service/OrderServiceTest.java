@@ -28,7 +28,6 @@ import com.example.i_commerce.domain.order.service.dto.OrderDetailResponse;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
-import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
@@ -64,8 +63,6 @@ class OrderServiceTest {
     @Mock
     OrderProductRepository orderProductRepository;
 
-    @Mock
-    StockFacade stockFacade;
 
     @InjectMocks
     OrderService orderService;

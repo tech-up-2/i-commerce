@@ -8,4 +8,5 @@ public final class CategoryPolicy {
     private CategoryPolicy() {
         throw new AssertionError("should not be instantiated");
     }
+
 }

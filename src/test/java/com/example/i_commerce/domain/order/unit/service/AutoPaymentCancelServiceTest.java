@@ -16,7 +16,6 @@ import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
 import com.example.i_commerce.domain.order.service.AutoPaymentCancelService;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
-import com.example.i_commerce.domain.product.facade.StockFacade;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.Map;
 import java.util.Optional;
@@ -37,9 +36,6 @@ class AutoPaymentCancelServiceTest {
 
     @Mock
     ApplicationEventPublisher publisher;
-
-    @Mock
-    StockFacade stockFacade;
 
     @Mock
     TossPaymentClient tossPaymentClient;
