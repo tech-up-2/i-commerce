@@ -2,7 +2,9 @@ package com.example.i_commerce.domain.review.integration;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.mock.http.server.reactive.MockServerHttpRequest.patch;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -10,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.i_commerce.common.ReviewIntegrationTestSupport;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
+import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.global.s3.service.S3ImageService;
 import com.example.i_commerce.global.security.checker.AuthChecker;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
@@ -58,6 +61,7 @@ public class ReviewApiIntegrationTest extends ReviewIntegrationTestSupport {
         );
 
         given(authChecker.canWriteReviewAsMember()).willReturn(true);
+        given(authChecker.canDeleteReview()).willReturn(true);
 
         given(s3ImageService.uploadImage(any(), any()))
             .willReturn("https://i-commerce-s3.com/reviews/test.jpg");
@@ -123,6 +127,40 @@ public class ReviewApiIntegrationTest extends ReviewIntegrationTestSupport {
 
             .andExpect(jsonPath("$.data.imageUrls").isArray())
             .andExpect(jsonPath("$.data.imageUrls[0]").value("https://i-commerce-s3.com/reviews/test.jpg"));
+
+
+        //리뷰 수정
+        UpdateReviewRequest updateRequest = new UpdateReviewRequest(generatedReviewId, "캐리어가 크고 튼튼해요", 5, List.of());
+
+        MockMultipartFile updateRequestPart = new MockMultipartFile(
+            "review",
+            "",
+            org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
+            objectMapper.writeValueAsBytes(updateRequest)
+        );
+
+        mockMvc.perform(multipart(org.springframework.http.HttpMethod.PATCH,"/api/v1/reviews/{reviewId}", generatedReviewId)
+                .file(updateRequestPart)
+                .with(user(testPrincipal))
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("SUCCESS"));
+
+        //리뷰 삭제
+        mockMvc.perform(delete("/api/v1/reviews/{reviewId}", generatedReviewId)
+            .with(user(testPrincipal))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+        )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.code").value("SUCCESS"));
+
+        mockMvc.perform(get("/api/v1/reviews/{reviewId}", generatedReviewId)
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+            )
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(status().isNotFound());
     }
 
 }
