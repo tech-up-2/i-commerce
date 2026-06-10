@@ -23,7 +23,7 @@ public enum ProductItemStatus {
     private static final Map<ProductItemStatus, Set<ProductItemStatus>> TRANSITIONS = Map.of(
         ON_SALE,      Set.of(OFF_SALE, OUT_OF_STOCK),
         OFF_SALE,     Set.of(ON_SALE),
-        OUT_OF_STOCK, Set.of(ON_SALE, OFF_SALE)
+        OUT_OF_STOCK, Set.of(OFF_SALE)
     );
 
     public void validateTransition(ProductItemStatus target) {
@@ -32,4 +32,5 @@ public enum ProductItemStatus {
             throw new AppException(ProductErrorCode.INVALID_STATUS_TRANSITION);
         }
     }
+
 }
