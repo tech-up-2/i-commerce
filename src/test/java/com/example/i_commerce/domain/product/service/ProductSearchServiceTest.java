@@ -11,7 +11,6 @@ import static org.mockito.Mockito.never;
 
 import com.example.i_commerce.domain.product.application.dto.ProductSearchQuery;
 import com.example.i_commerce.domain.product.application.service.ProductSearchService;
-import com.example.i_commerce.domain.product.entity.Attribute;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.fixture.ProductSearchFixture;
 import com.example.i_commerce.domain.product.presentation.request.SearchProductRequest;

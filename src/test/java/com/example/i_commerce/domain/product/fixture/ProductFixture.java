@@ -5,7 +5,6 @@ import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
-import com.example.i_commerce.domain.product.entity.ProductOptionValue;
 import com.example.i_commerce.domain.product.entity.enums.ProductStatus;
 import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
 import java.util.List;
