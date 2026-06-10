@@ -35,7 +35,7 @@ public class ReportConcurrencyTest extends ReviewIntegrationTestSupport {
     private ApplicationEventPublisher eventPublisher;
 
     @Test
-    @DisplayName("[시나리오 1] 1명의 유저가 동시에 한 리뷰를 5번 연타하여 신고하면, DB에는 딱 1개만 저장되어야 한다.")
+    @DisplayName("1명의 유저가 동시에 한 리뷰를 5번 연타하여 신고하면, DB에는 딱 1개만 저장되어야 한다.")
     void concurrentReportBySingleUser() throws InterruptedException {
         ReviewTestSet testSet = createReviewTestEnvironment();
         Long reporterId = 99L;
@@ -71,7 +71,7 @@ public class ReportConcurrencyTest extends ReviewIntegrationTestSupport {
     }
 
     @Test
-    @DisplayName("[시나리오 2] 10명의 서로 다른 유저가 동시에 한 리뷰를 신고하면, 리뷰 엔티티의 @Version에 의해 낙관적 락 예외가 발생한다.")
+    @DisplayName("10명의 서로 다른 유저가 동시에 한 리뷰를 신고하면, 리뷰 엔티티의 @Version에 의해 낙관적 락 예외가 발생한다.")
     void concurrentReportByMultipleUsers() throws InterruptedException {
         ReviewTestSet testSet = createReviewTestEnvironment();
         Long reviewId = testSet.review().getId();
@@ -100,10 +100,8 @@ public class ReportConcurrencyTest extends ReviewIntegrationTestSupport {
         latch.await();
         executorService.shutdown();
 
-        System.out.println("====== 시나리오 2 결과 ======");
         System.out.println("성공한 신고 횟수: " + successCount.get());
         System.out.println("튕겨나간 예외 개수: " + exceptions.size());
-        System.out.println("=============================");
 
         org.assertj.core.api.Assertions.assertThat(successCount.get()).isLessThan(numberOfThreads);
         org.assertj.core.api.Assertions.assertThat(exceptions).isNotEmpty();

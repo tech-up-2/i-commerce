@@ -21,6 +21,8 @@ import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -153,4 +155,20 @@ public abstract class ReviewIntegrationTestSupport extends IntegrationTestSuppor
         OrderProduct orderProduct,
         Review review
     ) {}
+
+    protected List<BuyerOrderSet> createMultipleBuyersAndOrders(int count, Product product, ProductItem productItem) {
+        List<BuyerOrderSet> list = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            Long userId = i + 300L;
+            Member buyer = memberRepository.save(
+                createMember(userId + "@test.com", "테스터" + i, MemberType.CUSTOMER)
+            );
+            Order order = createOrderWithProduct(buyer.getId(), product, productItem);
+
+            list.add(new BuyerOrderSet(buyer.getId(), order.getOrderProducts().get(0).getId()));
+        }
+        return list;
+    }
+
+    public record BuyerOrderSet(Long userId, Long orderProductId) {}
 }
