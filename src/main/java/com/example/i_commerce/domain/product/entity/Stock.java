@@ -64,21 +64,24 @@ public class Stock extends BaseEntity {
     }
 
     public void deduct(int amount, Long orderId) {
+        if(this.status == StockStatus.UNAVAILABLE) {
+            throw new AppException(ProductErrorCode.STOCK_UNAVAILABLE);
+        }
         if(this.quantity < amount) {
             throw new AppException(ProductErrorCode.INSUFFICIENT_STOCK);
         }
         this.quantity -= amount;
-
         if(this.quantity == 0) {
             this.status = StockStatus.OUT_OF_STOCK;
         }
-
         this.histories.add(StockHistory.ofDeduct(this, amount, orderId));
     }
 
     public void restore(int amount, Long orderId) {
         this.quantity += amount;
-        this.status = StockStatus.IN_STOCK;
+        if (this.status != StockStatus.UNAVAILABLE) {
+            this.status = StockStatus.IN_STOCK;
+        }
         this.histories.add(StockHistory.ofRestore(this, amount, orderId));
     }
 
