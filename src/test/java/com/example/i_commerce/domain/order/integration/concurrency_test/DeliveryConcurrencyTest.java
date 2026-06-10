@@ -2,8 +2,12 @@ package com.example.i_commerce.domain.order.integration.concurrency_test;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 
 import com.example.i_commerce.common.IntegrationTestSupport;
+import com.example.i_commerce.domain.member.entity.Store;
+import com.example.i_commerce.domain.member.entity.enums.StoreStatus;
+import com.example.i_commerce.domain.member.repository.StoreRepository;
 import com.example.i_commerce.domain.order.client.PaymentClient;
 import com.example.i_commerce.domain.order.client.TossPaymentClient;
 import com.example.i_commerce.domain.order.entity.Delivery;
@@ -55,6 +59,9 @@ class DeliveryConcurrencyTest extends IntegrationTestSupport {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @Autowired
+    private StoreRepository storeRepository;
+
     @MockitoBean // 스프링 부트 3.4+ 버전 기준 (구버전은 @MockBean 사용)
     private PaymentClient tossPaymentClient;
 
@@ -65,6 +72,8 @@ class DeliveryConcurrencyTest extends IntegrationTestSupport {
     private StockEventListener stockEventListener;
 
     private Long testOrderId;
+    private Long testSellerId;
+    private Long testStoreId;
     private Long testDeliveryId;
     private String testTossOrderId;
     private String testPaymentKey = "toss-payment-key-12345";
@@ -83,15 +92,26 @@ class DeliveryConcurrencyTest extends IntegrationTestSupport {
         testOrderId = savedOrder.getId();
 
         // Delivery를 생성하고 Order에 추가한 뒤 저장 (cascade 연쇄저장)
+        testSellerId = 1L;
+
+
+        Store savedStore = storeRepository.save(Store.builder()
+                .sellerId(testSellerId)
+                .phoneNumber("01012341234")
+                .storeName("상점")
+                .storeStatus(StoreStatus.OPEN)
+                .build());
+        testStoreId = savedStore.getId();
+
         Delivery delivery = Delivery.builder()
-                .storeId(1L)
+                .storeId(testStoreId)
                 .deliveryStatus(DeliveryStatus.PREPARING)
                 .order(savedOrder)
                 .build();
 
         savedOrder.getDeliveries().add(delivery);
         Order updated = orderRepository.save(savedOrder);
-        testDeliveryId = updated.getDeliveries().get(0).getId();
+        testDeliveryId = updated.getDeliveries().getFirst().getId();
 
         // Payment 생성: 고유한 tossOrderId와 pgTid 설정
         testTossOrderId = "toss-" + java.util.UUID.randomUUID();
@@ -127,7 +147,7 @@ class DeliveryConcurrencyTest extends IntegrationTestSupport {
         PaymentCancelRequest cancelRequest = new PaymentCancelRequest(
                 testTossOrderId,  50000, testPaymentKey,"고객 단순 변심"
         );
-        DeliveryShipRequest shipRequest = new DeliveryShipRequest(testDeliveryId, "TRACK-001");
+        DeliveryShipRequest shipRequest = new DeliveryShipRequest(testOrderId, testStoreId, testDeliveryId, "TRACK-001");
 
         given(tossPaymentClient.requestCanceled(any(PaymentCancelRequest.class))).willReturn(
                 Map.of("paymentKey", testPaymentKey)
@@ -146,7 +166,7 @@ class DeliveryConcurrencyTest extends IntegrationTestSupport {
 
         executorService.submit(() -> {
             try {
-                sellerDeliveryService.shipDelivery(shipRequest);
+                sellerDeliveryService.shipDelivery(testSellerId, shipRequest);
                 shipSuccess.set(true);
             } catch (Exception e) {
                 exceptions.add(e);
