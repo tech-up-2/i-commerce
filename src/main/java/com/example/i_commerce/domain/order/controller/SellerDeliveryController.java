@@ -35,7 +35,7 @@ public class SellerDeliveryController {
             @AuthenticationPrincipal CustomUserPrincipal seller,
             @PathVariable Long storeId,
             @RequestParam(required = false) DeliveryStatus status,
-            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.ASC) Pageable pageable) {
         return sellerDeliveryService.getDeliveryList(seller.getId(), storeId, status, pageable);
     }
 
