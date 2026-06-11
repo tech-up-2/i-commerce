@@ -9,6 +9,7 @@ import com.example.i_commerce.domain.product.application.service.ProductQuerySer
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewComment;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
+import com.example.i_commerce.domain.review.entity.enums.ReviewStatus;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repository.ReviewCommentRepository;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
@@ -56,7 +57,7 @@ public class ReviewService {
         validateStarRating(dto.getStarRate());
         reviewForbiddenWordValidator.validateContent(dto.getContent());
 
-        if (reviewRepo.existsByOrderProductId(orderProductId)) {
+        if (reviewRepo.existsByUserIdAndOrderProductIdAndStatus(userId, orderProductId, ReviewStatus.ACTIVE)) {
             throw new AppException(ReviewErrorCode.ALREADY_REVIEWED);
         }
 
@@ -249,7 +250,7 @@ public class ReviewService {
             review.getImages().forEach(image -> s3ImageService.deleteImage(image.getImageUrl()));
         }
 
-        reviewRepo.delete(review);
+        review.markAsDeleted();
     }
 
     @Transactional

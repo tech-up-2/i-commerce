@@ -2,6 +2,7 @@ package com.example.i_commerce.domain.review.repository;
 
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.review.entity.Review;
+import com.example.i_commerce.domain.review.entity.enums.ReviewStatus;
 import com.example.i_commerce.domain.review.service.dto.SellerReviewManagementResponse;
 import com.example.i_commerce.global.common.response.SliceResponse;
 import java.util.List;
@@ -15,7 +16,7 @@ import org.springframework.data.domain.Pageable;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    boolean existsByOrderProductId(Long orderProductId);
+    boolean existsByUserIdAndOrderProductIdAndStatus(Long userId, Long orderProductId, ReviewStatus status);
 
     List<Review> findAllByProductIdAndDeletedAtIsNull(Long productId);
 
