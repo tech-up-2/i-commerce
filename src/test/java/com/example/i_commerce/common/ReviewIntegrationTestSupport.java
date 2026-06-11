@@ -37,8 +37,10 @@ public abstract class ReviewIntegrationTestSupport extends IntegrationTestSuppor
     @Autowired protected ReviewRepository reviewRepository;
 
     protected ReviewTestSet createReviewTestEnvironment() {
-        Member buyer = memberRepository.save(createMember("buyer@test.com", "홍길동", MemberType.CUSTOMER));
-        Member seller = memberRepository.save(createMember("seller@test.com", "김철수", MemberType.SELLER));
+        String randomStr = java.util.UUID.randomUUID().toString().substring(0, 8);
+
+        Member buyer = memberRepository.save(createMember("buyer_" + randomStr + "@test.com", "홍길동", MemberType.CUSTOMER));
+        Member seller = memberRepository.save(createMember("seller_" + randomStr + "@test.com", "김철수", MemberType.SELLER));
 
         Store store = storeRepository.saveAndFlush(createStore("구름스토어", seller.getId()));
 
