@@ -18,6 +18,7 @@ import com.example.i_commerce.domain.product.application.service.ProductQuerySer
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewComment;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
+import com.example.i_commerce.domain.review.entity.enums.ReviewStatus;
 import com.example.i_commerce.domain.review.repository.ReviewCommentRepository;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.repository.StarRateCountProjection;
@@ -85,7 +86,7 @@ public class ReviewServiceUnitTest {
 
         CreateReviewRequest request = new CreateReviewRequest("좋아요",5);
 
-        given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
+        given(reviewRepo.existsByUserIdAndOrderProductIdAndStatus(userId, orderProductId, ReviewStatus.ACTIVE)).willReturn(false);
 
         OrderProductResponse mockResponse = new OrderProductResponse(productId, userId, OrderStatus.COMPLETED);
         given(orderService.getOrderProductForReview(orderProductId)).willReturn(mockResponse);
@@ -329,6 +330,7 @@ public class ReviewServiceUnitTest {
             .userId(userId)
             .content("너무 좋아요")
             .starRate(5)
+            .status(ReviewStatus.ACTIVE)
             .images(mockImages)
             .build();
 
@@ -338,7 +340,8 @@ public class ReviewServiceUnitTest {
         reviewService.deleteReview(userId, reviewId);
 
         //then
-        verify(reviewRepo, times(1)).delete(mockReview);
+        assertThat(mockReview.getStatus()).isEqualTo(ReviewStatus.DELETED);
+
         verify(s3ImageService, times(2)).deleteImage(anyString());
     }
 
