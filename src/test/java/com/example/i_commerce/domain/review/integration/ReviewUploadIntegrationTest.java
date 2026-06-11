@@ -11,12 +11,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.IMAGE_JPEG_VALUE;
 
 import com.example.i_commerce.common.ReviewIntegrationTestSupport;
-import com.example.i_commerce.domain.member.entity.Member;
-import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.global.s3.service.S3ImageService;
@@ -24,7 +20,6 @@ import com.example.i_commerce.global.security.checker.AuthChecker;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import java.util.List;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -83,6 +78,8 @@ public class ReviewUploadIntegrationTest extends ReviewIntegrationTestSupport {
             .willReturn("https://i-commerce-s3.com/reviews/travel_bag.jpg");
 
         given(authChecker.canWriteReviewAsMember()).willReturn(true);
+
+        reviewRepository.deleteAllInBatch();
 
         //when
         mockMvc.perform(multipart("/api/v1/order-products/{orderProductId}/reviews", testSet.orderProduct().getId())

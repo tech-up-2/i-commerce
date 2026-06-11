@@ -290,8 +290,8 @@ public class ReviewService {
     }
 
     private Review getReviewOrThrow(Long reviewId) {
-        return reviewRepo.findById(reviewId)
-        .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
+        return reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)
+            .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
     }
 
     private void validateAuthor(Review review, Long userId) {

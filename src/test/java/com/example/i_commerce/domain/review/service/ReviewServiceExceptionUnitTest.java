@@ -146,7 +146,7 @@ public class ReviewServiceExceptionUnitTest {
             .images(List.of(originalImage))
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         List<String> unmatchUrls = List.of(
             "real.jpg",
@@ -186,7 +186,7 @@ public class ReviewServiceExceptionUnitTest {
             .images(originalImages)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         List<MultipartFile> newImageFiles = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
@@ -237,7 +237,7 @@ public class ReviewServiceExceptionUnitTest {
             .userId(authorId)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         UpdateReviewRequest request = new UpdateReviewRequest(fakeAuthorId,"내용", 5, new ArrayList<>());
 
@@ -261,7 +261,7 @@ public class ReviewServiceExceptionUnitTest {
             .userId(99L)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         UpdateReviewRequest request = new UpdateReviewRequest(userId,"내용", 5, new ArrayList<>());
 

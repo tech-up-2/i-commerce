@@ -2,7 +2,6 @@ package com.example.i_commerce.domain.review.integration;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.mock.http.server.reactive.MockServerHttpRequest.patch;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -53,6 +52,8 @@ public class ReviewApiIntegrationTest extends ReviewIntegrationTestSupport {
     @DisplayName("인증된 사용자의 리뷰 생성, 목록 조회, 상세 조회, 수정, 삭제까지 검증한다.")
     void reviewTotalLifecycleScenario() throws Exception {
         ReviewTestSet testSet = createReviewTestEnvironment();
+
+        reviewRepository.deleteAllInBatch();
 
         CustomUserPrincipal testPrincipal = new CustomUserPrincipal(
             PrincipalType.MEMBER,

@@ -246,7 +246,7 @@ public class ReviewServiceUnitTest {
             .parent(parentComment)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         given(reviewCommentRepo.findByReviewId(reviewId))
             .willReturn(List.of(parentComment, childComment));
@@ -267,7 +267,7 @@ public class ReviewServiceUnitTest {
         assertThat(comments.get(0).getChildren()).hasSize(1);
         assertThat(comments.get(0).getChildren().get(0).getCommentId()).isEqualTo(20L);
 
-        verify(reviewRepo, times(1)).findById(reviewId);
+        verify(reviewRepo, times(1)).findByIdAndStatus(reviewId, ReviewStatus.ACTIVE);
         verify(reviewCommentRepo, times(1)).findByReviewId(reviewId);
 
     }
@@ -287,7 +287,7 @@ public class ReviewServiceUnitTest {
             .images(new ArrayList<>())
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         UpdateReviewRequest request = new UpdateReviewRequest(userId, "쓰다보니 불편해요", 2, null);
 
@@ -334,7 +334,7 @@ public class ReviewServiceUnitTest {
             .images(mockImages)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         //when
         reviewService.deleteReview(userId, reviewId);
