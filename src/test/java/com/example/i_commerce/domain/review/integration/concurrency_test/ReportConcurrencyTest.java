@@ -6,6 +6,7 @@ import com.example.i_commerce.domain.review.repository.ReviewReportRepository;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.service.ReviewReportService;
 import com.example.i_commerce.domain.review.service.dto.CreateReportRequest;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -84,11 +85,15 @@ public class ReportConcurrencyTest extends ReviewIntegrationTestSupport {
         ConcurrentLinkedQueue<Exception> exceptions = new ConcurrentLinkedQueue<>();
         AtomicInteger successCount = new AtomicInteger(0);
 
+        List<BuyerOrderSet> buyers = createMultipleBuyersAndOrders(numberOfThreads, testSet.product(), testSet.productItem());
+
         for (int i = 0; i < numberOfThreads; i++) {
-            long differentReporterId = i + 100L;
+            final int index = i;
+            long reporterId = buyers.get(index).userId();
+
             executorService.submit(() -> {
                 try {
-                    reviewReportService.createReviewReport(reviewId, differentReporterId, request);
+                    reviewReportService.createReviewReport(reviewId, reporterId, request);
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     exceptions.add(e);
