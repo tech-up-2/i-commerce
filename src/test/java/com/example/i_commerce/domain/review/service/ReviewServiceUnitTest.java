@@ -170,7 +170,7 @@ public class ReviewServiceUnitTest {
         boolean hasNext = false;
         Slice<Review> mockSlice = new SliceImpl<>(List.of(mockReview), pageable, hasNext);
 
-        given(reviewRepo.findByProductId(productId, pageable)).willReturn(mockSlice);
+        given(reviewRepo.findByProductIdAndStatus(productId, ReviewStatus.ACTIVE, pageable)).willReturn(mockSlice);
 
         //when
         SliceResponse<ReviewListResponse> result = reviewService.viewReviewList(productId, pageable);
@@ -181,7 +181,7 @@ public class ReviewServiceUnitTest {
 
         assertThat(result.content().get(0).getReviewId()).isEqualTo(100L);
 
-        verify(reviewRepo, times(1)).findByProductId(productId, pageable);
+        verify(reviewRepo, times(1)).findByProductIdAndStatus(productId, ReviewStatus.ACTIVE, pageable);
     }
 
 
@@ -370,7 +370,7 @@ public class ReviewServiceUnitTest {
         given(highScoreReview.calculateRecommendationScore()).willReturn(50.0);
 
         List<Review> reviews = new ArrayList<>(List.of(excludedReview, lowScoreReview, highScoreReview));
-        given(reviewRepo.findAllByProductIdAndDeletedAtIsNull(productId)).willReturn(reviews);
+        given(reviewRepo.findAllByProductIdAndStatus(productId, ReviewStatus.ACTIVE)).willReturn(reviews);
 
         //when
         List<ReviewListResponse> result = reviewService.getBestReviewCandidates(productId, sellerId);
@@ -380,6 +380,6 @@ public class ReviewServiceUnitTest {
         assertThat(result.get(0).getReviewId()).isEqualTo(200L);
         assertThat(result.get(1).getReviewId()).isEqualTo(100L);
 
-        verify(reviewRepo, times(1)).findAllByProductIdAndDeletedAtIsNull(productId);
+        verify(reviewRepo, times(1)).findAllByProductIdAndStatus(productId, ReviewStatus.ACTIVE);
     }
 }

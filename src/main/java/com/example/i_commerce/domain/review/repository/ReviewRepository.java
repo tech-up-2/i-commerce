@@ -19,11 +19,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     boolean existsByUserIdAndOrderProductIdAndStatus(Long userId, Long orderProductId, ReviewStatus status);
 
-    List<Review> findAllByProductIdAndDeletedAtIsNull(Long productId);
-
     Optional<Review> findByIdAndStatus(Long id, ReviewStatus status);
 
-    Slice<Review> findByProductId(@Param("productId") Long productId, Pageable pageable);
+    Slice<Review> findByProductIdAndStatus(Long productId, ReviewStatus status, Pageable pageable);
+
+    List<Review> findAllByProductIdAndStatus(Long productId, ReviewStatus status);
 
     @Query("SELECT r FROM Review r " +
         "WHERE (:displayOptionName IS NULL OR r.displayOptionName = :displayOptionName) " +

@@ -106,7 +106,7 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public SliceResponse<ReviewListResponse> viewReviewList(Long productId, Pageable pageable) {
 
-        Slice<Review> reviewSlice = reviewRepo.findByProductId(productId, pageable);
+        Slice<Review> reviewSlice = reviewRepo.findByProductIdAndStatus(productId, ReviewStatus.ACTIVE, pageable);
 
         return SliceResponse.of(reviewSlice, ReviewListResponse::from);
     }
@@ -265,7 +265,7 @@ public class ReviewService {
             throw new AppException(CommonErrorCode.INVALID_PERMISSION);
         }
 
-        List<Review> reviews = reviewRepo.findAllByProductIdAndDeletedAtIsNull(productId);
+        List<Review> reviews = reviewRepo.findAllByProductIdAndStatus(productId, ReviewStatus.ACTIVE);
 
         reviews.removeIf(Review::isExcluded);
 
