@@ -1,7 +1,8 @@
 import http from 'k6/http';
 
 const BASE_URL = __ENV.TARGET_HOST || 'http://localhost:8080';
-const binImage = open('/Users/goorm/Desktop/test_image/test.png', 'b');
+const imagePath = __ENV.TEST_IMAGE_PATH || './data/test.png';
+const binImage = open('../../data/test.png', 'b');
 
 function buildParams(token, tagName) {
   const headers = { 'Content-Type': 'application/json' };
