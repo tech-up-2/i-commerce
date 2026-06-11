@@ -43,8 +43,7 @@ public class SellerDeliveryService {
         }
 
         delivery.registerTrackingNumber(request.trackingNumber());
-
-        publisher.publishEvent(new DeliveryStatusChangedEvent(delivery.getOrder().getId()));
+        publisher.publishEvent(new DeliveryStatusChangedEvent(delivery.getOrder().getId(), delivery.getId(), delivery.getDeliveryStatus()));
         return ApiResponse.success();
     }
 
@@ -61,5 +60,20 @@ public class SellerDeliveryService {
         return ApiResponse.success(deliveryPage.map(delivery ->
             DeliveryResponse.of(delivery.getOrder().getId(), delivery)
         ));
+    }
+
+    @Transactional
+    public void completeDelivery(Long orderId, Long deliveryId) {
+
+        Delivery delivery = deliveryRepository.findBWithOrderById(deliveryId).orElseThrow(() ->
+                new AppException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
+
+        if(!Objects.equals(delivery.getOrder().getId(), orderId)) {
+            throw new AppException(DeliveryErrorCode.INVALID_DELIVERY_ORDER);
+        }
+
+        delivery.changeDeliveryStatus(DeliveryStatus.ARRIVED);
+
+        publisher.publishEvent(new DeliveryStatusChangedEvent(orderId, deliveryId, DeliveryStatus.ARRIVED));
     }
 }

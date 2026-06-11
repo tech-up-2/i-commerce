@@ -180,16 +180,27 @@ public class OrderService {
     }
 
     private OrderStatus determineOrderStatus(List<Delivery> deliveries) {
-        boolean allShipped = deliveries.stream()
-                .allMatch(d -> d.getDeliveryStatus() == DeliveryStatus.SHIPPING);
+        long totalCount = deliveries.size();
 
-        boolean anyShipped = deliveries.stream()
-                .anyMatch(d -> d.getDeliveryStatus() == DeliveryStatus.SHIPPING);
+        long shippingCount = deliveries.stream()
+                .filter(d -> d.getDeliveryStatus() == DeliveryStatus.SHIPPING)
+                .count();
 
-        if (allShipped) {
+        long arrivedCount = deliveries.stream()
+                .filter(d -> d.getDeliveryStatus() == DeliveryStatus.ARRIVED)
+                .count();
+
+        if (arrivedCount == totalCount) {
             return OrderStatus.DELIVERED;
-        } else if (anyShipped) {
+        }
+        if (shippingCount == totalCount) {
             return OrderStatus.SHIPPING;
+        }
+        if (arrivedCount > 0) {
+            return OrderStatus.PARTIAL_DELIVERED;
+        }
+        if (shippingCount > 0) {
+            return OrderStatus.PARTIAL_SHIPPING;
         }
 
         return OrderStatus.CONFIRMED;
