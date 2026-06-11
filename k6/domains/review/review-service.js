@@ -72,6 +72,13 @@ export function createComment(reviewId, token, payload) {
   return http.post(url, requestBody, buildParams(token, 'review_comment_create_post'));
 }
 
+//리뷰 삭제
+export function deleteReview(reviewId, token){
+  const url = `${BASE_URL}/api/v1/reviews/${reviewId}`;
+  const params = buildParams(token, 'review_delete');
+  return http.del(url, null, params);
+}
+
 /* =========================================================================
  * 좋아요, 신고 비즈니스 API
  * ========================================================================= */

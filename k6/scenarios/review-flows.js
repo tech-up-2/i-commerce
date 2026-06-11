@@ -44,7 +44,6 @@ export function flow() {
     sleep(0.5);
 
     // 6. 리뷰 신고 생성
-
     const reportPayload = { reportType: "SPAM", reportReason: "부적절한 광고성 리뷰입니다." };
     const reportRes = reviewAPI.createReport(newReviewId, viewerToken, reportPayload);
     check(reportRes, { 'POST /reports status is 201': (r) => r.status === 201 });
@@ -53,5 +52,10 @@ export function flow() {
     const newReportId = reportRes.json().data;
     const approveRes = reviewAPI.approveReport(newReportId, adminToken);
     check(approveRes, { 'PATCH /admin/reports/approve status is 200': (r) => r.status === 200 });
+    sleep(0.5);
+
+    //7. 리뷰 삭제
+    const deleteRes = reviewAPI.deleteReview(newReviewId, authorToken);
+    check(deleteRes, { 'DELETE /reviews status is 200': (r) => r.status === 200 });
     sleep(0.5);
 }
