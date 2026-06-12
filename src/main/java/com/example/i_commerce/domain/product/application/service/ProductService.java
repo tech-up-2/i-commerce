@@ -105,7 +105,7 @@ public class ProductService {
         ProductItem productItem,
         List<ItemAttributeRequest> attributeRequests
     ) {
-        if (attributeRequests == null || attributeRequests.isEmpty()) {
+        if (attributeRequests == null) {
             return;
         }
 
