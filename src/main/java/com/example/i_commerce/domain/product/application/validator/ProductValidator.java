@@ -66,6 +66,10 @@ public class ProductValidator {
             .distinct()
             .toList();
 
+        if (requestedAttributeIds.isEmpty()) {
+            return;
+        }
+
         List<Long> keys = categoryAttributeRepository.findAllAttributeIds(
             categoryId, requestedAttributeIds
         );
