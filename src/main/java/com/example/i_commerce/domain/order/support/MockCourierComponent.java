@@ -42,7 +42,8 @@ public class MockCourierComponent {
         Long orderId = event.orderId();
         Long deliveryId = event.deliveryId();
             try {
-                Thread.sleep(3000);
+                long randomSleep = (long) (Math.random() * 500) + 500;
+                Thread.sleep(randomSleep);
 
                 log.info("====== [가상 택배사] 배송 ID {} 배송 완료 처리 진행 ======", deliveryId);
                  sellerDeliveryService.completeDelivery(orderId, deliveryId);

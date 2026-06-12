@@ -47,6 +47,3 @@ public class SellerDeliveryController {
         return sellerDeliveryService.shipDelivery(seller.getId(), request);
     }
 }
-
-// 할거
-// 배송 서비스 가짜 서버 만드는거 고려해보기
