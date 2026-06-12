@@ -17,7 +17,7 @@ public interface CategoryOptionRepository extends JpaRepository<CategoryOption, 
     Optional<CategoryOption> findByIdAndCategoryId(Long id, Long categoryId);
 
     @Query("""
-    SELECT co.id
+    SELECT co.option.id
     FROM CategoryOption co
     WHERE co.category.id = :categoryId
     AND co.option.id IN :optionIds
