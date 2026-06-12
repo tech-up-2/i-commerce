@@ -2,6 +2,7 @@
 package com.example.i_commerce.domain.order.unit.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,8 +16,12 @@ import com.example.i_commerce.domain.member.service.delivery.DeliveryAddressServ
 import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressSnapshot;
 import com.example.i_commerce.domain.member.service.member.MemberService;
 import com.example.i_commerce.domain.member.service.member.dto.MemberOrderInfo;
+import com.example.i_commerce.domain.order.entity.Delivery;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
+import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
+import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
+import com.example.i_commerce.domain.order.repository.DeliveryRepository;
 import com.example.i_commerce.domain.order.repository.OrderProductRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
@@ -65,6 +70,9 @@ class OrderServiceTest {
     OrderProductRepository orderProductRepository;
 
     @Mock
+    DeliveryRepository deliveryRepository;
+
+    @Mock
     StockFacade stockFacade;
 
     @InjectMocks
@@ -109,6 +117,17 @@ class OrderServiceTest {
         return payment;
     }
 
+    private UpdateOrderStatusTestSet createTestSet(Long orderId, DeliveryStatus deliveryStatus1, DeliveryStatus deliveryStatus2) {
+        Order order = Order.builder().id(orderId).build();
+
+        Delivery delivery1 = Delivery.builder().deliveryStatus(deliveryStatus1).build();
+        Delivery delivery2 = Delivery.builder().deliveryStatus(deliveryStatus2).build();
+        return new UpdateOrderStatusTestSet(order, List.of(delivery1, delivery2));
+    }
+
+    private record UpdateOrderStatusTestSet(Order order, List<Delivery> deliveries) {
+    }
+
 
     @Test
     @DisplayName("성공: 다중 상품 주문 시 총액이 정확히 계산되고 저장된다")
@@ -141,7 +160,6 @@ class OrderServiceTest {
 
         then(orderRepository).should().save(argThat(order ->
                 order.getTotalProductAmount() == 35000 &&
-//                        order.getZipCode().equals(OrderFixture.ZIP_CODE) &&
                         order.getOrderProducts().size() == 2
         ));
 
@@ -202,6 +220,117 @@ class OrderServiceTest {
         AppException e = assertThrows(AppException.class, () -> orderService.getOrderDetail(orderId, invalidUserId));
         assertEquals("ORDER_NOT_FOUND", e.getErrorCode().toString());
     }
+
+    @Test
+    @DisplayName("모든 배송이 완료(ARRIVED)되면 주문 상태는 배송완료(DELIVERED)가 된다.")
+    void orderStatusBecomesDeliveredWhenAllDeliveriesArrived() {
+        // given
+        Long orderId = 1L;
+        UpdateOrderStatusTestSet testSet = createTestSet(orderId, DeliveryStatus.ARRIVED, DeliveryStatus.ARRIVED);
+        Order order = testSet.order;
+
+        ReflectionTestUtils.setField(order, "orderStatus", OrderStatus.CONFIRMED);
+
+        List<Delivery> deliveries = testSet.deliveries;
+
+        given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+        given(deliveryRepository.findAllByOrderId(orderId)).willReturn(deliveries);
+
+        // when
+        orderService.updateOrderStatusByDeliveries(orderId);
+
+        // then
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.DELIVERED);
+    }
+
+    @Test
+    @DisplayName("모든 배송이 중(SHIPPING)이면 주문 상태는 배송중(SHIPPING)이 된다.")
+    void orderStatusBecomesShippingWhenAllDeliveriesShipping() {
+        // given
+        Long orderId = 1L;
+        UpdateOrderStatusTestSet testSet = createTestSet(orderId, DeliveryStatus.SHIPPING, DeliveryStatus.SHIPPING);
+        Order order = testSet.order;
+
+        ReflectionTestUtils.setField(order, "orderStatus", OrderStatus.CONFIRMED);
+
+        List<Delivery> deliveries = testSet.deliveries;
+
+        given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+        given(deliveryRepository.findAllByOrderId(orderId)).willReturn(deliveries);
+
+        // when
+        orderService.updateOrderStatusByDeliveries(orderId);
+
+        // then
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.SHIPPING);
+    }
+
+    @Test
+    @DisplayName("배송 완료(ARRIVED) 건이 하나라도 존재하면 주문 상태는 부분배송완료(PARTIAL_DELIVERED)가 된다.")
+    void orderStatusBecomesPartialDeliveredWhenAnyDeliveryArrived() {
+        // given
+        Long orderId = 1L;
+        UpdateOrderStatusTestSet testSet = createTestSet(orderId, DeliveryStatus.SHIPPING, DeliveryStatus.ARRIVED);
+        Order order = testSet.order;
+
+        ReflectionTestUtils.setField(order, "orderStatus", OrderStatus.CONFIRMED);
+
+        List<Delivery> deliveries = testSet.deliveries;
+
+        given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+        given(deliveryRepository.findAllByOrderId(orderId)).willReturn(deliveries);
+
+        // when
+        orderService.updateOrderStatusByDeliveries(orderId);
+
+        // then
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PARTIAL_DELIVERED);
+    }
+
+    @Test
+    @DisplayName("배송중(SHIPPING) 건이 하나라도 존재하고 완료 건이 없으면 주문 상태는 부분배송중(PARTIAL_SHIPPING)이 된다.")
+    void orderStatusBecomesPartialShippingWhenAnyDeliveryShippingAndNoArrived() {
+        // given
+        Long orderId = 1L;
+        UpdateOrderStatusTestSet testSet = createTestSet(orderId, DeliveryStatus.PREPARING, DeliveryStatus.SHIPPING);
+        Order order = testSet.order;
+
+        ReflectionTestUtils.setField(order, "orderStatus", OrderStatus.CONFIRMED);
+
+        List<Delivery> deliveries = testSet.deliveries;
+
+        given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+        given(deliveryRepository.findAllByOrderId(orderId)).willReturn(deliveries);
+
+        // when
+        orderService.updateOrderStatusByDeliveries(orderId);
+
+        // then
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PARTIAL_SHIPPING);
+    }
+
+    @Test
+    @DisplayName("배송중이나 배송완료 상태가 없으면 주문 상태는 주문확정(CONFIRMED)을 유지한다.")
+    void orderStatusRemainsConfirmedWhenNoShippingOrArrivedDeliveries() {
+        // given
+        Long orderId = 1L;
+        UpdateOrderStatusTestSet testSet = createTestSet(orderId, DeliveryStatus.PREPARING, DeliveryStatus.PREPARING);
+        Order order = testSet.order;
+
+        ReflectionTestUtils.setField(order, "orderStatus", OrderStatus.CONFIRMED);
+
+        List<Delivery> deliveries = testSet.deliveries;
+
+        given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
+        given(deliveryRepository.findAllByOrderId(orderId)).willReturn(deliveries);
+
+        // when
+        orderService.updateOrderStatusByDeliveries(orderId);
+
+        // then
+        assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.CONFIRMED);
+    }
+
 
     public static class OrderFixture {
         public static final Long MEMBER_ID = 1L;
