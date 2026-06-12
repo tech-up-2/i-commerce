@@ -1,9 +1,11 @@
 package com.example.i_commerce.domain.product.fixture;
 
 import com.example.i_commerce.domain.product.entity.Product;
+import com.example.i_commerce.domain.product.entity.ProductAttribute;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.entity.enums.ProductItemStatus;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class ProductItemFixture {
 
@@ -34,6 +36,34 @@ public class ProductItemFixture {
         product.addItem(item);
         item.initStock(stockQuantity);
         return item;
+    }
+
+    public static ProductItem createProductItemBy(
+        Product product,
+        int price,
+        ProductItemStatus status
+    ) {
+        ProductItem item = ProductItem.builder()
+            .sku(UUID.randomUUID().toString())
+            .price(price)
+            .status(status)
+            .isDefault(true)
+            .build();
+        product.addItem(item);
+        return item;
+    }
+
+    public static void createProductAttributeBy(
+        ProductItem productItem,
+        Long attributeId,
+        String displayName
+    ) {
+        ProductAttribute attribute = ProductAttribute.builder()
+            .attributeId(attributeId)
+            .displayName(displayName)
+            .displayOrder(1)
+            .build();
+        productItem.addAttribute(attribute);
     }
 
 }
