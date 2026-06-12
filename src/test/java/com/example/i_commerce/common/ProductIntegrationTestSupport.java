@@ -21,7 +21,6 @@ import com.example.i_commerce.domain.product.repository.ProductOptionValueReposi
 import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.domain.product.repository.StockHistoryRepository;
 import com.example.i_commerce.domain.product.repository.StockRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -97,7 +96,7 @@ public class ProductIntegrationTestSupport extends IntegrationTestSupport {
     }
 
     @BeforeEach
-    void tearDown() {
+    void clearDatabase() {
         stockHistoryRepository.deleteAllInBatch();
         stockRepository.deleteAllInBatch();
         productAttributeRepository.deleteAllInBatch();
