@@ -208,7 +208,7 @@ public class CategoryServiceTest {
             // given
             CreateCategoryRequest request = createRequestByParentId(1L);
             Category parent = CategoryFixture.rootCategory();
-            Category saved = CategoryFixture.createChild(parent);
+            Category saved = CategoryFixture.createChild(parent, request.name());
 
             given(categoryRepository.findById(1L)).willReturn(Optional.of(parent));
             given(categoryRepository.existsByParentAndName(parent, request.name()))

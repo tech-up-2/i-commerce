@@ -34,4 +34,7 @@ public interface ProductItemRepository extends JpaRepository<ProductItem, Long> 
         WHERE pi.id IN :ids
         """)
     List<ProductItemInfoProjection> findAllItemInfoByIdIn(@Param("ids") Set<Long> ids);
+
+    List<ProductItem> findAllByProductId(Long productId);
+
 }

@@ -21,9 +21,10 @@ public class CategoryFixture {
             .build();
     }
 
-    public static Category createChild(Category category) {
+    public static Category createChild(Category category, String name) {
         return defaultCategory()
             .parent(category)
+            .name(name)
             .depth(category.getDepth() + 1)
             .build();
     }
