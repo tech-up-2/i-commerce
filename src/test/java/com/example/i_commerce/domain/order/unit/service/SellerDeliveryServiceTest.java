@@ -76,7 +76,7 @@ class SellerDeliveryServiceTest {
                     .isInstanceOf(AppException.class)
                     .hasMessage(DeliveryErrorCode.STORE_FORBIDDEN.getMessage());
 
-            verify(deliveryRepository, never()).findBWithOrderById(any());
+            verify(deliveryRepository, never()).findWithOrderById(any());
         }
 
         @Test
@@ -86,7 +86,7 @@ class SellerDeliveryServiceTest {
             Store store = mock(Store.class);
             given(store.getSellerId()).willReturn(sellerId);
             given(storeRepository.findById(storeId)).willReturn(Optional.of(store));
-            given(deliveryRepository.findBWithOrderById(deliveryId)).willReturn(Optional.empty());
+            given(deliveryRepository.findWithOrderById(deliveryId)).willReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> sellerDeliveryService.shipDelivery(sellerId, request))
@@ -95,7 +95,7 @@ class SellerDeliveryServiceTest {
         }
 
         @Test
-        @DisplayName("[실패 케이스 3] 주문 ID가 일치하지 않으면 CANNOT_SHIP_STATUS 예외")
+        @DisplayName("[실패 케이스 3] 주문 ID가 일치하지 않으면 INVALID_DELIVERY_ORDER 예외")
         void shipDelivery_InvalidOrderId_CannotShipStatus() {
             // given
             Store store = mock(Store.class);
@@ -107,12 +107,12 @@ class SellerDeliveryServiceTest {
 
             Delivery delivery = mock(Delivery.class);
             given(delivery.getOrder()).willReturn(order);
-            given(deliveryRepository.findBWithOrderById(deliveryId)).willReturn(Optional.of(delivery));
+            given(deliveryRepository.findWithOrderById(deliveryId)).willReturn(Optional.of(delivery));
 
             // when & then
             assertThatThrownBy(() -> sellerDeliveryService.shipDelivery(sellerId, request))
                     .isInstanceOf(AppException.class)
-                    .hasMessage(DeliveryErrorCode.CANNOT_SHIP_STATUS.getMessage());
+                    .hasMessage(DeliveryErrorCode.INVALID_DELIVERY_ORDER.getMessage());
 
         }
         @Test
@@ -132,7 +132,7 @@ class SellerDeliveryServiceTest {
                     .storeId(storeId)
                     .deliveryStatus(DeliveryStatus.CANCEL_REQUESTED)
                     .build();
-            given(deliveryRepository.findBWithOrderById(deliveryId)).willReturn(Optional.of(delivery));
+            given(deliveryRepository.findWithOrderById(deliveryId)).willReturn(Optional.of(delivery));
 
             // when & then
             assertThatThrownBy(() -> sellerDeliveryService.shipDelivery(sellerId, request))
@@ -159,7 +159,7 @@ class SellerDeliveryServiceTest {
                     .storeId(storeId)
                     .deliveryStatus(DeliveryStatus.PREPARING)
                     .build();
-            given(deliveryRepository.findBWithOrderById(deliveryId)).willReturn(Optional.of(delivery));
+            given(deliveryRepository.findWithOrderById(deliveryId)).willReturn(Optional.of(delivery));
 
             // when
             ApiResponse<Void> response = sellerDeliveryService.shipDelivery(sellerId, request);
@@ -181,7 +181,7 @@ class SellerDeliveryServiceTest {
         private final Pageable pageable = PageRequest.of(0, 10);
 
         @Test
-        @DisplayName("[실패 케이스] 요청한 사장님ID와 가게의 사장님ID가 다를 때 -> DELIVERY_NOT_FOUND 예외")
+        @DisplayName("[실패 케이스] 요청한 사장님ID와 가게의 사장님ID가 다를 때 -> STORE_FORBIDDEN 예외")
         void getDeliveryList_StoreForbidden() {
             // given
             Store wrongStore = mock(Store.class);
@@ -192,7 +192,7 @@ class SellerDeliveryServiceTest {
             assertThatThrownBy(() -> sellerDeliveryService.getDeliveryList(sellerId, storeId, status, pageable))
                     .isInstanceOf(AppException.class)
                     .extracting("errorCode")
-                    .isEqualTo(DeliveryErrorCode.DELIVERY_NOT_FOUND);
+                    .isEqualTo(DeliveryErrorCode.STORE_FORBIDDEN);
 
             verify(deliveryRepository, never()).findAllByStoreId(any(), any(), any());
         }

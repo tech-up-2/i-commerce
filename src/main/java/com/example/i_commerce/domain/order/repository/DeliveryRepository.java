@@ -2,7 +2,6 @@ package com.example.i_commerce.domain.order.repository;
 
 import com.example.i_commerce.domain.order.entity.Delivery;
 import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
-import com.example.i_commerce.domain.product.entity.Option;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -23,5 +22,5 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
             Pageable pageable);
 
     @EntityGraph(attributePaths = {"order"})
-    Optional<Delivery> findBWithOrderById(Long id);
+    Optional<Delivery> findWithOrderById(Long id);
 }

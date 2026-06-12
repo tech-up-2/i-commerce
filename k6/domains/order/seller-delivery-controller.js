@@ -14,7 +14,7 @@ export function getHeaders(authToken) {
 export function getDeliveryList(authToken, storeId, trackingNumber) {
     const url = `${BASE_URL}/api/v1/deliveries/${storeId}?status=preparing`;
 
-    return http.patch(url, getHeaders(authToken));
+    return http.get(url, getHeaders(authToken));
 }
 
 export function updateDeliveryStatus(authToken, deliverId, trackingNumber) {

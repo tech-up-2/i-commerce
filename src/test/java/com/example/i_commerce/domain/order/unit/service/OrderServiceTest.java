@@ -71,9 +71,6 @@ class OrderServiceTest {
     @Mock
     DeliveryRepository deliveryRepository;
 
-    @Mock
-    StockFacade stockFacade;
-
     @InjectMocks
     OrderService orderService;
 

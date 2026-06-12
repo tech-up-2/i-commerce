@@ -35,11 +35,11 @@ public class SellerDeliveryService {
             throw new AppException(DeliveryErrorCode.STORE_FORBIDDEN);
         }
 
-        Delivery delivery = deliveryRepository.findBWithOrderById(request.deliveryId())
+        Delivery delivery = deliveryRepository.findWithOrderById(request.deliveryId())
                 .orElseThrow(() -> new AppException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
         if (!request.orderId().equals(delivery.getOrder().getId())) {
-            throw new AppException(DeliveryErrorCode.CANNOT_SHIP_STATUS);
+            throw new AppException(DeliveryErrorCode.INVALID_DELIVERY_ORDER);
         }
 
         delivery.registerTrackingNumber(request.trackingNumber());
@@ -53,7 +53,7 @@ public class SellerDeliveryService {
         Store store = storeRepository.findById(storeId).orElseThrow();
 
         if(!Objects.equals(store.getSellerId(), sellerId)) {
-            throw new AppException(DeliveryErrorCode.DELIVERY_NOT_FOUND);
+            throw new AppException(DeliveryErrorCode.STORE_FORBIDDEN);
         }
 
         Page<Delivery> deliveryPage = deliveryRepository.findAllByStoreId(storeId, status, pageable);
@@ -65,7 +65,7 @@ public class SellerDeliveryService {
     @Transactional
     public void completeDelivery(Long orderId, Long deliveryId) {
 
-        Delivery delivery = deliveryRepository.findBWithOrderById(deliveryId).orElseThrow(() ->
+        Delivery delivery = deliveryRepository.findWithOrderById(deliveryId).orElseThrow(() ->
                 new AppException(DeliveryErrorCode.DELIVERY_NOT_FOUND));
 
         if(!Objects.equals(delivery.getOrder().getId(), orderId)) {

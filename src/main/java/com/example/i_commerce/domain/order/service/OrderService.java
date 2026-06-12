@@ -171,7 +171,7 @@ public class OrderService {
 
     @Transactional
     public void updateOrderStatusByDeliveries(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow();
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(OrderErrorCode.ORDER_NOT_FOUND));
         List<Delivery> deliveries = deliveryRepository.findAllByOrderId(orderId);
 
         OrderStatus nextStatus = determineOrderStatus(deliveries);
