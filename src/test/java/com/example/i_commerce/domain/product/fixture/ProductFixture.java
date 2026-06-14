@@ -37,6 +37,18 @@ public class ProductFixture {
             .build();
     }
 
+    public static Product createProductBy(
+        Category category,
+        String name,
+        ProductStatus status
+    ) {
+        return defaultProduct()
+            .category(category)
+            .name(name)
+            .status(status)
+            .build();
+    }
+
     public static Product createProduct(Long id, Long storeId, ProductOptionType optionType) {
         Product product = Product.builder()
             .storeId(storeId)

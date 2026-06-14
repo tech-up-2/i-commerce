@@ -33,9 +33,8 @@ public class ProductAttribute extends BaseEntity {
     @JoinColumn(name = "product_item_id", nullable = false)
     private ProductItem productItem;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "attribute_id", nullable = false)
-    private Attribute attribute;
+    @Column(nullable = false)
+    private Long attributeId;
 
     @Column(nullable = false)
     private String displayName;
@@ -45,12 +44,12 @@ public class ProductAttribute extends BaseEntity {
 
 
     public static ProductAttribute of(
-        Attribute attribute,
+        Long attributeId,
         String displayName,
         Integer displayOrder
     ) {
         return ProductAttribute.builder()
-            .attribute(attribute)
+            .attributeId(attributeId)
             .displayName(displayName)
             .displayOrder(displayOrder)
             .build();

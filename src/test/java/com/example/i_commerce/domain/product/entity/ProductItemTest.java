@@ -95,7 +95,7 @@ public class ProductItemTest {
             // given
             ProductItem item = createProductItem();
             ProductAttribute attribute = ProductAttribute.of(
-                AttributeFixture.defaultAttribute().build(), "속성", 1
+                AttributeFixture.defaultAttribute().build().getId(), "속성", 1
             );
 
             // when

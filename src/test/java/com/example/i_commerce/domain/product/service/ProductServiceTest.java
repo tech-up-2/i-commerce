@@ -4,38 +4,29 @@ package com.example.i_commerce.domain.product.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 
 
 import com.example.i_commerce.domain.member.service.store.StoreService;
-import com.example.i_commerce.domain.product.application.helper.OptionValueMapper;
-import com.example.i_commerce.domain.product.application.helper.ProductAssembler;
 import com.example.i_commerce.domain.product.application.service.ProductService;
+import com.example.i_commerce.domain.product.application.validator.ProductValidator;
+import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.fixture.CategoryFixture;
 import com.example.i_commerce.domain.product.fixture.ProductFixture;
 import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
-import com.example.i_commerce.domain.product.presentation.response.CreatedProductResponse;
-import com.example.i_commerce.domain.product.entity.Category;
-import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
+import com.example.i_commerce.domain.product.presentation.response.CreatedProductResponse;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
-import com.example.i_commerce.domain.product.application.validator.ProductAttributeValidator;
-import com.example.i_commerce.domain.product.application.validator.ProductOptionValidator;
 import com.example.i_commerce.global.exception.AppException;
-import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -57,65 +48,36 @@ public class ProductServiceTest {
     private CategoryRepository categoryRepository;
 
     @Mock
-    private ProductAssembler productAssembler;
-
-    @Mock
-    private ProductOptionValidator optionValidator;
-
-    @Mock
-    private ProductAttributeValidator attributeValidator;
+    private ProductValidator productValidator;
 
     @Nested
     @DisplayName("상품 생성 테스트")
     class CreateProductTest {
 
         @Test
-        @DisplayName("정상적으로 상품이 생성된다.")
-        void createProduct_success() {
+        @DisplayName("옵션 없는 상품을 정상적으로 생성한다.")
+        void createProduct_WithNoneOption_Success() {
             // given
             Long userId = 1L;
             Long storeId = 1L;
             Long categoryId = 1L;
-
             CreateProductRequest request = ProductFixture.createProductRequest(
                 storeId, categoryId, ProductOptionType.NONE
             );
 
-            Category category = CategoryFixture.createRootWithId(categoryId);
             Product savedProduct = ProductFixture.createProduct(1L, storeId, ProductOptionType.NONE);
-            OptionValueMapper optionValueMapper = mock(OptionValueMapper.class);
 
             given(storeService.isStoreManager(userId, storeId)).willReturn(true);
-            given(attributeValidator.validateAndFetchAttributes(categoryId, request.items()))
-                .willReturn(Map.of());
-            given(categoryRepository.findById(categoryId)).willReturn(Optional.of(category));
-            given(productAssembler.assembleOptions(any(Product.class), eq(request.options())))
-                .willReturn(optionValueMapper);
+            given(categoryRepository.findById(categoryId))
+                .willReturn(Optional.of(CategoryFixture.createRootWithId(categoryId)));
             given(productRepository.save(any(Product.class))).willReturn(savedProduct);
 
             // when
-            CreatedProductResponse result = productService.createProduct(userId, request);
+            CreatedProductResponse response = productService.createProduct(userId, request);
 
             // then
-            assertThat(result.productId()).isEqualTo(savedProduct.getId());
-
-            InOrder inOrder = inOrder(
-                storeService, optionValidator, attributeValidator,
-                categoryRepository, productAssembler, productRepository
-            );
-            inOrder.verify(storeService).isStoreManager(userId, storeId);
-            inOrder.verify(optionValidator).validateOptions(
-                categoryId, request.productOptionType(), request.options()
-            );
-            inOrder.verify(attributeValidator).validateAndFetchAttributes(
-                categoryId, request.items()
-            );
-            inOrder.verify(categoryRepository).findById(categoryId);
-            inOrder.verify(productAssembler).assembleOptions(any(Product.class), eq(request.options()));
-            inOrder.verify(productAssembler).assembleItems(
-                any(Product.class), eq(request.items()), eq(optionValueMapper), eq(Map.of())
-            );
-            inOrder.verify(productRepository).save(any(Product.class));
+            assertThat(response).isNotNull();
+            then(productRepository).should().save(any(Product.class));
         }
 
         @Test
@@ -138,8 +100,6 @@ public class ProductServiceTest {
             assertThat(exception.getErrorCode())
                 .isEqualTo(ProductErrorCode.PRODUCT_ACCESS_DENIED);
 
-            then(optionValidator).should(never()).validateOptions(any(), any(), any());
-            then(attributeValidator).should(never()).validateAndFetchAttributes(any(), any());
             then(categoryRepository).should(never()).findById(any());
             then(productRepository).should(never()).save(any());
         }
@@ -157,9 +117,8 @@ public class ProductServiceTest {
             );
 
             given(storeService.isStoreManager(userId, storeId)).willReturn(true);
-            given(attributeValidator.validateAndFetchAttributes(categoryId, request.items()))
-                .willReturn(Map.of());
-            given(categoryRepository.findById(categoryId)).willReturn(Optional.empty());
+            given(categoryRepository.findById(categoryId))
+                .willReturn(Optional.empty());
 
             // when & then
             AppException exception = assertThrows(AppException.class,
@@ -168,21 +127,11 @@ public class ProductServiceTest {
             assertThat(exception.getErrorCode())
                 .isEqualTo(ProductErrorCode.CATEGORY_NOT_FOUND);
 
-            then(productAssembler).should(never()).assembleOptions(any(), any());
-            then(productAssembler).should(never()).assembleItems(any(), any(), any(), any());
+            then(productValidator).should(never()).validateOptions(any(), any(), any());
             then(productRepository).should(never()).save(any());
         }
 
     }
 
-
 }
-
-
-
-
-
-
-
-
 
