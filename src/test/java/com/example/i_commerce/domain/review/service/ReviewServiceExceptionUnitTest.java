@@ -15,6 +15,7 @@ import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
 import com.example.i_commerce.domain.product.application.service.ProductQueryService;
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
+import com.example.i_commerce.domain.review.entity.enums.ReviewStatus;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
@@ -65,7 +66,7 @@ public class ReviewServiceExceptionUnitTest {
         CreateReviewRequest request = new CreateReviewRequest("그냥 그래요", 3);
         List<MultipartFile> imageFiles = new ArrayList<>();
 
-        given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(true);
+        given(reviewRepo.existsByUserIdAndOrderProductIdAndStatus(userId, orderProductId, ReviewStatus.ACTIVE)).willReturn(true);
 
         //when
         AppException exception = assertThrows(AppException.class,
@@ -88,7 +89,7 @@ public class ReviewServiceExceptionUnitTest {
         CreateReviewRequest request = new CreateReviewRequest("그냥 그래요", 3);
         List<MultipartFile> imageFiles = new ArrayList<>();
 
-        given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
+        given(reviewRepo.existsByUserIdAndOrderProductIdAndStatus(fakeUserId, orderProductId, ReviewStatus.ACTIVE)).willReturn(false);
 
         OrderProductResponse orderInfo = new OrderProductResponse(productId, realUserId, OrderStatus.COMPLETED);
 
@@ -114,7 +115,7 @@ public class ReviewServiceExceptionUnitTest {
         List<MultipartFile> imageFiles = new ArrayList<>();
 
 
-        given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
+        given(reviewRepo.existsByUserIdAndOrderProductIdAndStatus(userId, orderProductId, ReviewStatus.ACTIVE)).willReturn(false);
 
         OrderProductResponse orderInfo = new OrderProductResponse(productId, userId,OrderStatus.SHIPPING);
 
@@ -145,7 +146,7 @@ public class ReviewServiceExceptionUnitTest {
             .images(List.of(originalImage))
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         List<String> unmatchUrls = List.of(
             "real.jpg",
@@ -185,7 +186,7 @@ public class ReviewServiceExceptionUnitTest {
             .images(originalImages)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         List<MultipartFile> newImageFiles = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
@@ -236,7 +237,7 @@ public class ReviewServiceExceptionUnitTest {
             .userId(authorId)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         UpdateReviewRequest request = new UpdateReviewRequest(fakeAuthorId,"내용", 5, new ArrayList<>());
 
@@ -260,7 +261,7 @@ public class ReviewServiceExceptionUnitTest {
             .userId(99L)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         UpdateReviewRequest request = new UpdateReviewRequest(userId,"내용", 5, new ArrayList<>());
 

@@ -9,6 +9,7 @@ import com.example.i_commerce.domain.product.application.service.ProductQuerySer
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewComment;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
+import com.example.i_commerce.domain.review.entity.enums.ReviewStatus;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
 import com.example.i_commerce.domain.review.repository.ReviewCommentRepository;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
@@ -56,7 +57,7 @@ public class ReviewService {
         validateStarRating(dto.getStarRate());
         reviewForbiddenWordValidator.validateContent(dto.getContent());
 
-        if (reviewRepo.existsByOrderProductId(orderProductId)) {
+        if (reviewRepo.existsByUserIdAndOrderProductIdAndStatus(userId, orderProductId, ReviewStatus.ACTIVE)) {
             throw new AppException(ReviewErrorCode.ALREADY_REVIEWED);
         }
 
@@ -105,7 +106,7 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public SliceResponse<ReviewListResponse> viewReviewList(Long productId, Pageable pageable) {
 
-        Slice<Review> reviewSlice = reviewRepo.findByProductId(productId, pageable);
+        Slice<Review> reviewSlice = reviewRepo.findByProductIdAndStatus(productId, ReviewStatus.ACTIVE, pageable);
 
         return SliceResponse.of(reviewSlice, ReviewListResponse::from);
     }
@@ -249,7 +250,7 @@ public class ReviewService {
             review.getImages().forEach(image -> s3ImageService.deleteImage(image.getImageUrl()));
         }
 
-        reviewRepo.delete(review);
+        review.markAsDeleted();
     }
 
     @Transactional
@@ -264,7 +265,7 @@ public class ReviewService {
             throw new AppException(CommonErrorCode.INVALID_PERMISSION);
         }
 
-        List<Review> reviews = reviewRepo.findAllByProductIdAndDeletedAtIsNull(productId);
+        List<Review> reviews = reviewRepo.findAllByProductIdAndStatus(productId, ReviewStatus.ACTIVE);
 
         reviews.removeIf(Review::isExcluded);
 
@@ -289,8 +290,8 @@ public class ReviewService {
     }
 
     private Review getReviewOrThrow(Long reviewId) {
-        return reviewRepo.findById(reviewId)
-        .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
+        return reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)
+            .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
     }
 
     private void validateAuthor(Review review, Long userId) {

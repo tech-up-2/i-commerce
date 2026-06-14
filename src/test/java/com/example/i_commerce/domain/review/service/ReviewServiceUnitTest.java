@@ -18,6 +18,7 @@ import com.example.i_commerce.domain.product.application.service.ProductQuerySer
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewComment;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
+import com.example.i_commerce.domain.review.entity.enums.ReviewStatus;
 import com.example.i_commerce.domain.review.repository.ReviewCommentRepository;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.repository.StarRateCountProjection;
@@ -85,7 +86,7 @@ public class ReviewServiceUnitTest {
 
         CreateReviewRequest request = new CreateReviewRequest("좋아요",5);
 
-        given(reviewRepo.existsByOrderProductId(orderProductId)).willReturn(false);
+        given(reviewRepo.existsByUserIdAndOrderProductIdAndStatus(userId, orderProductId, ReviewStatus.ACTIVE)).willReturn(false);
 
         OrderProductResponse mockResponse = new OrderProductResponse(productId, userId, OrderStatus.COMPLETED);
         given(orderService.getOrderProductForReview(orderProductId)).willReturn(mockResponse);
@@ -169,7 +170,7 @@ public class ReviewServiceUnitTest {
         boolean hasNext = false;
         Slice<Review> mockSlice = new SliceImpl<>(List.of(mockReview), pageable, hasNext);
 
-        given(reviewRepo.findByProductId(productId, pageable)).willReturn(mockSlice);
+        given(reviewRepo.findByProductIdAndStatus(productId, ReviewStatus.ACTIVE, pageable)).willReturn(mockSlice);
 
         //when
         SliceResponse<ReviewListResponse> result = reviewService.viewReviewList(productId, pageable);
@@ -180,7 +181,7 @@ public class ReviewServiceUnitTest {
 
         assertThat(result.content().get(0).getReviewId()).isEqualTo(100L);
 
-        verify(reviewRepo, times(1)).findByProductId(productId, pageable);
+        verify(reviewRepo, times(1)).findByProductIdAndStatus(productId, ReviewStatus.ACTIVE, pageable);
     }
 
 
@@ -245,7 +246,7 @@ public class ReviewServiceUnitTest {
             .parent(parentComment)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         given(reviewCommentRepo.findByReviewId(reviewId))
             .willReturn(List.of(parentComment, childComment));
@@ -266,7 +267,7 @@ public class ReviewServiceUnitTest {
         assertThat(comments.get(0).getChildren()).hasSize(1);
         assertThat(comments.get(0).getChildren().get(0).getCommentId()).isEqualTo(20L);
 
-        verify(reviewRepo, times(1)).findById(reviewId);
+        verify(reviewRepo, times(1)).findByIdAndStatus(reviewId, ReviewStatus.ACTIVE);
         verify(reviewCommentRepo, times(1)).findByReviewId(reviewId);
 
     }
@@ -286,7 +287,7 @@ public class ReviewServiceUnitTest {
             .images(new ArrayList<>())
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         UpdateReviewRequest request = new UpdateReviewRequest(userId, "쓰다보니 불편해요", 2, null);
 
@@ -329,16 +330,18 @@ public class ReviewServiceUnitTest {
             .userId(userId)
             .content("너무 좋아요")
             .starRate(5)
+            .status(ReviewStatus.ACTIVE)
             .images(mockImages)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)).willReturn(Optional.of(mockReview));
 
         //when
         reviewService.deleteReview(userId, reviewId);
 
         //then
-        verify(reviewRepo, times(1)).delete(mockReview);
+        assertThat(mockReview.getStatus()).isEqualTo(ReviewStatus.DELETED);
+
         verify(s3ImageService, times(2)).deleteImage(anyString());
     }
 
@@ -367,7 +370,7 @@ public class ReviewServiceUnitTest {
         given(highScoreReview.calculateRecommendationScore()).willReturn(50.0);
 
         List<Review> reviews = new ArrayList<>(List.of(excludedReview, lowScoreReview, highScoreReview));
-        given(reviewRepo.findAllByProductIdAndDeletedAtIsNull(productId)).willReturn(reviews);
+        given(reviewRepo.findAllByProductIdAndStatus(productId, ReviewStatus.ACTIVE)).willReturn(reviews);
 
         //when
         List<ReviewListResponse> result = reviewService.getBestReviewCandidates(productId, sellerId);
@@ -377,6 +380,6 @@ public class ReviewServiceUnitTest {
         assertThat(result.get(0).getReviewId()).isEqualTo(200L);
         assertThat(result.get(1).getReviewId()).isEqualTo(100L);
 
-        verify(reviewRepo, times(1)).findAllByProductIdAndDeletedAtIsNull(productId);
+        verify(reviewRepo, times(1)).findAllByProductIdAndStatus(productId, ReviewStatus.ACTIVE);
     }
 }

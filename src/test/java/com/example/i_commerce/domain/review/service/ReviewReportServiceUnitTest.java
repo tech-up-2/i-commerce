@@ -23,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 public class ReviewReportServiceUnitTest {
@@ -46,6 +47,7 @@ public class ReviewReportServiceUnitTest {
         Long reviewId = 1L;
         Long userId = 5L;
         Long reporterId = 10L;
+        Long expectedReportId = 99L;
 
         Review mockReview = Review.builder()
             .id(reviewId)
@@ -57,15 +59,23 @@ public class ReviewReportServiceUnitTest {
 
         given(reviewReportRepo.existsByReporterIdAndReviewId(reporterId, reviewId))
             .willReturn(false);
+
+        given(reviewReportRepo.save(any(ReviewReport.class))).willAnswer(invocation -> {
+            ReviewReport report = invocation.getArgument(0);
+            ReflectionTestUtils.setField(report, "id", expectedReportId);
+            return report;
+        });
         
         CreateReportRequest request = new CreateReportRequest("광고성 댓글입니다.", ReportType.SPAM);
 
         //when
-        reviewReportService.createReviewReport(reviewId, reporterId, request);
+        Long actualReportId = reviewReportService.createReviewReport(reviewId, reporterId, request);
 
         //then
         verify(reviewReportRepo, times(1)).save(any(ReviewReport.class));
         assertThat(mockReview.getReportCount()).isEqualTo(1L);
+
+        assertThat(actualReportId).isEqualTo(expectedReportId);
     }
 
     @Test

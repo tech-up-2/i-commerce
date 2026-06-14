@@ -131,13 +131,13 @@ public class ReviewController {
     @PostMapping("/{reviewId}/reports")
     @PreAuthorize("@authChecker.canReportReview()")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Void> createReport(
+    public ApiResponse<Long> createReport(
         @PathVariable Long reviewId,
         @AuthenticationPrincipal CustomUserPrincipal principal,
         @RequestBody @Valid CreateReportRequest dto
     ) {
-        reviewReportService.createReviewReport(reviewId, principal.getId(), dto);
-        return ApiResponse.success();
+        Long reportId = reviewReportService.createReviewReport(reviewId, principal.getId(), dto);
+        return ApiResponse.success(reportId);
     }
 
     @Operation(summary = "리뷰 답글 생성", description = "사용자는 특정 리뷰에 답글을 달 수 있다.")
