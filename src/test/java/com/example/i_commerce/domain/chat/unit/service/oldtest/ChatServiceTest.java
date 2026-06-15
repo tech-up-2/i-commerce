@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.chat.service.oldtest;
+package com.example.i_commerce.domain.chat.unit.service.oldtest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

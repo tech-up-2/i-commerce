@@ -76,12 +76,12 @@ public class ChatService {
 
     //    해당 부분은 메시지를 보냈을 때, 새로고침을 통해만 확인이 가능하기 때문에 ws를 이용해서 실시간 처리가 가능하도록 하는게 최종 목표.
     public ApiResponse<Void> saveMessage(Long roomId,
-        ChatMessageSendRequest chatMessageSendRequest) {
+        ChatMessageSendRequest chatMessageSendRequest, Long memberId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
 //            멤버에서 ID를 가져오는 부분 시큐리티가 ws에서 작동하려면 StompHandler 수정이 필요
 //            추후 리펙토링을 통해 보완예정
             .orElseThrow(() -> new AppException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
-        MemberChatInfo member = memberService.getMemberChatInfo(TempChatUtil.getCurrentUserId());
+        MemberChatInfo member = memberService.getMemberChatInfo(memberId);
         ChatMessage chatMessage = ChatMessage.builder()
             .chatRoom(chatRoom)
             .memberId(member.id())
