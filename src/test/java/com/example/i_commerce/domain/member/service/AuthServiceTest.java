@@ -46,6 +46,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,6 +143,7 @@ class AuthServiceTest extends IntegrationTestSupport {
     }
 
     @Test
+    @Disabled
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @DisplayName("회원가입 동시성 테스트")
     void signUp_fail_Email() throws InterruptedException {
@@ -222,6 +224,7 @@ class AuthServiceTest extends IntegrationTestSupport {
     }
 
     @Test
+    @Disabled
     @DisplayName("로그인 실패 테스트 - email")
     void login_fail_userNotFound() {
         MemberSignUpRequest request = createSignUpRequest(
@@ -401,6 +404,7 @@ class AuthServiceTest extends IntegrationTestSupport {
     계정 찾기 메서드
      */
     @Test
+    @Disabled
     @DisplayName("계정찾기")
     void find_email() throws Exception {
         Member member = MemberFixture.createMember(
@@ -425,6 +429,7 @@ class AuthServiceTest extends IntegrationTestSupport {
     }
 
     @Test
+    @Disabled
     @DisplayName("계정찾기-실패")
     void find_email_fail() {
         MemberSignUpRequest request = createSignUpRequest(

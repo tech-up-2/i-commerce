@@ -17,7 +17,7 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/i_commerce
+    url: jdbc:postgresql://i_commerce_postgres:5432/i_commerce
     username: postgres
     password: 1234
 
@@ -27,7 +27,6 @@ spring:
       ddl-auto: update
     show-sql: true
     open-in-view: false
-
   cloud:
     aws:
       credentials:
