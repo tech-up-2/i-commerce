@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -133,7 +134,12 @@ public class ChatRoomService {
         if (participant.isPresent()) {
             throw new AppException(ChatErrorCode.ALREADY_PARTICIPANT);
         }
-        addParticipantToRoom(chatRoom, member.id());
+        try {
+            addParticipantToRoom(chatRoom, member.id());
+            chatParticipantRepository.flush();
+        }catch (DataIntegrityViolationException e){
+            throw new AppException(ChatErrorCode.ALREADY_PARTICIPANT);
+        }
         return ApiResponse.success();
     }
 

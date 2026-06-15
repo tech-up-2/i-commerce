@@ -20,8 +20,16 @@ import lombok.NoArgsConstructor;
 
 @Entity
 
-/**/
-@Table(name = "chat_participants")
+
+/* 동시성 및 중복참여 방지
+   chatRoom_Id에 특정 member_Id가 중복으로 참여하는 것을 DB Unique조건을
+   사용하여 차단합니다. */
+@Table(name = "chat_participants",
+    uniqueConstraints = {@UniqueConstraint(
+        name = "uk_chatroom_member",
+        columnNames = {"chat_room_id","member_id"}
+    )}
+)
 @Getter
 @Builder
 @AllArgsConstructor
