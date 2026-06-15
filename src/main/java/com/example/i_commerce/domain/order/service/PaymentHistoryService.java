@@ -4,7 +4,10 @@ import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
 import com.example.i_commerce.domain.order.entity.PaymentHistory;
 import com.example.i_commerce.domain.order.event.dto.PaymentStatusChangedEvent;
+import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
 import com.example.i_commerce.domain.order.repository.PaymentHistoryRepository;
+import com.example.i_commerce.domain.order.repository.PaymentRepository;
+import com.example.i_commerce.global.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -14,11 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class PaymentHistoryService {
 
+    private final PaymentRepository paymentRepository;
     private final PaymentHistoryRepository paymentHistoryRepository;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void createPaymentHistory(PaymentStatusChangedEvent event) {
-        Payment payment = event.payment();
+        Payment payment = paymentRepository.findById(event.paymentId()).orElseThrow(() -> new AppException(
+                PaymentErrorCode.PAYMENT_NOT_FOUND));
+
         Order order = payment.getOrder();
         paymentHistoryRepository.save(
                 PaymentHistory.builder()
@@ -32,8 +38,6 @@ public class PaymentHistoryService {
                         .actorId(order.getUserId())
                         .build()
         );
-
-
     }
 
 }

@@ -1,5 +1,6 @@
-package com.example.i_commerce.domain.order.client;
+package com.example.i_commerce.domain.order.support;
 
+import com.example.i_commerce.domain.order.client.PaymentClient;
 import com.example.i_commerce.domain.order.service.dto.PaymentCancelRequest;
 import com.example.i_commerce.domain.order.service.dto.PaymentConfirmRequest;
 import java.time.OffsetDateTime;

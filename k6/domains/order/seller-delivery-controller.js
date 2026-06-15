@@ -11,6 +11,12 @@ export function getHeaders(authToken) {
   };
 }
 
+export function getDeliveryList(authToken, storeId, trackingNumber) {
+    const url = `${BASE_URL}/api/v1/deliveries/${storeId}?status=preparing`;
+
+    return http.get(url, getHeaders(authToken));
+}
+
 export function updateDeliveryStatus(authToken, deliverId, trackingNumber) {
     const url = `${BASE_URL}/api/v1/deliveries/ship`;
 
