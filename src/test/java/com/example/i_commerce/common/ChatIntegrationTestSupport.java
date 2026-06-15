@@ -5,6 +5,7 @@ import com.example.i_commerce.domain.chat.entity.ChatRoom;
 import com.example.i_commerce.domain.chat.repository.ChatMessageRepository;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
+import com.example.i_commerce.domain.chat.repository.ChatStatusRepository;
 import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
@@ -19,9 +20,11 @@ public abstract class ChatIntegrationTestSupport extends IntegrationTestSupport 
     @Autowired protected ChatRoomRepository chatRoomRepository;
     @Autowired protected ChatParticipantRepository chatParticipantRepository;
     @Autowired protected ChatMessageRepository chatMessageRepository;
+    @Autowired protected ChatStatusRepository chatStatusRepository;
     @Autowired protected JwtTokenUtil jwtTokenUtil;
     @AfterEach
     void tearDown() {
+        chatStatusRepository.deleteAllInBatch();
         chatMessageRepository.deleteAllInBatch();
         chatParticipantRepository.deleteAllInBatch();
         chatRoomRepository.deleteAllInBatch();
@@ -119,11 +122,30 @@ public abstract class ChatIntegrationTestSupport extends IntegrationTestSupport 
         );
     }
 
+    protected Member saveMember(String prefix)
+    {
+        String uniqueId = UUID.randomUUID().toString().substring(0, 8);
+        // 구매자 생성
+        return memberRepository.save(
+            Member.builder()
+                .name(dataEncryptor.encrypt(prefix))
+                .phoneNumber(dataEncryptor.encrypt("01011111111"))
+                .emailHash("customer" + uniqueId)
+                .emailEncrypted(dataEncryptor.encrypt(prefix+"@test.com"))
+                .password("password")
+                .sex(Gender.MALE)
+                .birthday(dataEncryptor.encrypt("20000101"))
+                .role(MemberType.CUSTOMER)
+                .build()
+        );
+    }
+
 
     protected record ChatTestSet(
         Member customer,
         Member sellerMember,
         ChatRoom room
     ) {}
+
 
 }

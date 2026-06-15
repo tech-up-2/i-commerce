@@ -5,6 +5,7 @@ import com.example.i_commerce.domain.chat.service.ChatService;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
 import com.example.i_commerce.global.security.jwt.TokenPayload;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -31,18 +32,32 @@ public class StompHandler implements ChannelInterceptor {
         if(StompCommand.CONNECT == accessor.getCommand()){
             log.info("connect요청시 토큰 유효성 검증");
             String token = getValidToken(accessor);
-            jwtTokenUtil.parseToken(token);
+            TokenPayload payload = jwtTokenUtil.parseToken(token);
             log.info("토큰 검증 완료");
+            Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+            if(sessionAttributes != null){
+                Long memberId =  payload.accountId();
+                accessor.getSessionAttributes().put("memberId", memberId);
+            }
+
         }
         if(StompCommand.SUBSCRIBE == accessor.getCommand()){
             log.info("subscribe 검증");
-            String token = getValidToken(accessor);
-            TokenPayload payload = jwtTokenUtil.parseToken(token);
-            //ws은 연결마다 세션이 하나씩 있으므로 거기에 memberId나 정보 등을 담아둘 수 있음...
-            accessor.getSessionAttributes().put("memberId", payload.accountId());
-            Long memberId = payload.accountId();
+            Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+            if(sessionAttributes == null || !sessionAttributes.containsKey("memberId")){
+                throw new AppException(ChatErrorCode.INVALID_STOMP_TOKEN_HEADER);
+            }
+//            String token = getValidToken(accessor);
+//            TokenPayload payload = jwtTokenUtil.parseToken(token);
+//            //ws은 연결마다 세션이 하나씩 있으므로 거기에 memberId나 정보 등을 담아둘 수 있음...
+//            accessor.getSessionAttributes().put("memberId", payload.accountId());
+//            Long memberId = payload.accountId();
+            Long memberId = (Long) sessionAttributes.get("memberId");
             String roomId = accessor.getDestination().split("/")[2];
+
+
             if(!chatService.isRoomParticipant(memberId, Long.parseLong(roomId))){
+                log.info("NOT_A_ROOM_MEMBER 발생");
                 throw new AppException(ChatErrorCode.NOT_A_ROOM_MEMBER);
             }
         }

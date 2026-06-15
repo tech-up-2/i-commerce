@@ -3,6 +3,8 @@ package com.example.i_commerce.domain.chat.controller;
 import com.example.i_commerce.domain.chat.service.ChatService;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendRequest;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
+import com.example.i_commerce.domain.member.exception.MemberErrorCode;
+import com.example.i_commerce.global.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -29,6 +31,9 @@ public class StompController {
     public void sendMessage(@DestinationVariable Long roomId, ChatMessageSendRequest request, SimpMessageHeaderAccessor headerAccessor) {
 //       StompHandler에서 세션에 넣어둔 값을 꺼내어 사용할 수 있도록 함.
         Long memberId = (Long) headerAccessor.getSessionAttributes().get("memberId");
+        if(memberId == null) {
+            throw new AppException(MemberErrorCode.USER_NOT_FOUND);
+        }
         chatService.saveMessage(roomId, request, memberId);
         messagingTemplate.convertAndSend("/topic/" + roomId, request);
     }
