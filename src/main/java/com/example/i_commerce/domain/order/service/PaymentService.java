@@ -121,7 +121,7 @@ public class PaymentService {
 
         publisher.publishEvent(new PaymentApprovedEvent(payment.getOrder().getId()));
         publisher.publishEvent(
-            new PaymentStatusChangedEvent(payment, previousStatus, "결제 완료", PaymentStatus.PAID,
+            new PaymentStatusChangedEvent(payment.getId(), previousStatus, "결제 완료", PaymentStatus.PAID,
                 pgTid, responseStr));
     }
 
@@ -130,7 +130,7 @@ public class PaymentService {
         String responseStr) {
         Payment payment = paymentRepository.findById(paymentId).orElseThrow();
         publisher.publishEvent(
-            new PaymentStatusChangedEvent(payment, previousStatus, "재고 부족으로 인한 자동 취소",
+            new PaymentStatusChangedEvent(payment.getId(), previousStatus, "재고 부족으로 인한 자동 취소",
                 PaymentStatus.FAILED, pgTid, responseStr));
     }
 
@@ -204,7 +204,7 @@ public class PaymentService {
             .forEach(delivery -> delivery.changeDeliveryStatus(DeliveryStatus.CANCELLED));
 
         publisher.publishEvent(new PaymentStatusChangedEvent(
-            payment, previousStatus, dto.cancelReason(),
+            payment.getId(), previousStatus, dto.cancelReason(),
             PaymentStatus.CANCELLED, pgTid, responseStr));
     }
 

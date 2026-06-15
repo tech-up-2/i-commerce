@@ -1,13 +1,10 @@
-package com.example.i_commerce.domain.product.domain;
+package com.example.i_commerce.domain.product.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.entity.Stock;
-import com.example.i_commerce.domain.product.entity.StockHistory;
 import com.example.i_commerce.domain.product.entity.enums.StockChangeType;
 import com.example.i_commerce.domain.product.entity.enums.StockStatus;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;

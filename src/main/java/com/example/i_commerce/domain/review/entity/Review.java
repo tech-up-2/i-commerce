@@ -2,6 +2,7 @@ package com.example.i_commerce.domain.review.entity;
 
 import com.example.i_commerce.domain.review.entity.enums.ReviewIsBestStatus;
 import com.example.i_commerce.domain.review.entity.enums.ReviewReportStatus;
+import com.example.i_commerce.domain.review.entity.enums.ReviewStatus;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.global.common.entity.BaseEntity;
 import jakarta.persistence.CascadeType;
@@ -97,6 +98,9 @@ public class Review extends BaseEntity {
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> images = new ArrayList<>();
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private ReviewStatus status = ReviewStatus.ACTIVE;
 
     @Builder.Default
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -114,6 +118,10 @@ public class Review extends BaseEntity {
             .review(this)
             .build();
         this.images.add(reviewImage);
+    }
+
+    public void markAsDeleted() {
+        this.status = ReviewStatus.DELETED;
     }
 
     public void update(String newContent, Integer newStarRate, List<String> newImageUrls) {
@@ -239,6 +247,7 @@ public class Review extends BaseEntity {
             .starRate(dto.getStarRate())
             .likeCount(0L)
             .reportCount(0L)
+            .status(ReviewStatus.ACTIVE)
             .bestStatus(ReviewIsBestStatus.NORMAL)
             .isBest(false)
             .isUpdated(false)

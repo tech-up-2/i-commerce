@@ -17,6 +17,8 @@ public enum ProductErrorCode implements ErrorCode {
     CATEGORY_DEPTH_EXCEEDED(HttpStatus.BAD_REQUEST, "PRD-40005", "카테고리 최대 깊이를 초과했습니다."),
     NEGATIVE_QUANTITY_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "PRD-40006", "재고 수량은 음수일 수 없습니다."),
     INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "PRD-40007", "현재 상태에서 허용되지 않는 상태 변경입니다."),
+    INVALID_OPTION_COUNT(HttpStatus.BAD_REQUEST, "PRD-40008", "옵션 개수가 올바르지 않습니다."),
+    DUPLICATED_OPTION(HttpStatus.BAD_REQUEST, "PRD-40009", "중복 요청된 옵션이 존재합니다."),
 
     // 403 Forbidden
     GUEST_PAGE_LIMIT_EXCEEDED(HttpStatus.FORBIDDEN, "PRD-40301", "비로그인 사용자는 더 이상 페이지를 조회할 수 없습니다."),

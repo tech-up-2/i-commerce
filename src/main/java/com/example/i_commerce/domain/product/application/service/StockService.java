@@ -3,8 +3,6 @@ package com.example.i_commerce.domain.product.application.service;
 
 import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.domain.product.entity.Stock;
-import com.example.i_commerce.domain.product.entity.StockHistory;
-import com.example.i_commerce.domain.product.entity.enums.StockChangeType;
 import com.example.i_commerce.domain.product.event.StockDepletedEvent;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.StockHistoryRepository;

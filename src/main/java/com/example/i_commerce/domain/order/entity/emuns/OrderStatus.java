@@ -8,8 +8,10 @@ import lombok.Getter;
 public enum OrderStatus {
     PENDING("주문 대기", "주문서가 생성되고 결제 대기 상태입니다."),
     CONFIRMED("주문 접수", "결제가 완료되어 배송을 준비 중입니다."),
-    SHIPPING("배송 중", "상품이 배송 중입니다.(하나라도 출발 시)"),
+    SHIPPING("배송 중", "주문한 모든 상품이 배송 중입니다."),
     DELIVERED("배송 완료", "모든 상품이 배송지에 도착했습니다."),
+    PARTIAL_SHIPPING("일부 배송 중", "일부는 준비 중, 일부는 배송을 시작했습니다."),
+    PARTIAL_DELIVERED("일부 배송 완료", "일부는 배송 완료, 일부는 여전히 배송 중입니다."),
     COMPLETED("구매 확정", ""),
     CANCELLED("주문 취소", ""),
     UNKNOWN_HOLD("결제 성공을 알 수 없는 상태", "결제가 성공/실패 했는지 파악할 수 없습니다."),
