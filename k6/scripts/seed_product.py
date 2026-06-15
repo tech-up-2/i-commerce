@@ -3,6 +3,7 @@
 """
 
 import os
+import uuid
 import random
 import time
 import argparse
@@ -195,7 +196,6 @@ def _add_item_meta(item_rows_meta, pid, opt_type, p_status,
     ov1_vals=None, ov2_vals=None,
     opt1_name=None, opt2_name=None):
   """item_rows_meta에 메타 정보 추가 (실제 INSERT는 나중에 일괄 처리)"""
-  import uuid
 
   if opt_type == "NONE":
     base_price = random_price()
