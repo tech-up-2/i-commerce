@@ -1,0 +1,67 @@
+import { check, sleep } from 'k6';
+import { createOrder, getOrderDetail } from '../../domains/order/order-controller.js';
+import { paymentConfirm } from '../../domains/order/payment-controller.js'
+import { SharedArray } from 'k6/data';
+import exec from 'k6/execution';
+import papaparse from 'https://jslib.k6.io/papaparse/5.1.1/index.js';
+
+const BASE_URL = __ENV.TARGET_HOST || 'http://localhost:8080';
+
+const csvData = new SharedArray('member_tokens', function () {
+    const fileData = open('../../data/dummy-tokens.csv');
+    return papaparse.parse(fileData, { header: true }).data;
+});
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function runPurchaseScenario() {
+    const jsonHeaders = { headers: { 'Content-Type': 'application/json' } };
+
+    const userIndex = exec.scenario.iterationInTest % csvData.length;
+    const currentUser = csvData[userIndex];
+
+    if (!currentUser || !currentUser.token) {
+        console.error(`================[Error] ${userIndex}번 인덱스에서 토큰을 찾지 못했습니다.`);
+        return;
+    }
+
+    const token = `${currentUser.token}`;
+
+    const itemsCount = getRandomInt(1, 3);
+    const mockItems = [];
+    for (let i = 0; i < itemsCount; i++) {
+        mockItems.push({
+            productId: getRandomInt(1, 50),
+            quantity: getRandomInt(1, 5),
+        });
+    }
+
+    const orderRes = createOrder(token, 1, mockItems);
+    console.log(`================주문 생성 결과: ${orderRes ? '성공' : '실패'}`);
+    if (!orderRes) return;
+    sleep(1);
+
+    // const responseBody = orderRes.json();
+
+    let responseBody;
+    if (orderRes.body && orderRes.body.trim().length > 0) {
+        responseBody = orderRes.json();
+    } else {
+        console.log(`[경고] 응답 바디가 비어있습니다. 상태 코드: ${orderRes.status}`);
+    }
+
+    const uniqueId = Math.random().toString(36).substring(2, 10);
+    const fakePaymentKey = `pay_${uniqueId}`;
+    const tossOrderId = responseBody.data.tossOrderId;
+    const amount = responseBody.data.amount;
+
+    console.log(`================tossOrderId: ${tossOrderId}`);
+
+    const confirmRes = paymentConfirm(token, fakePaymentKey, tossOrderId, amount);
+
+    check(confirmRes, { '4. 최종 결제 승인 성공': (r) => r.status === 200 });
+
+    sleep(2);
+}
