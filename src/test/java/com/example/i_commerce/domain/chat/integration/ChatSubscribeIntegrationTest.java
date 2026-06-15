@@ -107,24 +107,23 @@ class ChatSubscribeIntegrationTest extends ChatIntegrationTestSupport {
         ).get(5, TimeUnit.SECONDS);
         StompHeaders subscribeHeaders = new StompHeaders();
         subscribeHeaders.setDestination("/topic/" + testSet.room().getId());
-//        log.info("Customer = {}", testSet.customer().getId());
-//        log.info("Seller = {}", testSet.sellerMember().getId());
-//        log.info("Stranger = {}", stranger.getId());
         session.subscribe(
             subscribeHeaders,
             new StompSessionHandlerAdapter() {}
         );
 
 //        비동기 요청으로 sub 처리되므로 서버측 검증이 완료될 때까지 대기
-        Thread.sleep(1000);
 
-
-        assertThat(
-            chatService.isRoomParticipant(
-                stranger.getId(),
-                testSet.room().getId()
-            )
-        ).isFalse();
+        org.awaitility.Awaitility.await()
+            .atMost(2, java.util.concurrent.TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                assertThat(
+                    chatService.isRoomParticipant(
+                        stranger.getId(),
+                        testSet.room().getId()
+                    )
+                ).isFalse();
+            });
     }
     @Test
     @DisplayName("[예외]: 존재하지 않는 채팅방 Subscribe 요청 시 연결은 유지된다.")
