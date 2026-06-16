@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SearchReviewRequest {
-
+    private Long productId;
     private String optionName;
     private String keyword;
     private Integer starRate;

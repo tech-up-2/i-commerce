@@ -117,7 +117,8 @@ public class ReviewServiceUnitTest {
     @DisplayName("작성된 리뷰를 슬라이싱, 옵션 검색한다.")
     void searchReviews() {
         //given
-        SearchReviewRequest request = new SearchReviewRequest("옵션1", "강아지", 5);
+        Long productId = 10L;
+        SearchReviewRequest request = new SearchReviewRequest(productId, "옵션1", "강아지", 5);
         Pageable pageable = PageRequest.of(0, 10);
 
         Review mockReview = Review.builder()
@@ -130,6 +131,7 @@ public class ReviewServiceUnitTest {
         Slice<Review> mockSlice = new SliceImpl<>(List.of(mockReview), pageable, hasNext);
 
         given(reviewRepo.searchReviews(
+            request.getProductId(),
             request.getOptionName(),
             request.getKeyword(),
             request.getStarRate(),
@@ -147,6 +149,7 @@ public class ReviewServiceUnitTest {
         assertThat(result.hasNext()).isEqualTo(false);
 
         verify(reviewRepo, times(1)).searchReviews(
+            request.getProductId(),
             request.getOptionName(),
             request.getKeyword(),
             request.getStarRate(),
