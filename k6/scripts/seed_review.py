@@ -14,23 +14,38 @@ def get_connection():
   )
 
 def seed_reviews():
-  print("🚀 product_items(229~234) 매핑을 포함한 리뷰 데이터(1,000건), 랜덤 이미지 적재 시작")
-
-  target_product_id = 55
-
-  option_names = [
-    "사이즈: L / 색상: 핑크",
-    "사이즈: L / 색상: 옐로우",
-    "사이즈: XXL / 색상: 핑크",
-    "사이즈: XXL / 색상: 옐로우",
-    "사이즈: S / 색상: 핑크",
-    "사이즈: S / 색상: 옐로우"
-  ]
-
   conn = get_connection()
   cursor = conn.cursor()
 
   try:
+    print("[데이터 매핑] 실시간 상품 및 옵션 조회 중...")
+
+    cursor.execute("SELECT id FROM products LIMIT 1;")
+    row = cursor.fetchone()
+    if row:
+      target_product_id = row[0]
+      print(f"데이터셋에 존재하는 진짜 상품 ID를 타겟으로 지정: {target_product_id}")
+    else:
+      target_product_id = 55
+      print(f"[주의] 상품 테이블이 비어있어 기본값 {target_product_id}로 진행합니다.")
+
+    cursor.execute("""
+                   SELECT DISTINCT display_option_name
+                   FROM product_items
+                   WHERE product_id = %s AND display_option_name IS NOT NULL;
+                   """, (target_product_id,))
+
+    db_options = [r[0] for r in cursor.fetchall()]
+
+    if not db_options:
+      print("해당 상품은 옵션이 없는 상품(NONE)이므로 기본 텍스트 매핑을 사용합니다.")
+      option_names = ["기본 옵션 / 단일 상품"]
+    else:
+      option_names = db_options
+      print(f"[성공] 진짜 옵션 {len(option_names)}개 실시간 탐지 완료: {option_names}")
+
+    print(f"\n해당 상품(ID: {target_product_id}) 기반 리뷰 1,000건 & 이미지 적재 시작")
+
     cursor.execute("SET session_replication_role = 'replica';")
 
     sql = """
@@ -39,7 +54,7 @@ def seed_reviews():
               star_rate, like_count, report_count, version, status,
               is_best, is_excluded, is_updated, created_at, updated_at
           ) VALUES %s
-              ON CONFLICT (id) DO NOTHING; \
+              ON CONFLICT (id) DO NOTHING;
           """
 
     review_data = []
@@ -54,7 +69,7 @@ def seed_reviews():
 
       if i == 1:
         star_rate = 5
-        content = "★낙관적 락 & 페사드 동시성 테스트용 황금 리뷰★"
+        content = "★테스트용 리뷰★"
       else:
         content = f"[{current_option}] 평점 {star_rate}점 다중 검색 및 페이징 성능 테스트용 dummy 리뷰 {i}번"
 
@@ -85,7 +100,7 @@ def seed_reviews():
 
     image_sql = """
                 INSERT INTO review_images (id, image_url, sort_order, review_id, created_at, updated_at)
-                VALUES %s ON CONFLICT (id) DO NOTHING; \
+                VALUES %s ON CONFLICT (id) DO NOTHING;
                 """
 
     execute_values(cursor, image_sql, image_data)
@@ -95,7 +110,7 @@ def seed_reviews():
     cursor.execute("SELECT setval(pg_get_serial_sequence('reviews', 'id'), COALESCE((SELECT MAX(id) FROM reviews), 1));")
     cursor.execute("SELECT setval(pg_get_serial_sequence('review_images', 'id'), COALESCE((SELECT MAX(id) FROM review_images), 1));")
     conn.commit()
-    print("✅ 모든 테이블 ID 시퀀스 동기화 완료!")
+    print("모든 테이블 ID 시퀀스 동기화 완료!")
 
   except Exception as e:
     print(f"에러 발생: {e}")
