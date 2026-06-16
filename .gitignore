@@ -266,3 +266,10 @@ gradle-app.setting
 .gitattributes
 .env
 /src/main/generated/
+
+# k6 token files
+k6/data/dummy-tokens.csv
+k6/dummy-tokens.csv
+dummy-tokens.csv
+
+k6/data/generate-token-csv.sh

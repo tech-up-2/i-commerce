@@ -24,16 +24,24 @@ import com.example.i_commerce.domain.member.service.admin.dto.AdminSellerStatusU
 import com.example.i_commerce.domain.member.service.admin.dto.AdminStatusUpdateRequest;
 import com.example.i_commerce.domain.member.service.admin.dto.AdminUpdateResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueResponse;
 import com.example.i_commerce.domain.member.service.loginHistory.LoginLogService;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
+import com.example.i_commerce.domain.member.tools.RefreshTokenValidator;
 import com.example.i_commerce.global.common.response.SliceResponse;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
-import com.example.i_commerce.global.security.jwt.TokenPayload;
+import com.example.i_commerce.global.security.jwt.TokenHashEncoder;
+import com.example.i_commerce.global.security.jwt.dto.RefreshTokenPayload;
+import com.example.i_commerce.global.security.jwt.dto.TokenPayload;
+import com.example.i_commerce.global.security.jwt.entity.RefreshToken;
+import com.example.i_commerce.global.security.jwt.repo.RefreshTokenRepository;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -49,10 +57,13 @@ public class AdminService {
     private final DataEncryptor dataEncryptor;
     private final PasswordEncoder passwordEncoder;
     private final EmailHashEncoder emailHashEncoder;
+    private final TokenHashEncoder tokenHashEncoder;
     private final JwtTokenUtil jwtTokenUtil;
     private final MemberRepository memberRepository;
     private final SellerRepository sellerRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final LoginLogService loginLogService;
+    private final RefreshTokenValidator refreshTokenValidator;
 
     @Transactional
     public AdminLoginResponse login(LoginRequest dto) {
@@ -101,6 +112,33 @@ public class AdminService {
 
         String accessToken = jwtTokenUtil.createToken(payload);
 
+        // 리프레시 토큰 발급
+        String tokenId = UUID.randomUUID().toString();
+
+        RefreshTokenPayload refreshTokenPayload = new RefreshTokenPayload(
+            PrincipalType.MEMBER,
+            admin.getId(),
+            tokenId
+        );
+
+        String refreshToken = jwtTokenUtil.createRefreshToken(refreshTokenPayload);
+
+        String refreshTokenHash = tokenHashEncoder.encode(refreshToken);
+
+        RefreshToken savedToken = RefreshToken.create(
+            tokenId,
+            payload.principalType(),
+            payload.accountId(),
+            refreshTokenHash,
+            LocalDateTime.now().plusDays(7)
+        );
+
+        refreshTokenRepository.save(savedToken);
+
+        //로그인 성공 기록
+        loginLogService.writeAdminLoginHistory(admin.getId(),
+            LoginResult.SUCCESS, null, LocalDateTime.now(), null);
+
         return new AdminLoginResponse(
             admin.getId(),
             accessToken
@@ -111,6 +149,50 @@ public class AdminService {
         switch (admin.getAdminStatus()) {
             case WITHDRAWN -> throw new AppException(MemberErrorCode.WITHDRAWN_MEMBER);
             case LOCKED -> throw new AppException(MemberErrorCode.ADMIN_LOCKED);
+        }
+    }
+
+    @Transactional
+    public TokenReissueResponse reissue(TokenReissueRequest request) {
+
+        RefreshTokenPayload refreshPayload = refreshTokenValidator.validate(
+            request.refreshToken(),
+            PrincipalType.ADMIN
+        );
+
+        TokenPayload accessPayload = createAdminAccessPayload(refreshPayload.accountId());
+
+        String accessToken = jwtTokenUtil.createToken(accessPayload);
+
+        return new TokenReissueResponse(accessToken);
+    }
+
+    private TokenPayload createAdminAccessPayload(Long adminId) {
+        Admin admin = adminRepository.findById(adminId)
+            .orElseThrow(() -> new AppException(MemberErrorCode.ADMIN_NOT_FOUND));
+
+        validateAdminCanReissue(admin);
+
+        return new TokenPayload(
+            PrincipalType.ADMIN,
+            admin.getId(),
+            admin.getAdminRole(),
+            admin.getAdminStatus(),
+            null
+        );
+    }
+
+    private void validateAdminCanReissue(Admin admin) {
+        if (admin.getDeletedAt() != null) {
+            throw new AppException(MemberErrorCode.WITHDRAWN_MEMBER);
+        }
+
+        if (admin.getAdminStatus() == AdminStatus.WITHDRAWN) {
+            throw new AppException(MemberErrorCode.WITHDRAWN_MEMBER);
+        }
+
+        if (admin.getAdminStatus() == AdminStatus.LOCKED) {
+            throw new AppException(MemberErrorCode.ADMIN_LOCKED);
         }
     }
 

@@ -27,6 +27,13 @@ spring:
       ddl-auto: update #update
     show-sql: true
     open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 1000
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
 
   cloud:
     aws:

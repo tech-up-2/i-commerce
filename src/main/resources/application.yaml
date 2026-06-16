@@ -16,6 +16,7 @@ app:
     key: "Gq1wXnzi+7PBHjbvIpEi4TwjuH+L64fFAFYQGE0x2bc="
   jwt:
     secret: "oMUV1EZ82PhPtaaldRsWrYCMll8kFoyv+o1u0CJGuIM="
+    refresh-secret: "R7BlpH2qHTnSLOAC8PNAwuLwLORgemWDXB8d7FsIIm4="
   bootstrap: #최초 MASTER 관리자
     admin:
       enabled: true
@@ -25,6 +26,7 @@ app:
 
 security:
   email-hmac-key: "m+Mtv+DxZbk0psKymGWCsAMTx1jSMIJnIV/SVtlCTT8="
+  token-hmac-key: "pr9oR/AoLdZu5G+irmIw1DCo0tL+jJFUxZjqZSGtERI="
 
 resilience4j.retry:
   instances:
