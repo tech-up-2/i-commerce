@@ -17,6 +17,18 @@ services:
     networks:
       - monitoring
 
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres_exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:1234@i_commerce_postgres:5432/i_commerce?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - monitoring
+    depends_on:
+      - postgres
+
   prometheus:
     image: prom/prometheus
     volumes:
