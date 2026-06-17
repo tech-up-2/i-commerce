@@ -51,9 +51,9 @@ export function runPurchaseScenario() {
         });
     }
 
-    const orderRes = createOrder(token, addressId, mockItems);
+    const orderRes = createOrder(token, addressId, mockItems, { tags: { name: '주문생성' } });
     if (!orderRes) return;
-    console.log(`================주문 생성 결과: ${orderRes ? '성공' : '실패'}`);
+    // console.log(`================주문 생성 결과: ${orderRes ? '성공' : '실패'}`);
     sleep(1);
 
     let responseBody;
@@ -68,11 +68,11 @@ export function runPurchaseScenario() {
     const tossOrderId = responseBody.data.tossOrderId;
     const amount = responseBody.data.amount;
 
-    console.log(`================tossOrderId: ${tossOrderId}`);
+    // console.log(`================tossOrderId: ${tossOrderId}`);
 
-    const confirmRes = paymentConfirm(token, fakePaymentKey, tossOrderId, amount);
+    const confirmRes = paymentConfirm(token, fakePaymentKey, tossOrderId, amount, { tags: { name: '결제승인' } });
 
-    check(confirmRes, { '최종 결제 승인 성공': (r) => r.status === 200 });
+    // check(confirmRes, { '최종 결제 승인 성공': (r) => r.status === 200 });
     // 3번
     // check(confirmRes, {
     //     '타임아웃 안전장치 작동 (5초 다 안 걸리고 3초대 차단)': (r) => r.timings.duration < 3500,

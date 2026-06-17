@@ -18,15 +18,26 @@ const errorCounter = new Rate('errors');
 function sendRequest(apiName, httpMethodCall) {
   const res = httpMethodCall();
 
-  // 1. 공통 검증 로직 (2xx 성공 여부)
-  const isOk = check(res, {
+  // 1. 공통 검증 로직 (성공, 4xx, 5xx 구분)
+  const checkResult = check(res, {
     [`${apiName} 성공 (2xx)`]: (r) => Math.floor(r.status / 100) === 2,
+    [`${apiName} 클라이언트 에러 (4xx)`]: (r) => Math.floor(r.status / 100) === 4,
+    [`${apiName} 서버 에러 (5xx)`]: (r) => Math.floor(r.status / 100) === 5,
   });
 
-  // 2. 공통 실패 로그 로직
-  if (!isOk) {
-    errorCounter.add(true);
-    console.error(`[${apiName} 실패] 상태코드: ${res.status} | 원인: ${res.body}`);
+  // 2. 실패 로그 로직 분기
+  const statusGroup = Math.floor(res.status / 100);
+
+  if (statusGroup !== 2) {
+    errorCounter.add(true); // 기존 에러 카운터 유지
+
+    if (statusGroup === 4) {
+      console.error(`[${apiName} 4xx 에러] 상태코드: ${res.status} | 원인: ${res.body}`);
+    } else if (statusGroup === 5) {
+      console.error(`[${apiName} 5xx 에러] 상태코드: ${res.status} | 원인: ${res.body}`);
+    } else {
+      console.error(`[${apiName} 기타 에러] 상태코드: ${res.status} | 원인: ${res.body}`);
+    }
   }
 
   return res;
