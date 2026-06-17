@@ -7,14 +7,14 @@
  *   [사후 정리] 카테고리 삭제
  */
 import { check, sleep } from 'k6';
-import { getAuthTokenFromEnv } from '../lib/auth-helper.js';
-import { createCategory, deleteCategory } from '../domains/product/category-service.js';
-import { createAttribute, getAllAttributes } from '../domains/product/attribute-service.js';
+import { getAuthTokenFromEnv } from '../../lib/auth-helper.js';
+import { createCategory, deleteCategory } from '../../domains/product/category-service.js';
+import { createAttribute, getAllAttributes } from '../../domains/product/attribute-service.js';
 import {
   getCategoryAttributes,
   addCategoryAttribute,
   deleteCategoryAttribute,
-} from '../domains/product/category-attribute-service.js';
+} from '../../domains/product/category-attribute-service.js';
 
 function getValidatedToken() {
   const token = getAuthTokenFromEnv();

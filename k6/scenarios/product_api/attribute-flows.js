@@ -6,8 +6,8 @@
  *
  */
 import { check, sleep } from 'k6';
-import { getAuthTokenFromEnv } from '../lib/auth-helper.js';
-import { createAttribute, getAllAttributes } from '../domains/product/attribute-service.js';
+import { getAuthTokenFromEnv } from '../../lib/auth-helper.js';
+import { createAttribute, getAllAttributes } from '../../domains/product/attribute-service.js';
 
 function getValidatedToken() {
   const token = getAuthTokenFromEnv();

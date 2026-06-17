@@ -9,12 +9,12 @@
  *   DOUBLE → optionGroups: [2개], lookupType: "DOUBLE", doubleMap 구조 검증
  */
 import { check, sleep } from 'k6';
-import { getProductDetail } from '../domains/product/product-query-service.js';
+import { getProductDetail } from '../../domains/product/product-query-service.js';
 
 import {
   setupTestData,
   cleanupTestProduct,
-} from '../lib/product-helper.js';
+} from '../../lib/product-helper.js';
 
 import {
   createProductNoneFlow,

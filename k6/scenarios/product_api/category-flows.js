@@ -7,13 +7,13 @@
  *   → 자식 삭제 → 부모 삭제 → 삭제 검증
  */
 import { check, sleep } from 'k6';
-import { getAuthTokenFromEnv } from '../lib/auth-helper.js';
+import { getAuthTokenFromEnv } from '../../lib/auth-helper.js';
 import {
   createCategory,
   getAllCategories,
   getCategory,
   deleteCategory,
-} from '../domains/product/category-service.js';
+} from '../../domains/product/category-service.js';
 
 function getValidatedToken() {
   const token = getAuthTokenFromEnv();

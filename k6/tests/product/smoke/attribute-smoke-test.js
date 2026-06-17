@@ -5,8 +5,8 @@
  *   k6 run k6/tests/attribute/attribute-smoke-test.js --env TEST_TOKEN=
  *
  */
-import { getAuthTokenFromEnv } from '../../lib/auth-helper.js';
-import { attributeFullScenario } from '../../scenarios/attribute-flows.js';
+import { getAuthTokenFromEnv } from '../../../lib/auth-helper.js';
+import { attributeFullScenario } from '../../../scenarios/product_api/attribute-flows.js';
 
 export const options = {
   vus: 1,

@@ -7,14 +7,14 @@
  *   [사후 정리] 옵션 삭제 → 카테고리 삭제
  */
 import { check, sleep } from 'k6';
-import { getAuthTokenFromEnv } from '../lib/auth-helper.js';
-import { createCategory, deleteCategory } from '../domains/product/category-service.js';
-import { createOption, getAllOptions, deleteOption } from '../domains/product/option-service.js';
+import { getAuthTokenFromEnv } from '../../lib/auth-helper.js';
+import { createCategory, deleteCategory } from '../../domains/product/category-service.js';
+import { createOption, getAllOptions, deleteOption } from '../../domains/product/option-service.js';
 import {
   getCategoryOptions,
   addCategoryOption,
   deleteCategoryOption,
-} from '../domains/product/category-option-service.js';
+} from '../../domains/product/category-option-service.js';
 
 function getValidatedToken() {
   const token = getAuthTokenFromEnv();

@@ -17,9 +17,9 @@
  */
 import { check, sleep } from 'k6';
 import { createProduct, updateProduct, changeProductStatus }
-  from '../domains/product/product-command-service.js';
-import { setupTestData, cleanupTestData } from '../lib/product-helper.js';
-import { buildNoneProductPayload } from '../lib/product-payload-builder.js';
+  from '../../domains/product/product-command-service.js';
+import { setupTestData, cleanupTestData } from '../../lib/product-helper.js';
+import { buildNoneProductPayload } from '../../lib/product-payload-builder.js';
 
 /**
  * 상품 기본 정보 수정 플로우
