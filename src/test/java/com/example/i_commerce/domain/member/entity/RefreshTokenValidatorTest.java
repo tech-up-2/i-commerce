@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-import com.example.i_commerce.domain.member.tools.RefreshTokenValidator;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
+import com.example.i_commerce.global.security.jwt.RefreshTokenValidator;
 import com.example.i_commerce.global.security.jwt.TokenHashEncoder;
 import com.example.i_commerce.global.security.jwt.dto.RefreshTokenPayload;
 import com.example.i_commerce.global.security.jwt.entity.RefreshToken;

@@ -18,6 +18,7 @@ import com.example.i_commerce.domain.member.service.auth.dto.MemberSignUpRequest
 import com.example.i_commerce.domain.member.service.auth.dto.PasswordFindRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.PasswordResetRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.SignUpResponse;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenLogoutRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserInfoResponse;
@@ -26,9 +27,10 @@ import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
 import com.example.i_commerce.domain.member.service.loginHistory.LoginLogService;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
-import com.example.i_commerce.domain.member.tools.RefreshTokenValidator;
 import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.security.jwt.BlacklistedTokenService;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
+import com.example.i_commerce.global.security.jwt.RefreshTokenValidator;
 import com.example.i_commerce.global.security.jwt.TokenHashEncoder;
 import com.example.i_commerce.global.security.jwt.dto.RefreshTokenPayload;
 import com.example.i_commerce.global.security.jwt.dto.TokenPayload;
@@ -58,6 +60,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final LoginLogService loginLogService;
     private final RefreshTokenValidator refreshTokenValidator;
+    private final BlacklistedTokenService blacklistedTokenService;
 
     //회원 가입
     @Transactional
@@ -239,6 +242,20 @@ public class AuthService {
         if (member.getStatus() == MemberStatus.INACTIVE) {
             throw new AppException(MemberErrorCode.INACTIVE_MEMBER);
         }
+    }
+
+    //    로그아웃
+    @Transactional
+    public void logout(String authorization, TokenLogoutRequest request) {
+        String accessToken = authorization.substring(7);
+        blacklistedTokenService.logout(accessToken);
+
+        RefreshToken savedToken = refreshTokenValidator.validateAndGetToken(
+            request.refreshToken(),
+            PrincipalType.MEMBER
+        );
+
+        refreshTokenRepository.delete(savedToken);
     }
 
     //    계정 찾기
