@@ -46,6 +46,7 @@ spring:
         bucket: ${AWS_S3_BUCKET_NAME:dummy}
       stack:
         auto: false
+  threads.virtual.enabled: true
 
   servlet:
     multipart:
@@ -54,6 +55,7 @@ spring:
 
 toss:
   secretKey: ${TOSS_SECRET_KEY:dummy}
+  baseUrl: http://localhost:8089
 
 management:
   endpoints:
