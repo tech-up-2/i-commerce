@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.chat.service;
+package com.example.i_commerce.domain.chat.unit.service;
 
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;

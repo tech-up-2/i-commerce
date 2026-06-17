@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.chat.service.fixture;
+package com.example.i_commerce.domain.chat.unit.service.fixture;
 
 import com.example.i_commerce.domain.chat.entity.ChatRoom;
 import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;

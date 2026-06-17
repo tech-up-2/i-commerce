@@ -1,4 +1,4 @@
-package com.example.i_commerce.domain.chat.service.fixture;
+package com.example.i_commerce.domain.chat.unit.service.fixture;
 
 import com.example.i_commerce.domain.member.entity.Admin;
 import com.example.i_commerce.domain.member.entity.Member;
