@@ -34,7 +34,7 @@ extract_account_id_from_token() {
 
   echo "$payload" \
     | tr '_-' '/+' \
-    | base64 -d 2>/dev/null \
+    | { base64 -d 2>/dev/null || base64 -D 2>/dev/null; } \
     | jq -r '.accountId // .sub // empty'
 }
 

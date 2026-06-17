@@ -5,13 +5,17 @@ import com.example.i_commerce.domain.member.entity.enums.AdminStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
+import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.tools.AccountRole;
 import com.example.i_commerce.domain.member.tools.AccountStatus;
+import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.jwt.dto.RefreshTokenPayload;
 import com.example.i_commerce.global.security.jwt.dto.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.time.Instant;
@@ -120,25 +124,24 @@ public class JwtTokenUtil {
     }
 
     public RefreshTokenPayload parseRefreshToken(String refreshToken) {
-        Claims claims = Jwts.parser()
-            .verifyWith(getSigningRefreshKey())
-            .requireIssuer("i-commerce")
-            .build()
-            .parseSignedClaims(refreshToken)
-            .getPayload();
+        try {
+            Claims claims = Jwts.parser()
+                .verifyWith(getSigningRefreshKey())
+                .requireIssuer("i-commerce")
+                .build()
+                .parseSignedClaims(refreshToken)
+                .getPayload();
 
-        PrincipalType principalType = PrincipalType.valueOf(
-            claims.get("principalType", String.class)
-        );
-
-        Long accountId = claims.get("accountId", Long.class);
-        String tokenId = claims.get("tokenId", String.class);
-
-        return new RefreshTokenPayload(
-            principalType,
-            accountId,
-            tokenId
-        );
+            return new RefreshTokenPayload(
+                PrincipalType.valueOf(claims.get("principalType", String.class)),
+                claims.get("accountId", Long.class),
+                claims.get("tokenId", String.class)
+            );
+        } catch (ExpiredJwtException e) {
+            throw new AppException(MemberErrorCode.EXPIRED_REFRESH_TOKEN);
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new AppException(MemberErrorCode.INVALID_REFRESH_TOKEN);
+        }
     }
 
     public Claims getClaims(String token) {

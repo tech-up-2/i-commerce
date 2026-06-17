@@ -211,7 +211,7 @@ public class AuthService {
 
         SellerStatus sellerStatus = null;
 
-        if (member.getRole() == MemberType.SELLER) {
+        if (member.getIsSeller() == true) {
             Seller seller = sellerRepository.findById(member.getId())
                 .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
 

@@ -116,7 +116,7 @@ public class AdminService {
         String tokenId = UUID.randomUUID().toString();
 
         RefreshTokenPayload refreshTokenPayload = new RefreshTokenPayload(
-            PrincipalType.MEMBER,
+            PrincipalType.ADMIN,
             admin.getId(),
             tokenId
         );
