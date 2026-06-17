@@ -5,6 +5,8 @@ import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -13,11 +15,20 @@ import reactor.netty.http.client.HttpClient;
 import reactor.netty.internal.shaded.reactor.pool.PoolAcquireTimeoutException;
 import reactor.netty.resources.ConnectionProvider;
 
+@Slf4j
 @Configuration
 public class WebClientConfig {
 
+    @Value("${toss.baseUrl:https://api.tosspayments.com/v1/payments}")
+    private String tossBaseUrl;
+
     @Bean
     public WebClient tossWebClient() {
+
+
+        log.info("=================================================");
+        log.info("[WebClient 주입 확인] Toss Base URL: {}", tossBaseUrl);
+        log.info("=================================================");
 
         ConnectionProvider connectionProvider = ConnectionProvider.builder("tossConnectionPool")
                 .maxConnections(100) // 최대 연결 수
@@ -36,7 +47,7 @@ public class WebClientConfig {
 
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl("https://api.tosspayments.com/v1/payments")
+                .baseUrl(tossBaseUrl)
                 .defaultHeader("Content-Type", "application/json")
                 .build();
 
