@@ -48,7 +48,7 @@ public class JwtTokenUtil {
     public String createToken(TokenPayload payload) {
 
         Instant now = Instant.now();
-        Instant expiry = now.plus(1, ChronoUnit.HOURS);
+        Instant expiry = now.plus(30, ChronoUnit.DAYS);
 
         JwtBuilder builder = Jwts.builder()
             .subject(String.valueOf(payload.accountId()))
