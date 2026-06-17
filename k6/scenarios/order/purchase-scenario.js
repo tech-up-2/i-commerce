@@ -19,9 +19,9 @@ function getRandomInt(min, max) {
 export function runPurchaseScenario() {
     const jsonHeaders = { headers: { 'Content-Type': 'application/json' } };
 
-    const userIndex = exec.scenario.iterationInTest % csvData.length;
-    // const currentUser = csvData[userIndex];
-    const currentUser = csvData[0];
+    // const userIndex = exec.scenario.iterationInTest % csvData.length;
+    const userIndex = getRandomInt(0, 14999);
+    const currentUser = csvData[userIndex];
 
     if (!currentUser || !currentUser.token) {
         console.error(`================[Error] ${userIndex}번 인덱스에서 토큰을 찾지 못했습니다.`);
@@ -29,6 +29,18 @@ export function runPurchaseScenario() {
     }
 
     const token = `${currentUser.token}`;
+
+    let addressId = null;
+    if (currentUser.deliveryAddressIds) {
+        const addressIds = currentUser.deliveryAddressIds.split('|');
+        addressId = addressIds[0]; // 첫 번째 주소 사용 (필요시 이 안에서도 랜덤 선택 가능)
+    }
+
+    // 주소 값이 없을 경우를 대비한 예외 처리
+    if (!addressId) {
+        console.error(`================[Error] ${userIndex}번 유저의 배송지 주소가 없습니다.`);
+        return;
+    }
 
     const itemsCount = getRandomInt(1, 3);
     const mockItems = [];
@@ -39,12 +51,10 @@ export function runPurchaseScenario() {
         });
     }
 
-    const orderRes = createOrder(token, 1, mockItems);
+    const orderRes = createOrder(token, addressId, mockItems);
     if (!orderRes) return;
     console.log(`================주문 생성 결과: ${orderRes ? '성공' : '실패'}`);
     sleep(1);
-
-    // const responseBody = orderRes.json();
 
     let responseBody;
     if (orderRes.body && orderRes.body.trim().length > 0) {
