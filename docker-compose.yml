@@ -12,7 +12,6 @@ services:
       - postgres
     networks:
       - monitoring
-    # 🌟 API 서버 자원 최적 할당
     deploy:
       resources:
         limits:
@@ -39,7 +38,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2.0'        # 복잡한 쿼리 및 동시성 락(Lock) 처리를 위해 2코어 할당
+          cpus: '2.0'
           memory: 4000M
 
   postgres-exporter:
@@ -109,6 +108,21 @@ services:
         limits:
           cpus: '2.0'        # k6가 쏟아내는 초당 수천 개의 시계열 데이터 저장용 2코어
           memory: 2000M
+  mock-toss-server:
+    image: wiremock/wiremock:latest # ◀ 가장 안정적인 최신 v3 버전 자동 다운로드
+    container_name: mock-toss-server
+    ports:
+      - "8089:8080" # 외부 포트 8089를 사용해 WebClient 연동
+    command:
+      - --global-response-templating # ◀ Handlebars 문법({{jsonPath}}) 활성화 옵션 자동 주입
+    restart: unless-stopped
+    networks:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'        # 500 RPS 가짜 응답 처리를 위한 1.5코어 할당
+          memory: 1000M
 
 volumes:
   postgres_volume:
