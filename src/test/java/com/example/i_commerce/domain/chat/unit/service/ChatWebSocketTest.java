@@ -1,13 +1,12 @@
 package com.example.i_commerce.domain.chat.unit.service;
 
-import com.example.i_commerce.domain.chat.entity.ChatMessage;
 import com.example.i_commerce.domain.chat.repository.ChatParticipantRepository;
 import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
 import com.example.i_commerce.domain.member.entity.enums.MemberStatus;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
-import com.example.i_commerce.global.security.jwt.TokenPayload;
+import com.example.i_commerce.global.security.jwt.dto.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -19,7 +18,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 
 import org.springframework.messaging.converter.JacksonJsonMessageConverter;
 import org.springframework.messaging.simp.stomp.StompSession;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;

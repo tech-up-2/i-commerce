@@ -1,4 +1,4 @@
-package com.example.i_commerce.global.security.jwt;
+package com.example.i_commerce.global.security.jwt.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

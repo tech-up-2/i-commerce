@@ -1,4 +1,4 @@
-package com.example.i_commerce.global.security.jwt;
+package com.example.i_commerce.global.security.jwt.dto;
 
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
 import com.example.i_commerce.domain.member.tools.AccountRole;

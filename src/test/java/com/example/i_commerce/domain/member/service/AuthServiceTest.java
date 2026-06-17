@@ -215,7 +215,7 @@ class AuthServiceTest extends IntegrationTestSupport {
         LoginResponse response = authService.login(loginRequest);
 
         assertThat(response.memberId()).isGreaterThan(0L);
-        
+
         assertThat(response.email()).isEqualTo("login@test.com");
         assertThat(response.accessToken()).isNotNull();
         assertThat(userLoginHistoryRepository.countByMemberId(response.memberId())).isNotNull();
