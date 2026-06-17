@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check } from 'k6';
+import { Rate } from 'k6/metrics';
 
 const BASE_URL = __ENV.TARGET_HOST || 'http://localhost:8080';
 
@@ -12,6 +13,8 @@ export function getHeaders(authToken) {
   };
 }
 
+const errorCounter = new Rate('errors');
+
 function sendRequest(apiName, httpMethodCall) {
     const res = httpMethodCall(); // 실제 HTTP 요청 실행
 
@@ -22,6 +25,7 @@ function sendRequest(apiName, httpMethodCall) {
 
     // 2. 공통 실패 로그 로직
     if (!isOk) {
+        errorCounter.add(true);
         console.error(`[${apiName} 실패] 상태코드: ${res.status} | 원인: ${res.body}`);
     }
 
