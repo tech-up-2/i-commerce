@@ -43,7 +43,7 @@ function sendRequest(apiName, httpMethodCall) {
   return res;
 }
 
-export function createOrder(authToken, addressId, items) {
+export function createOrder(authToken, addressId, items, options = {}) {
   const url = `${BASE_URL}/api/v1/orders`;
 
   const payload = JSON.stringify({
@@ -51,9 +51,16 @@ export function createOrder(authToken, addressId, items) {
     items: items
   });
 
-  return sendRequest('주문 생성', () =>
-      http.post(url, payload, getHeaders(authToken))
-  );
+  // return sendRequest('주문 생성', () =>
+  //     http.post(url, payload, getHeaders(authToken))
+  // );
+  const tagName = (options.tags && options.tags.name) || '주문생성';
+
+  return sendRequest('주문 생성', tagName, () => {
+    const params = getHeaders(authToken);
+    params.tags = { name: tagName }; // ★ k6 메트릭 구분을 위한 태그 주입
+    return http.post(url, payload, params);
+  });
 }
 
 export function getOrderList(authToken) {

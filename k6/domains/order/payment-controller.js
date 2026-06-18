@@ -52,9 +52,16 @@ export function paymentConfirm(authToken, paymentKey, tossOrderId, amount) {
         amount : amount
     })
 
-    return sendRequest('결제 승인', () =>
-        http.post(url, payload, getHeaders(authToken))
-    );
+    // return sendRequest('결제 승인', () =>
+    //     http.post(url, payload, getHeaders(authToken))
+    // );
+    const tagName = (options.tags && options.tags.name) || '결제승인';
+
+    return sendRequest('결제 승인', tagName, () => {
+        const params = getHeaders(authToken);
+        params.tags = { name: tagName }; // ★ k6 메트릭 구분을 위한 태그 주입
+        return http.post(url, payload, params);
+    });
 }
 
 export function paymentCancel(authToken, tossOrderId, cancelAmount, paymentKey, cancelReason) {
