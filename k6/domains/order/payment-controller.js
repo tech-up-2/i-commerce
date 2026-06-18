@@ -15,7 +15,7 @@ export function getHeaders(authToken) {
 
 const errorCounter = new Rate('errors');
 
-function sendRequest(apiName, httpMethodCall) {
+function sendRequest(apiName, tagName, httpMethodCall) {
     const res = httpMethodCall();
 
     // 1. 공통 검증 로직 (성공, 4xx, 5xx 구분)
@@ -43,7 +43,7 @@ function sendRequest(apiName, httpMethodCall) {
     return res;
 }
 
-export function paymentConfirm(authToken, paymentKey, tossOrderId, amount) {
+export function paymentConfirm(authToken, paymentKey, tossOrderId, amount, options = {}) {
     const url = `${BASE_URL}/api/v1/payments/confirm`;
 
     const payload = JSON.stringify({

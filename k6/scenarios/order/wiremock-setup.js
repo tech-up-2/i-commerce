@@ -1,7 +1,7 @@
 import http from 'k6/http';
 
 export function initPurchaseScenario() {
-    const wiremockAdminUrl = 'http://localhost:8089/__admin/mappings';
+    const wiremockAdminUrl = 'http://13.125.133.69:8089/__admin/mappings';
 
     // 1. 기존 와이어목에 등록된 장애/지연 규칙 모두 초기화
     http.request('DELETE', wiremockAdminUrl);
