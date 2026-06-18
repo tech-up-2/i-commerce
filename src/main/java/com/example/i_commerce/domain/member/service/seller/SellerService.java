@@ -6,12 +6,14 @@ import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.repository.SellerRepository;
+import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerInfoResponse;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerRequest;
 import com.example.i_commerce.domain.member.service.seller.dto.SellerResponse;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.global.exception.AppException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ public class SellerService {
     private final SellerRepository sellerRepository;
     private final MemberRepository memberRepository;
     private final DataEncryptor dataEncryptor;
+    private final PasswordEncoder passwordEncoder;
 
     //판매자 신청 서비스
     @Transactional
@@ -29,7 +32,7 @@ public class SellerService {
         Long memberId,
         SellerRequest dto
     ) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         Seller seller = sellerRepository.findById(memberId)
@@ -49,6 +52,7 @@ public class SellerService {
                     dataEncryptor.encrypt(dto.depositorName())
                 );
                 existingSeller.changeStatus(SellerStatus.PENDING);
+                existingSeller.restore();
                 return existingSeller;
             })
             .orElseGet(() -> Seller.builder()//seller 등록이 없으면 새로 생성
@@ -66,6 +70,7 @@ public class SellerService {
             );
 
         Seller savedSeller = sellerRepository.save(seller);
+        member.isSeller();
 
         return new SellerResponse(
             savedSeller.getId(),
@@ -116,5 +121,22 @@ public class SellerService {
         Seller savedSeller = sellerRepository.save(seller);
 
         return new SellerResponse(savedSeller.getId(), savedSeller.getUpdatedAt());
+    }
+
+    @Transactional
+    public void deleteSeller(Long memberId, WithDrawRequest dto) {
+        Member member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
+            .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
+            throw new AppException(MemberErrorCode.INVALID_PASSWORD);
+        }
+
+        Seller seller = sellerRepository.findByIdAndDeletedAtIsNull(member.getId())
+            .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
+
+        seller.delete();
+
+        //연결된 상점들도 정지되도록 해야함, 즉시 로그아웃 되게 해야함
     }
 }

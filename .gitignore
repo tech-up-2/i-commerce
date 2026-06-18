@@ -1,6 +1,8 @@
 # Created by https://www.toptal.com/developers/gitignore/api/java,git,intellij,gradle,macos,windows,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=java,git,intellij,gradle,macos,windows,visualstudiocode
 
+k6/scripts/venv/
+
 .env
 ### Git ###
 # Created by git for backups. To disable backups in Git:
@@ -266,3 +268,10 @@ gradle-app.setting
 .gitattributes
 .env
 /src/main/generated/
+
+# k6 token files
+k6/data/dummy-tokens.csv
+k6/dummy-tokens.csv
+dummy-tokens.csv
+
+k6/data/generate-token-csv.sh

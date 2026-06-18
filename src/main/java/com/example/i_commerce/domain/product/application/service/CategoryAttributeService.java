@@ -2,11 +2,11 @@ package com.example.i_commerce.domain.product.application.service;
 
 
 import com.example.i_commerce.domain.product.application.mapper.CategoryAttributeMapper;
-import com.example.i_commerce.domain.product.controller.request.AddCategoryAttributeRequest;
-import com.example.i_commerce.domain.product.controller.response.AddCategoryAttributeResponse;
-import com.example.i_commerce.domain.product.controller.response.AddCategoryAttributeResponse.AlreadyExistsAttribute;
+import com.example.i_commerce.domain.product.presentation.request.AddCategoryAttributeRequest;
+import com.example.i_commerce.domain.product.presentation.response.AddCategoryAttributeResponse;
+import com.example.i_commerce.domain.product.presentation.response.AddCategoryAttributeResponse.AlreadyExistsAttribute;
 import com.example.i_commerce.domain.product.application.dto.CategoryAttributeGroupDto;
-import com.example.i_commerce.domain.product.controller.response.CategoryAttributeResponse;
+import com.example.i_commerce.domain.product.presentation.response.CategoryAttributeResponse;
 import com.example.i_commerce.domain.product.entity.Attribute;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.CategoryAttribute;
@@ -94,6 +94,17 @@ public class CategoryAttributeService {
         categoryAttributeRepository.saveAll(categoryAttributes);
 
         return AddCategoryAttributeResponse.of(categoryId, existsAttributes);
+    }
+
+
+    @Transactional
+    public void deleteCategoryAttribute(Long categoryId, Long categoryAttributeId) {
+
+        CategoryAttribute categoryAttribute = categoryAttributeRepository
+            .findByIdAndCategoryId(categoryAttributeId, categoryId)
+            .orElseThrow(() -> new AppException(ProductErrorCode.CATEGORY_ATTRIBUTE_NOT_FOUND));
+
+        categoryAttributeRepository.delete(categoryAttribute);
     }
 
 }

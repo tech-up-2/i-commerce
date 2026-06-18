@@ -3,12 +3,11 @@ package com.example.i_commerce.global.common.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 
 /*
@@ -45,5 +44,9 @@ public abstract class BaseEntity {
         }
         // 수정 시각이 등록 시각보다 이후라면 '수정됨'으로 판단합니다.
         return updatedAt.isAfter(createdAt);
+    }
+
+    public void restore() {
+        this.deletedAt = null;
     }
 }

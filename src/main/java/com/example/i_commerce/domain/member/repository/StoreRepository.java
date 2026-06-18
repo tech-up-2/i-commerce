@@ -12,4 +12,8 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     List<Store> findAllBySellerIdAndDeletedAtIsNull(Long sellerId);
 
     Optional<Store> findByIdAndSellerIdAndDeletedAtIsNull(Long storeId, Long sellerId);
+
+    Optional<Store> findByIdAndDeletedAtIsNull(Long storeId);
+
+    long countBySellerIdAndDeletedAtIsNull(Long id);
 }

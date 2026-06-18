@@ -50,6 +50,9 @@ public class Seller extends BaseEntity {
     @Column(nullable = false)
     private String phoneNumber;
 
+    /*
+    회원 상태를 상위 상태로 보고, 판매자 상태는 판매자 자격 상태로만 본다.
+     */
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -65,10 +68,6 @@ public class Seller extends BaseEntity {
 
     @Column(nullable = false)//암호화
     private byte[] depositorName;
-
-//    @Builder.Default
-//    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Store> stores = new ArrayList<>();
 
     public void update(
         String businessName,
@@ -97,5 +96,11 @@ public class Seller extends BaseEntity {
     public void approve() {
         this.sellerStatus = SellerStatus.APPROVED;
         this.approvedAt = LocalDateTime.now();
+    }
+
+    public void delete() {
+        this.sellerStatus = SellerStatus.WITHDRAW;
+        this.member.isNotSeller();
+        super.delete();
     }
 }

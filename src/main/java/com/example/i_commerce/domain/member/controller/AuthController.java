@@ -9,17 +9,20 @@ import com.example.i_commerce.domain.member.service.auth.dto.MemberSignUpRequest
 import com.example.i_commerce.domain.member.service.auth.dto.PasswordFindRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.PasswordResetRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.SignUpResponse;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserInfoResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserUpdateRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
-import com.example.i_commerce.domain.member.service.member.MemberService;
 import com.example.i_commerce.global.common.response.ApiResponse;
+import com.example.i_commerce.global.security.jwt.BlacklistedTokenService;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
-    private final MemberService memberService;
+    private final BlacklistedTokenService blacklistedTokenService;
 
     @Operation(summary = "회원가입", description = "일반 회원 계정을 생성한다.")
     @PostMapping("/signup")
@@ -53,11 +57,24 @@ public class AuthController {
         return ApiResponse.success(response);
     }
 
+    @PostMapping("/reissue")
+    public ApiResponse<TokenReissueResponse> reissue(
+        @Valid @RequestBody TokenReissueRequest request
+    ) {
+        return ApiResponse.success(authService.reissue(request));
+    }
+
+    //로그아웃
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "로그아웃", description = "로그아웃한다.")
     @PostMapping("/logout")
-    public ApiResponse<Void> logout() {//나중에 redis를 붙이면 토큰을 blacklist로 전달해야함.
+    public ApiResponse<Void> logout(
+        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization
+    ) {//나중에 redis를 붙여야 함.
+        String token = authorization.substring(7);
+        blacklistedTokenService.logout(token);
+
         return ApiResponse.success();
     }
 
@@ -127,11 +144,4 @@ public class AuthController {
         UserInfoResponse response = authService.updateMyInfo(principal.getId(), request);
         return ApiResponse.success(response);
     }
-
-    //복호화 테스트
-//    @GetMapping("/getget/{id}")
-//    public ApiResponse<MemberOrderInfo> testGetMemberOrderInfo(@PathVariable Long id) {
-//        MemberOrderInfo memberOrderInfo = memberService.getMemberOrderInfo(id);
-//        return ApiResponse.success(memberOrderInfo);
-//    }
 }

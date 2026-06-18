@@ -1,0 +1,45 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/testdb
+    username: testuser
+    password: testpass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        show_sql: true
+
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY:dummy}
+        secret-key: ${AWS_SECRET_KEY:dummy}
+      region:
+        static: ap-northeast-2
+      s3:
+        bucket: ${AWS_S3_BUCKET_NAME:dummy}
+      stack:
+        auto: false
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+toss:
+  secretKey: ${TOSS_SECRET_KEY:dummy}
+
+resilience4j.retry:
+  instances:
+    tossConfirmRetry:
+      maxAttempts: 3                            # 최대 3번 시도
+      waitDuration: 1s                          # 재시도 간격 1초
+      ignoreExceptions:
+        - org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
+        - org.springframework.web.reactive.function.client.WebClientResponseException.Unauthorized
+        - org.springframework.web.reactive.function.client.WebClientResponseException.Forbidden
+        - org.springframework.web.reactive.function.client.WebClientResponseException.NotFound

@@ -3,7 +3,7 @@ package com.example.i_commerce.domain.product.application.mapper;
 
 import com.example.i_commerce.domain.product.application.dto.OptionItemLookupDto;
 import com.example.i_commerce.domain.product.entity.ProductItem;
-import com.example.i_commerce.domain.product.entity.ProductOptionType;
+import com.example.i_commerce.domain.product.entity.enums.ProductOptionType;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;

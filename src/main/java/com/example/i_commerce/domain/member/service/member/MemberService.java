@@ -1,8 +1,13 @@
 package com.example.i_commerce.domain.member.service.member;
 
+import com.example.i_commerce.domain.member.entity.Admin;
 import com.example.i_commerce.domain.member.entity.Member;
+import com.example.i_commerce.domain.member.entity.Seller;
+import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
+import com.example.i_commerce.domain.member.repository.AdminRepository;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
+import com.example.i_commerce.domain.member.repository.SellerRepository;
 import com.example.i_commerce.domain.member.service.member.dto.MemberChatInfo;
 import com.example.i_commerce.domain.member.service.member.dto.MemberNotificationInfo;
 import com.example.i_commerce.domain.member.service.member.dto.MemberOrderInfo;
@@ -17,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final SellerRepository sellerRepository;
+    private final AdminRepository adminRepository;
     private final DataEncryptor dataEncryptor;
 
     @Transactional(readOnly = true)
@@ -34,14 +41,43 @@ public class MemberService {
 
     @Transactional(readOnly = true)
     public MemberChatInfo getMemberChatInfo(Long memberId) {
-        Member member = memberRepository.findById(memberId)
+        Member member = memberRepository.findByIdAndDeletedAtIsNull(memberId)
             .orElseThrow(() -> new AppException(MemberErrorCode.USER_NOT_FOUND));
 
         return new MemberChatInfo(
             member.getId(),
-            dataEncryptor.decrypt(member.getName())
+            dataEncryptor.decrypt(member.getName()),
+            member.getRole(),
+            member.getStatus()
         );
     }
+
+    @Transactional(readOnly = true)
+    public MemberChatInfo getSellerChatInfo(Long sellerId) {
+        Seller seller = sellerRepository.findByIdAndDeletedAtIsNull(sellerId)
+            .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
+
+        return new MemberChatInfo(
+            seller.getId(),
+            seller.getBusinessName(),
+            MemberType.SELLER,
+            seller.getSellerStatus()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public MemberChatInfo getAdminChatInfo(Long adminId) {
+        Admin admin = adminRepository.findByIdAndDeletedAtIsNull(adminId)
+            .orElseThrow(() -> new AppException(MemberErrorCode.ADMIN_NOT_FOUND));
+
+        return new MemberChatInfo(
+            admin.getId(),
+            dataEncryptor.decrypt(admin.getName()),
+            admin.getAdminRole(),
+            admin.getAdminStatus()
+        );
+    }
+    // -------
 
     @Transactional(readOnly = true)
     public MemberNotificationInfo getMemberNotificationInfo(Long memberId) {
@@ -54,4 +90,6 @@ public class MemberService {
             dataEncryptor.decrypt(member.getPhoneNumber())
         );
     }
+
+
 }

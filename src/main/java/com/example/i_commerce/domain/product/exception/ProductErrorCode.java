@@ -17,9 +17,12 @@ public enum ProductErrorCode implements ErrorCode {
     CATEGORY_DEPTH_EXCEEDED(HttpStatus.BAD_REQUEST, "PRD-40005", "카테고리 최대 깊이를 초과했습니다."),
     NEGATIVE_QUANTITY_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "PRD-40006", "재고 수량은 음수일 수 없습니다."),
     INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "PRD-40007", "현재 상태에서 허용되지 않는 상태 변경입니다."),
+    INVALID_OPTION_COUNT(HttpStatus.BAD_REQUEST, "PRD-40008", "옵션 개수가 올바르지 않습니다."),
+    DUPLICATED_OPTION(HttpStatus.BAD_REQUEST, "PRD-40009", "중복 요청된 옵션이 존재합니다."),
 
     // 403 Forbidden
     GUEST_PAGE_LIMIT_EXCEEDED(HttpStatus.FORBIDDEN, "PRD-40301", "비로그인 사용자는 더 이상 페이지를 조회할 수 없습니다."),
+    PRODUCT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "PRD-40302", "해당 상품에 대한 접근 권한이 없습니다."),
 
 
     // 404 NotFound
@@ -31,6 +34,8 @@ public enum ProductErrorCode implements ErrorCode {
     ATTRIBUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40406","속성이 존재하지 않습니다."),
     STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40407", "상품 재고가 존재하지 않습니다."),
     STOCK_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40408", "재고 기록이 존재하지 않습니다."),
+    CATEGORY_OPTION_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40409", "해당 카테고리의 옵션을 찾을 수 없습니다."),
+    CATEGORY_ATTRIBUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "PRD-40410", "해당 카테고리의 속성을 찾을 수 없습니다."),
 
 
     // 409 Conflict
@@ -40,7 +45,9 @@ public enum ProductErrorCode implements ErrorCode {
     DUPLICATE_CATEGORY_NAME(HttpStatus.CONFLICT, "PRD-40904", "이미 존재하는 카테고리입니다."),
     STOCK_ALREADY_INITIALIZED(HttpStatus.CONFLICT, "PRD-40905", "재고가 이미 초기화되었습니다."),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "PRD-40906", "재고가 충분하지 않습니다."),
-
+    CATEGORY_HAS_PRODUCTS(HttpStatus.CONFLICT, "PRD-40907", "하위 상품이 존재하는 카테고리는 삭제할 수 없습니다."),
+    STOCK_ALREADY_RESTORED(HttpStatus.CONFLICT, "PRD-40908", "이미 취소 처리된 주문입니다."),
+    STOCK_UNAVAILABLE(HttpStatus.CONFLICT, "PRD-40909", "사용할 수 없는 재고입니다.")
 
     ;
 

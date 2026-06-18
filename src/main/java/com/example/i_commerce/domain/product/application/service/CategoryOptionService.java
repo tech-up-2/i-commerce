@@ -3,9 +3,9 @@ package com.example.i_commerce.domain.product.application.service;
 
 import com.example.i_commerce.domain.product.application.dto.AlreadyExistsOption;
 import com.example.i_commerce.domain.product.application.dto.CategoryOptionDto;
-import com.example.i_commerce.domain.product.controller.request.AddCategoryOptionRequest;
-import com.example.i_commerce.domain.product.controller.response.AddCategoryOptionResponse;
-import com.example.i_commerce.domain.product.controller.response.CategoryOptionResponse;
+import com.example.i_commerce.domain.product.presentation.request.AddCategoryOptionRequest;
+import com.example.i_commerce.domain.product.presentation.response.AddCategoryOptionResponse;
+import com.example.i_commerce.domain.product.presentation.response.CategoryOptionResponse;
 import com.example.i_commerce.domain.product.entity.Category;
 import com.example.i_commerce.domain.product.entity.CategoryOption;
 import com.example.i_commerce.domain.product.entity.Option;
@@ -31,6 +31,7 @@ public class CategoryOptionService {
     private final CategoryRepository categoryRepository;
     private final OptionRepository optionRepository;
     private final CategoryOptionRepository categoryOptionRepository;
+
 
     @Transactional(readOnly = true)
     public CategoryOptionResponse getOptionsByCategory(Long categoryId) {
@@ -96,5 +97,18 @@ public class CategoryOptionService {
 
         return AddCategoryOptionResponse.of(categoryId, existsOptions);
     }
+
+
+    @Transactional
+    public void deleteCategoryOption(Long categoryId, Long categoryOptionId) {
+
+        CategoryOption categoryOption = categoryOptionRepository
+            .findByIdAndCategoryId(categoryOptionId, categoryId)
+            .orElseThrow(() -> new AppException(ProductErrorCode.CATEGORY_OPTION_NOT_FOUND));
+
+        categoryOptionRepository.delete(categoryOption);
+    }
+
+
 
 }

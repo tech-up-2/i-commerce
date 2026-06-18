@@ -1,156 +1,125 @@
 package com.example.i_commerce.domain.product.application.service;
 
 
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ItemAttributeRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.OptionValueRequest;
-import com.example.i_commerce.domain.product.controller.request.CreateProductRequest.ProductItemRequest;
-import com.example.i_commerce.domain.product.controller.response.CreatedProductResponse;
-import com.example.i_commerce.domain.product.entity.Attribute;
-import com.example.i_commerce.domain.product.entity.Category;
-import com.example.i_commerce.domain.product.entity.Product;
+import com.example.i_commerce.domain.member.service.store.StoreService;
+import com.example.i_commerce.domain.product.application.validator.ProductValidator;
 import com.example.i_commerce.domain.product.entity.ProductAttribute;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.entity.ProductOptionValue;
-import com.example.i_commerce.domain.product.entity.service.OptionValueMapper;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ItemAttributeRequest;
+import com.example.i_commerce.domain.product.presentation.request.CreateProductRequest.ProductItemRequest;
+import com.example.i_commerce.domain.product.presentation.response.CreatedProductResponse;
+import com.example.i_commerce.domain.product.entity.Category;
+import com.example.i_commerce.domain.product.entity.Product;
+import com.example.i_commerce.domain.product.application.helper.OptionValueMapper;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.domain.product.repository.ProductRepository;
-import com.example.i_commerce.domain.product.application.validator.ProductAttributeValidator;
-import com.example.i_commerce.domain.product.application.validator.ProductOptionValidator;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
-import java.util.Map;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ProductService {
-    private static final int FIRST_OPTION_INDEX = 0;
-    private static final int SECOND_OPTION_INDEX = 1;
 
+    private final StoreService storeService;
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-
-    private final ProductOptionValidator optionValidator;
-    private final ProductAttributeValidator attributeValidator;
-
+    private final ProductValidator productValidator;
 
     @Transactional
-    public CreatedProductResponse createProduct(Long sellerId, CreateProductRequest request) {
+    public CreatedProductResponse createProduct(Long userId, CreateProductRequest request) {
 
-        optionValidator.validateOptions(request);
-        Map<Long, Attribute> attributeMap = attributeValidator.validateAndFetchAttributes(request);
+        if(!storeService.isStoreManager(userId, request.storeId())) {
+            throw new AppException(ProductErrorCode.PRODUCT_ACCESS_DENIED);
+        }
 
-        Category category = categoryRepository.findById(request.categoryId())
-                .orElseThrow(() ->  new AppException(ProductErrorCode.CATEGORY_NOT_FOUND));
+        Long categoryId = request.categoryId();
 
-        Product product = productRepository.save(Product.of(
+        Category category = categoryRepository.findById(categoryId)
+            .orElseThrow(() ->  new AppException(ProductErrorCode.CATEGORY_NOT_FOUND));
+
+        productValidator.validateOptions(
+            categoryId, request.productOptionType(), request.options()
+        );
+        productValidator.validateAttributes(categoryId, request.items());
+
+        Product product = Product.of(
             request.storeId(),
             category,
             request.name(),
             request.description(),
             request.productOptionType()
-        ));
+        );
 
-        OptionValueMapper optionMapper = createProductOptions(product, request.options());
-        createProductItem(product, request.items(), optionMapper, attributeMap);
+        OptionValueMapper optionMapper = OptionValueMapper.from(product, request.options());
+
+        request.items().forEach(productItemRequest ->
+            buildAndAttachItem(product, productItemRequest, optionMapper)
+        );
+
         Product saved = productRepository.save(product);
 
         return CreatedProductResponse.from(saved);
     }
 
-
-    private OptionValueMapper createProductOptions(
+    private void buildAndAttachItem(
         Product product,
-        List<OptionRequest> optionRequests
+        ProductItemRequest itemReq,
+        OptionValueMapper optionMapper
     ) {
-        OptionValueMapper mapper = new OptionValueMapper();
+        ProductOptionValue pov1 = resolveOptionValue(optionMapper, itemReq, 0);
+        ProductOptionValue pov2 = resolveOptionValue(optionMapper, itemReq, 1);
 
-        for(OptionRequest option : optionRequests) {
-            for(OptionValueRequest value : option.values()) {
-                ProductOptionValue optionValue = ProductOptionValue.of(
-                    option.optionOrder(),
-                    option.name(),
-                    value.value(),
-                    value.displayOrder()
-                );
-                product.addOptionValue(optionValue);
-                mapper.put(option.optionOrder(), value.value(), optionValue);
-            }
-        }
+        ProductItem productItem = ProductItem.of(
+            itemReq.sku(),
+            itemReq.price(),
+            itemReq.displayName(),
+            pov1,
+            pov2,
+            itemReq.isDefault()
+        );
 
-        return mapper;
+        productItem.initStock(itemReq.stock());
+        attachAttributes(productItem, itemReq.attributes());
+        product.addItem(productItem);
     }
 
-    private void createProductItem(
-        Product product,
-        List<ProductItemRequest> itemRequests,
-        OptionValueMapper optionMapper,
-        Map<Long, Attribute> attributeMap
-    ) {
-        for (ProductItemRequest itemReq : itemRequests) {
-            ProductOptionValue pov1 = getOptionValue(optionMapper, itemReq, FIRST_OPTION_INDEX);
-            ProductOptionValue pov2 = getOptionValue(optionMapper, itemReq, SECOND_OPTION_INDEX);
-
-            ProductItem productItem = ProductItem.of(
-                itemReq.sku(), itemReq.price(), itemReq.displayName(),
-                pov1, pov2, itemReq.isDefault()
-            );
-
-            productItem.initStock(itemReq.stock());
-            addAttribute(productItem, itemReq.attributes(), attributeMap);
-            product.addItem(productItem);
-        }
-    }
-
-
-    private ProductOptionValue getOptionValue(
+    private ProductOptionValue resolveOptionValue(
         OptionValueMapper mapper,
         ProductItemRequest itemReq,
         int index
     ) {
-        if(itemReq.optionValues() == null || itemReq.optionValues().size() <= index) {
+        List<String> optionValues = itemReq.optionValues();
+        if (optionValues == null || optionValues.size() <= index) {
             return null;
         }
-        String value = itemReq.optionValues().get(index);
-        return mapper.get(index + 1, value);
+        return mapper.getOrThrow(index + 1, optionValues.get(index));
     }
 
-    private void addAttribute(
+    private void attachAttributes(
         ProductItem productItem,
-        List<ItemAttributeRequest> attributeRequests,
-        Map<Long, Attribute> attributeMap
+        List<ItemAttributeRequest> attributeRequests
     ) {
-        if(attributeRequests == null || attributeRequests.isEmpty()) {
+        if (attributeRequests == null) {
             return;
         }
 
-        for (ItemAttributeRequest attReq : attributeRequests) {
-            Attribute attribute = attributeMap.get(attReq.attributeId());
-
-            if (attribute == null) {
-                throw new AppException(ProductErrorCode.ATTRIBUTE_NOT_FOUND);
-            }
-
+        for(ItemAttributeRequest attReq : attributeRequests) {
             ProductAttribute productAttribute = ProductAttribute.of(
-                attribute,
+                attReq.attributeId(),
                 attReq.displayName(),
                 attReq.displayOrder()
             );
-
             productItem.addAttribute(productAttribute);
         }
 
     }
 
 }
-
-
-
-
 
 

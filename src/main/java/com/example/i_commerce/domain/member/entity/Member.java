@@ -82,19 +82,7 @@ public class Member extends BaseEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<UserLoginHistory> loginHistories = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DeliveryAddress> deliveryAddresses = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PointHistory> pointHistories = new ArrayList<>();
-
-//    @Builder.Default
-//    @OneToMany(mappedBy = "member")
-//    private List<ChatMessage> chatMessages = new ArrayList<>();
 
     public void changePassword(String password) {
         this.password = password;
@@ -119,5 +107,13 @@ public class Member extends BaseEntity {
 
     public void changeStatus(MemberStatus status) {
         this.status = status;
+    }
+
+    public void isSeller() {
+        this.isSeller = true;
+    }
+
+    public void isNotSeller() {
+        this.isSeller = false;
     }
 }

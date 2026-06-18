@@ -3,10 +3,14 @@ package com.example.i_commerce.domain.chat.controller;
 import com.example.i_commerce.domain.chat.service.ChatService;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendRequest;
 import com.example.i_commerce.domain.chat.service.dto.ChatMessageSendResponse;
+import com.example.i_commerce.domain.member.exception.MemberErrorCode;
+import com.example.i_commerce.global.exception.AppException;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
 
@@ -25,8 +29,14 @@ public class StompController {
     기존 RequestParam, PathVariable과 같은 매핑 역할을 하는 어노테이션
      */
     @MessageMapping("/{roomId}")
-    public void sendMessage(@DestinationVariable Long roomId, ChatMessageSendRequest request) {
-        chatService.saveMessage(roomId, request);
+    public void sendMessage(@DestinationVariable Long roomId, ChatMessageSendRequest request, SimpMessageHeaderAccessor headerAccessor) {
+        Map<String, Object> sessionAttributes = headerAccessor.getSessionAttributes();
+        if(sessionAttributes == null || sessionAttributes.get("memberId") == null){
+            throw new AppException(MemberErrorCode.USER_NOT_FOUND);
+        }
+        //       StompHandler에서 세션에 넣어둔 값을 꺼내어 사용할 수 있도록 함.
+        Long memberId = (Long) headerAccessor.getSessionAttributes().get("memberId");
+        chatService.saveMessage(roomId, request, memberId);
         messagingTemplate.convertAndSend("/topic/" + roomId, request);
     }
 }

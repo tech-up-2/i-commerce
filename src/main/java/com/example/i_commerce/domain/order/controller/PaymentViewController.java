@@ -1,7 +1,5 @@
 package com.example.i_commerce.domain.order.controller;
 
-import com.example.i_commerce.domain.order.entity.Order;
-import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.order.service.PaymentService;
 import com.example.i_commerce.domain.order.service.dto.PaymentDetailResponse;
@@ -27,10 +25,10 @@ public class PaymentViewController {
     @GetMapping("/checkout")
     public String checkoutPage(
             @AuthenticationPrincipal CustomUserPrincipal member,
-            @RequestParam Long paymentId,
+            @RequestParam Long orderId,
             Model model) {
 
-        PaymentDetailResponse info = paymentService.getPaymentDetails(member.getId(), paymentId);
+        PaymentDetailResponse info = paymentService.getPaymentDetails(member.getId(), orderId);
 
         model.addAttribute("orderId", info.tossOrderId());
         model.addAttribute("customerKey", info.customerKey());

@@ -1,6 +1,7 @@
 package com.example.i_commerce.domain.member.repository;
 
 import com.example.i_commerce.domain.member.entity.Member;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findAllByDeletedAtIsNull();//나중에 변경 필요
 
     Optional<Member> findByIdAndDeletedAtIsNull(Long id);
+
+    int countByEmailHash(String emailHash);
+
+    List<Member> findAllByEmailHashIn(Collection<String> emailHashes);
 }

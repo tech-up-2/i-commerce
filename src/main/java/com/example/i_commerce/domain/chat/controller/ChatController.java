@@ -14,6 +14,7 @@
     import lombok.RequiredArgsConstructor;
     import org.springframework.web.bind.annotation.DeleteMapping;
     import org.springframework.web.bind.annotation.GetMapping;
+    import org.springframework.web.bind.annotation.PatchMapping;
     import org.springframework.web.bind.annotation.PathVariable;
     import org.springframework.web.bind.annotation.PostMapping;
     import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,6 +56,14 @@
         @GetMapping("/group/list")
         public ApiResponse<List<GroupChatListResponse>> getGroupChatList() {
             return chatService.getGroupChatList();
+        }
+
+        @Operation(summary = "잘못 작성한 채팅을 제거", description = "이미 작성된 채팅을 채팅방 화면에서 제거합니다.")
+        @PatchMapping("/messages/{messageId}/delete")
+        public ApiResponse<Void> deleteMessage(@PathVariable Long messageId){
+            chatService.deleteMessage(messageId);
+            return ApiResponse.success();
+
         }
 
     }

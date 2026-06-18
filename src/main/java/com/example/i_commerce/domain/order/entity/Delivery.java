@@ -2,7 +2,9 @@ package com.example.i_commerce.domain.order.entity;
 
 import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
+import com.example.i_commerce.domain.order.exception.DeliveryErrorCode;
 import com.example.i_commerce.global.common.entity.BaseEntity;
+import com.example.i_commerce.global.exception.AppException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,7 +50,18 @@ public class Delivery extends BaseEntity {
     @Column(length = 50)
     private String trackingNo;
 
+    @Version
+    private Long version;
+
     public void changeDeliveryStatus(DeliveryStatus deliveryStatus) {
         this.deliveryStatus = deliveryStatus;
+    }
+
+    public void registerTrackingNumber(String trackingNo) {
+        if (this.deliveryStatus != DeliveryStatus.PREPARING) {
+            throw new AppException(DeliveryErrorCode.CANNOT_SHIP_STATUS);
+        }
+        this.trackingNo = trackingNo;
+        this.changeDeliveryStatus(DeliveryStatus.SHIPPING);
     }
 }

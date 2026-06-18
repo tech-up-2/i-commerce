@@ -112,6 +112,10 @@ public class StoreService {
         long storeAddressCount = storeAddressRepository.countByStoreIdAndDeletedAtIsNull(
             store.getId());
 
+        if (storeAddressCount >= 20) {// 최대 상점 주소 갯수
+            throw new AppException(MemberErrorCode.STORE_ADDRESS_LIMIT_EXCEEDED);
+        }
+
         //첫 배송지면 무조건 기본 배송지, 첫 배송지가 아니면 요청값이 true일 때만 기본 배송지
         boolean isDefault = storeAddressCount == 0 || Boolean.TRUE.equals(dto.isDefault());
 
@@ -145,17 +149,17 @@ public class StoreService {
         Long sellerId,
         StoreAddressRequest dto
     ) {
-        Store store = storeRepository.findByIdAndSellerIdAndDeletedAtIsNull(storeId, sellerId)
+        storeRepository.findByIdAndSellerIdAndDeletedAtIsNull(storeId, sellerId)
             .orElseThrow(() -> new AppException(MemberErrorCode.STORE_NOT_FOUND));
 
         StoreAddress address = storeAddressRepository
-            .findStoreAddressByIdAndStoreIdAndDeletedAtIsNull(addressId, store.getId())
+            .findStoreAddressByIdAndStoreIdAndDeletedAtIsNull(addressId, storeId)
             .orElseThrow(() -> new AppException(MemberErrorCode.STORE_ADDRESS_NOT_FOUND));
 
         boolean isDefault = Boolean.TRUE.equals(dto.isDefault());
 
         if (isDefault && !address.getIsDefault()) {
-            clearDefaultAddresses(store.getId());
+            clearDefaultAddresses(storeId);
             address.changeDefault(true);
         }
 
@@ -188,14 +192,14 @@ public class StoreService {
     //기본주소 설정
     @Transactional
     public void changeDefault(Long addressId, Long storeId, Long sellerId) {
-        Store store = storeRepository.findByIdAndSellerIdAndDeletedAtIsNull(storeId, sellerId)
+        storeRepository.findByIdAndSellerIdAndDeletedAtIsNull(storeId, sellerId)
             .orElseThrow(() -> new AppException(MemberErrorCode.STORE_NOT_FOUND));
 
         StoreAddress address = storeAddressRepository
-            .findStoreAddressByIdAndStoreIdAndDeletedAtIsNull(addressId, store.getId())
+            .findStoreAddressByIdAndStoreIdAndDeletedAtIsNull(addressId, storeId)
             .orElseThrow(() -> new AppException(MemberErrorCode.STORE_ADDRESS_NOT_FOUND));
 
-        clearDefaultAddresses(store.getId());
+        clearDefaultAddresses(storeId);
         address.changeDefault(true);
     }
 
@@ -212,5 +216,14 @@ public class StoreService {
                 address.changeDefault(false);
             }
         }
+    }
+
+    //현재 로그인된 유저가 store 관리자인지 검증
+    @Transactional(readOnly = true)
+    public boolean isStoreManager(Long userId, Long storeId) {
+        Store store = storeRepository.findByIdAndDeletedAtIsNull(storeId)
+            .orElseThrow(() -> new AppException(MemberErrorCode.STORE_NOT_FOUND));
+
+        return store.getSellerId().equals(userId);
     }
 }

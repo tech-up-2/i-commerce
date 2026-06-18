@@ -2,32 +2,36 @@ package com.example.i_commerce.domain.product.service;
 
 
 
-import static com.example.i_commerce.domain.product.fixture.StockFixture.mockDeductHistory;
-import static com.example.i_commerce.domain.product.fixture.StockFixture.mockOutOfStock;
-import static com.example.i_commerce.domain.product.fixture.StockFixture.mockStock;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
 import com.example.i_commerce.domain.product.application.service.StockService;
-import com.example.i_commerce.domain.product.facade.dto.StockDeductCommand;
+import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
+import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.entity.Stock;
-import com.example.i_commerce.domain.product.entity.StockChangeType;
-import com.example.i_commerce.domain.product.entity.StockHistory;
-import com.example.i_commerce.domain.product.entity.StockStatus;
 import com.example.i_commerce.domain.product.event.StockDepletedEvent;
+import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.StockHistoryRepository;
 import com.example.i_commerce.domain.product.repository.StockRepository;
+import com.example.i_commerce.domain.product.repository.projection.StockDeductHistory;
+import com.example.i_commerce.global.exception.AppException;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -49,20 +53,36 @@ public class StockServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    @Captor
+    private ArgumentCaptor<List<Long>> idsCaptor;
+
+    @Captor
+    private ArgumentCaptor<StockDepletedEvent> eventCaptor;
+
+
+    private Stock createMockStock(Long productItemId) {
+        Stock stock = mock(Stock.class);
+        ProductItem productItem = mock(ProductItem.class);
+
+        given(stock.getProductItem()).willReturn(productItem);
+        given(productItem.getId()).willReturn(productItemId);
+
+        return stock;
+    }
 
     @Nested
-    @DisplayName("재고 차감")
-    class DeductStocks {
+    @DisplayName("재고 차감 테스트")
+    class DeductStocksTest {
+
         @Test
-        @DisplayName("단일 상품의 재고를 차감한다.")
-        void deductSingleProduct() {
+        @DisplayName("단일 상품의 재고를 정상적으로 차감한다.")
+        void deductStocks_success_singleProduct() {
             // given
             Long productItemId = 1L;
             Long orderId = 100L;
             int deductQuantity = 3;
-            int initialStock = 10;
 
-            Stock stock = mockStock(productItemId, initialStock);
+            Stock stock = createMockStock(productItemId);
 
             List<StockDeductCommand> commands = List.of(
                 new StockDeductCommand(productItemId, deductQuantity, orderId)
@@ -70,236 +90,269 @@ public class StockServiceTest {
 
             given(stockRepository.findAllByProductItemIdsWithLock(anyList()))
                 .willReturn(List.of(stock));
+            given(stock.isOutOfStock()).willReturn(false);
 
             // when
             stockService.deductStocks(commands);
 
             // then
-            assertThat(stock.getQuantity()).isEqualTo(initialStock - deductQuantity);
-            assertThat(stock.getStatus()).isEqualTo(StockStatus.IN_STOCK);
-            assertThat(stock.getHistories()).hasSize(1);
-
-            StockHistory history = stock.getHistories().getFirst();
-            assertThat(history.getChangeType()).isEqualTo(StockChangeType.DEDUCT);
-            assertThat(history.getChangeQuantity()).isEqualTo(deductQuantity);
-            assertThat(history.getOrderId()).isEqualTo(orderId);
-
+            then(stock).should(times(1)).deduct(deductQuantity, orderId);
             then(eventPublisher).should(never()).publishEvent(any(StockDepletedEvent.class));
         }
 
         @Test
-        @DisplayName("여러 상품의 재고를 차감한다.")
-        void deductMultipleProducts() {
+        @DisplayName("여러 상품의 재고를 졍상적으로 차감한다.")
+        void deductStocks_success_multipleProducts() {
             // given
+            Long productItemId1 = 1L;
+            Long productItemId2 = 2L;
             Long orderId = 100L;
+            int deductQuantity1 = 3;
+            int deductQuantity2 = 5;
 
-            Stock stock1 = mockStock(1L, 10);
-            Stock stock2 = mockStock(2L, 5);
-            Stock stock3 = mockStock(3L, 20);
+            Stock stock1 = createMockStock(productItemId1);
+            Stock stock2 = createMockStock(productItemId2);
 
             List<StockDeductCommand> commands = List.of(
-                new StockDeductCommand(1L, 3, orderId),
-                new StockDeductCommand(2L, 2, orderId),
-                new StockDeductCommand(3L, 5, orderId)
+                new StockDeductCommand(productItemId1, deductQuantity1, orderId),
+                new StockDeductCommand(productItemId2, deductQuantity2, orderId)
             );
 
             given(stockRepository.findAllByProductItemIdsWithLock(anyList()))
-                .willReturn(List.of(stock1, stock2, stock3));
+                .willReturn(List.of(stock1, stock2));
+            given(stock1.isOutOfStock()).willReturn(false);
+            given(stock2.isOutOfStock()).willReturn(false);
 
             // when
             stockService.deductStocks(commands);
 
             // then
-            assertThat(stock1.getQuantity()).isEqualTo(7);
-            assertThat(stock2.getQuantity()).isEqualTo(3);
-            assertThat(stock3.getQuantity()).isEqualTo(15);
-
-            assertThat(stock1.getHistories()).hasSize(1);
-            assertThat(stock2.getHistories()).hasSize(1);
-            assertThat(stock3.getHistories()).hasSize(1);
-
+            then(stock1).should(times(1)).deduct(deductQuantity1, orderId);
+            then(stock2).should(times(1)).deduct(deductQuantity2, orderId);
             then(eventPublisher).should(never()).publishEvent(any(StockDepletedEvent.class));
         }
 
         @Test
-        @DisplayName("재고가 0이 되면 재고 상태를 OUT_OF_STOCK 상태로 변경한다.")
-        void changeStatusToOutOfStockWhenQuantityBecomesZero() {
+        @DisplayName("재고 차감 후 품절 상태가 된 상품이 존재하면 StockDepletedEvent를 발행한다.")
+        void deductStocks_success_publishesEvent() {
             // given
-            Long productItemId = 1L;
+            Long productItemId1 = 1L;
+            Long productItemId2 = 2L;
             Long orderId = 100L;
-            int initialStock = 5;
 
-            Stock stock = mockStock(productItemId, initialStock);
-
-            List<StockDeductCommand> commands = List.of(
-                new StockDeductCommand(productItemId, initialStock, orderId)
+            StockDeductCommand command1 = new StockDeductCommand(
+                productItemId1, 5, orderId
+            );
+            StockDeductCommand command2 = new StockDeductCommand(
+                productItemId2, 5, orderId
             );
 
+            Stock stock1 = createMockStock(productItemId1);
+            Stock stock2 = createMockStock(productItemId2);
+
             given(stockRepository.findAllByProductItemIdsWithLock(anyList()))
-                .willReturn(List.of(stock));
+                .willReturn(List.of(stock1, stock2));
+
+            given(stock1.isOutOfStock()).willReturn(true);
+            given(stock2.isOutOfStock()).willReturn(false);
 
             // when
-            stockService.deductStocks(commands);
+            stockService.deductStocks(List.of(command1, command2));
 
             // then
-            assertThat(stock.getQuantity()).isZero();
-            assertThat(stock.getStatus()).isEqualTo(StockStatus.OUT_OF_STOCK);
-            assertThat(stock.isOutOfStock()).isTrue();
-
-            ArgumentCaptor<StockDepletedEvent> eventCaptor =
-                ArgumentCaptor.forClass(StockDepletedEvent.class);
-
-            then(eventPublisher).should(times(1)).publishEvent(eventCaptor.capture());
-            StockDepletedEvent capturedEvent = eventCaptor.getValue();
-            assertThat(capturedEvent.productItemIds()).containsExactly(productItemId);
+            then(eventPublisher)
+                .should(times(1)).publishEvent(eventCaptor.capture());
+            StockDepletedEvent publishedEvent = eventCaptor.getValue();
+            assertThat(publishedEvent.productItemIds()).containsExactly(productItemId1);
         }
 
         @Test
-        @DisplayName("품절된 상품들에 대해서만 상품 상태 변경 이벤트를 발행한다.")
-        void publishEventOnlyForDepletedProducts() {
+        @DisplayName("재고 차감시 ID가 정렬되어 락 조회가 요청된다.")
+        void deductStocks_success_sortedIds() {
             // given
             Long orderId = 100L;
 
-            Stock stock1 = mockStock(1L, 5);
-            Stock stock2 = mockStock(2L, 10);
-            Stock stock3 = mockStock(3L, 3);
-
-            List<StockDeductCommand> commands = List.of(
-                new StockDeductCommand(1L, 5, orderId),
-                new StockDeductCommand(2L, 3, orderId),
-                new StockDeductCommand(3L, 3, orderId)
+            StockDeductCommand command1 = new StockDeductCommand(
+                3L, 1, orderId
             );
+            StockDeductCommand command2 = new StockDeductCommand(
+                1L, 1, orderId
+            );
+            StockDeductCommand command3 = new StockDeductCommand(
+                2L, 1, orderId
+            );
+
+            Stock stock1 = createMockStock(1L);
+            Stock stock2 = createMockStock(2L);
+            Stock stock3 = createMockStock(3L);
 
             given(stockRepository.findAllByProductItemIdsWithLock(anyList()))
                 .willReturn(List.of(stock1, stock2, stock3));
 
+            given(stock1.isOutOfStock()).willReturn(false);
+            given(stock2.isOutOfStock()).willReturn(false);
+            given(stock3.isOutOfStock()).willReturn(false);
+
             // when
-            stockService.deductStocks(commands);
+            stockService.deductStocks(List.of(command1, command2, command3));
 
             // then
-            assertThat(stock1.getQuantity()).isZero();
-            assertThat(stock1.isOutOfStock()).isTrue();
+            then(stockRepository).should()
+                .findAllByProductItemIdsWithLock(idsCaptor.capture());
+            List<Long> capturedIds = idsCaptor.getValue();
+            assertThat(capturedIds).containsExactly(1L, 2L, 3L);
+        }
 
-            assertThat(stock2.getQuantity()).isEqualTo(7);
-            assertThat(stock2.isOutOfStock()).isFalse();
+        @Test
+        @DisplayName("재고가 조회되지 않으면 예외가 발생한다.")
+        void deductStocks_fail_stockNotFound() {
+            // given
+            StockDeductCommand command = new StockDeductCommand(
+                1L, 5, 100L
+            );
+            given(stockRepository.findAllByProductItemIdsWithLock(anyList()))
+                .willReturn(Collections.emptyList());
 
-            assertThat(stock3.getQuantity()).isZero();
-            assertThat(stock3.isOutOfStock()).isTrue();
-
-            ArgumentCaptor<StockDepletedEvent> eventCaptor =
-                ArgumentCaptor.forClass(StockDepletedEvent.class);
-
-            then(eventPublisher).should(times(1)).publishEvent(eventCaptor.capture());
-
-            StockDepletedEvent capturedEvent = eventCaptor.getValue();
-            assertThat(capturedEvent.productItemIds())
-                .hasSize(2)
-                .containsExactlyInAnyOrder(1L, 3L);
+            // when & then
+            AppException exception = assertThrows(AppException.class, () ->
+                stockService.deductStocks(List.of(command))
+            );
+            assertThat(exception.getErrorCode())
+                .isEqualTo(ProductErrorCode.STOCK_NOT_FOUND);
         }
 
     }
 
     @Nested
-    @DisplayName("재고 롤백")
-    class RollbackStocks {
+    @DisplayName("재고 롤백 테스트")
+    class RollbackStocksTest {
 
         @Test
-        @DisplayName("차감된 재고를 복구한다.")
-        void restoreDeductedStock() {
+        @DisplayName("재고가 정상적으로 복구된다.")
+        void rollbackStocks_success() {
             // given
             Long orderId = 100L;
-            Long productItemId = 1L;
-            int restoredQuantity = 3;
-            int currentStock = 7;
+            Long productItemId1 = 1L;
+            Long productItemId2 = 2L;
 
-            Stock stock = mockStock(productItemId, currentStock);
+            StockDeductHistory history1 = new StockDeductHistory(productItemId1, 3);
+            StockDeductHistory history2 = new StockDeductHistory(productItemId2, 2);
 
-            StockHistory deductHistory = mockDeductHistory(stock, restoredQuantity, orderId);
+            Stock stock1 = createMockStock(productItemId1);
+            Stock stock2 = createMockStock(productItemId2);
 
             given(stockHistoryRepository.findDeductHistoriesByOrderId(orderId))
-                .willReturn(List.of(deductHistory));
-
+                .willReturn(List.of(history1, history2));
             given(stockRepository.findAllByProductItemIdsWithLock(anyList()))
-                .willReturn(List.of(stock));
+                .willReturn(List.of(stock1, stock2));
+            given(stockHistoryRepository.existsRestoreHistoryByOrderId(orderId))
+                .willReturn(false);
 
             // when
             stockService.rollbackStocks(orderId);
 
             // then
-            assertThat(stock.getQuantity()).isEqualTo(currentStock + restoredQuantity);
-            assertThat(stock.getStatus()).isEqualTo(StockStatus.IN_STOCK);
-            assertThat(stock.getHistories()).hasSize(1);
-
-            StockHistory restoreHistory = stock.getHistories().getFirst();
-            assertThat(restoreHistory.getChangeType()).isEqualTo(StockChangeType.RESTORE);
-            assertThat(restoreHistory.getChangeQuantity()).isEqualTo(restoredQuantity);
-            assertThat(restoreHistory.getOrderId()).isEqualTo(orderId);
+            then(stock1).should(times(1)).restore(3, orderId);
+            then(stock2).should(times(1)).restore(2, orderId);
         }
 
         @Test
-        @DisplayName("여러 상품의 재고를 복구한다.")
-        void rollbackMultipleProducts() {
+        @DisplayName("재고 복구시 ID가 정렬되어 락 조회가 요청된다.")
+        void rollbackStocks_success_sortedIds() {
             // given
             Long orderId = 100L;
 
-            Stock stock1 = mockStock(1L, 7);
-            Stock stock2 = mockStock(2L, 3);
-            Stock stock3 = mockStock(3L, 15);
+            StockDeductHistory history1 = new StockDeductHistory(3L, 1);
+            StockDeductHistory history2 = new StockDeductHistory(1L, 1);
+            StockDeductHistory history3 = new StockDeductHistory(2L, 1);
 
-            List<StockHistory> deductHistories = List.of(
-                mockDeductHistory(stock1, 3, orderId),
-                mockDeductHistory(stock2, 2, orderId),
-                mockDeductHistory(stock3, 5, orderId)
-            );
+            Stock stock1 = createMockStock(1L);
+            Stock stock2 = createMockStock(2L);
+            Stock stock3 = createMockStock(3L);
 
             given(stockHistoryRepository.findDeductHistoriesByOrderId(orderId))
-                .willReturn(deductHistories);
-
+                .willReturn(List.of(history1, history2, history3));
             given(stockRepository.findAllByProductItemIdsWithLock(anyList()))
                 .willReturn(List.of(stock1, stock2, stock3));
+            given(stockHistoryRepository.existsRestoreHistoryByOrderId(orderId))
+                .willReturn(false);
 
             // when
             stockService.rollbackStocks(orderId);
 
             // then
-            assertThat(stock1.getQuantity()).isEqualTo(10);
-            assertThat(stock2.getQuantity()).isEqualTo(5);
-            assertThat(stock3.getQuantity()).isEqualTo(20);
-
-            assertThat(stock1.getHistories()).hasSize(1);
-            assertThat(stock2.getHistories()).hasSize(1);
-            assertThat(stock3.getHistories()).hasSize(1);
-
-            stock1.getHistories().forEach(h -> {
-                assertThat(h.getChangeType()).isEqualTo(StockChangeType.RESTORE);
-                assertThat(h.getOrderId()).isEqualTo(orderId);
-            });
+            then(stockRepository).should()
+                .findAllByProductItemIdsWithLock(idsCaptor.capture());
+            assertThat(idsCaptor.getValue()).containsExactly(1L, 2L, 3L);
         }
 
         @Test
-        @DisplayName("재고를 복구하면 재고 상태를 IN_STOCK 상태로 변경한다.")
-        void changeStatusToInStockWhenRestoringFromOutOfStock() {
+        @DisplayName("이미 복구된 주문 ID로 요청시 예외가 발생한다.")
+        void rollbackStocks_fail_stockAlreadyRestored() {
             // given
             Long orderId = 100L;
             Long productItemId = 1L;
-            int restoredQuantity = 5;
 
-            Stock stock = mockOutOfStock(productItemId);
-            StockHistory deductHistory = mockDeductHistory(stock, restoredQuantity, orderId);
+            StockDeductHistory history = new StockDeductHistory(productItemId, 3);
+            Stock stock = createMockStock(productItemId);
 
             given(stockHistoryRepository.findDeductHistoriesByOrderId(orderId))
-                .willReturn(List.of(deductHistory));
+                .willReturn(List.of(history));
+            given(stockRepository.findAllByProductItemIdsWithLock(anyList()))
+                .willReturn(List.of(stock));
+            given(stockHistoryRepository.existsRestoreHistoryByOrderId(orderId))
+                .willReturn(true);
 
+            // when & then
+            AppException exception = assertThrows(AppException.class, () ->
+                stockService.rollbackStocks(orderId));
+            assertThat(exception.getErrorCode())
+                .isEqualTo(ProductErrorCode.STOCK_ALREADY_RESTORED);
+
+            then(stock).should(never()).restore(anyInt(), anyLong());
+        }
+
+        @Test
+        @DisplayName("주문 ID와 일치하는 기록이 존재하지 않으면 예외가 발생한다.")
+        void rollbackStocks_fail_stockHistoryNotFound() {
+            // given
+            given(stockHistoryRepository.findDeductHistoriesByOrderId(anyLong()))
+                .willReturn(List.of());
+
+            // when & then
+            AppException exception = assertThrows(AppException.class, () ->
+                stockService.rollbackStocks(anyLong()));
+            assertThat(exception.getErrorCode())
+                .isEqualTo(ProductErrorCode.STOCK_HISTORY_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("복구 대상 재고가 존재하지 않으면 예외가 발생한다.")
+        void rollbackStocks_fail_stockNotFound() {
+            // given
+            Long orderId = 100L;
+            Long existingItemId = 1L;
+            Long nonExistingItemId = 2L;
+
+            StockDeductHistory history1 = new StockDeductHistory(existingItemId, 3);
+            StockDeductHistory history2 = new StockDeductHistory(nonExistingItemId, 2);
+
+            Stock stock = createMockStock(existingItemId);
+
+            given(stockHistoryRepository.findDeductHistoriesByOrderId(orderId))
+                .willReturn(List.of(history1, history2));
             given(stockRepository.findAllByProductItemIdsWithLock(anyList()))
                 .willReturn(List.of(stock));
 
-            // when
-            stockService.rollbackStocks(orderId);
 
-            // then
-            assertThat(stock.getQuantity()).isEqualTo(restoredQuantity);
-            assertThat(stock.getStatus()).isEqualTo(StockStatus.IN_STOCK);
-            assertThat(stock.isOutOfStock()).isFalse();
+            // when & then
+            AppException exception = assertThrows(AppException.class, () ->
+                stockService.rollbackStocks(orderId));
+            assertThat(exception.getErrorCode())
+                .isEqualTo(ProductErrorCode.STOCK_NOT_FOUND);
+            then(stockHistoryRepository).should(never())
+                .existsRestoreHistoryByOrderId(anyLong());
+            then(stock).should(never()).restore(anyInt(), anyLong());
         }
 
     }

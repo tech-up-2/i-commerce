@@ -30,10 +30,6 @@ public class Store extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-//    @JoinColumn(name = "seller_id", nullable = false)
-//    private Seller seller;
-
     @Column(nullable = false, name = "seller_id")
     private Long sellerId;
 
@@ -47,10 +43,6 @@ public class Store extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private StoreStatus storeStatus = StoreStatus.CLOSE;
-
-//    @Builder.Default
-//    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<StoreAddress> storeAddresses = new ArrayList<>();
 
     public void update(StoreUpdateRequest request) {
         this.storeName = request.storeName();

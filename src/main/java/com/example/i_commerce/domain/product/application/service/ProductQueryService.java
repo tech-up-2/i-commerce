@@ -1,20 +1,20 @@
 package com.example.i_commerce.domain.product.application.service;
 
 
+import com.example.i_commerce.domain.product.application.dto.ProductItemInfo;
 import com.example.i_commerce.domain.product.application.mapper.OptionGroupBuilder;
 import com.example.i_commerce.domain.product.application.mapper.OptionLookupBuilder;
 import com.example.i_commerce.domain.product.application.dto.OptionItemLookupDto;
-import com.example.i_commerce.domain.product.controller.response.ProductDetailResponse;
+import com.example.i_commerce.domain.product.presentation.response.ProductDetailResponse;
 import com.example.i_commerce.domain.product.application.dto.ProductOptionGroupDto;
 import com.example.i_commerce.domain.product.entity.Product;
 import com.example.i_commerce.domain.product.entity.ProductAttribute;
 import com.example.i_commerce.domain.product.entity.ProductImage;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
-import com.example.i_commerce.domain.product.facade.ProductQueryFacade;
-import com.example.i_commerce.domain.product.facade.dto.ProductItemInfoResponse;
 import com.example.i_commerce.domain.product.repository.ProductAttributeRepository;
 import com.example.i_commerce.domain.product.repository.ProductImageRepository;
+import com.example.i_commerce.domain.product.repository.ProductRepository;
 import com.example.i_commerce.domain.product.repository.projection.ProductItemInfoProjection;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.domain.product.repository.ProductQueryRepository;
@@ -28,19 +28,37 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ProductQueryService implements ProductQueryFacade {
+public class ProductQueryService  {
 
     private final OptionGroupBuilder optionGroupBuilder;
     private final OptionLookupBuilder optionLookupBuilder;
 
+    private final ProductRepository productRepository;
     private final ProductQueryRepository productQueryRepository;
     private final ProductImageRepository productImageRepository;
     private final ProductItemRepository productItemRepository;
     private final ProductAttributeRepository productAttributeRepository;
 
-    @Override
-    public List<ProductItemInfoResponse> getProductItemInfos(Set<Long> productItemIds) {
-        if (productItemIds.isEmpty()) {
+
+    public List<Long> getProductIdsByStoreIds(List<Long> storeIds) {
+        return productRepository.findAllIdsByStoreIds(storeIds);
+    }
+
+    public Long getStoreIdByProductId(Long productId) {
+        return productRepository.findById(productId)
+            .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_NOT_FOUND))
+            .getStoreId();
+    }
+
+    public ProductItemInfo getProductItemInfoById(Long itemId) {
+        ProductItemInfoProjection itemInfoProjection = productItemRepository.findItemInfoById(itemId)
+            .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_ITEM_NOT_FOUND));
+
+        return ProductItemInfo.from(itemInfoProjection);
+    }
+
+    public List<ProductItemInfo> getProductItemInfosByIds(Set<Long> productItemIds) {
+        if (productItemIds == null || productItemIds.isEmpty()) {
             return List.of();
         }
 
@@ -48,19 +66,9 @@ public class ProductQueryService implements ProductQueryFacade {
             .findAllItemInfoByIdIn(productItemIds);
 
         return infoProjections.stream()
-            .map(ProductItemInfoResponse::from)
+            .map(ProductItemInfo::from)
             .toList();
     }
-
-    @Override
-    public ProductItemInfoResponse getProductItemInfo(Long itemId) {
-
-        ProductItemInfoProjection itemInfoProjection = productItemRepository.findItemInfoById(itemId)
-            .orElseThrow(() -> new AppException(ProductErrorCode.PRODUCT_ITEM_NOT_FOUND));
-
-        return ProductItemInfoResponse.from(itemInfoProjection);
-    }
-
 
     public ProductDetailResponse getProductDetail(Long productId, Long itemId) {
 

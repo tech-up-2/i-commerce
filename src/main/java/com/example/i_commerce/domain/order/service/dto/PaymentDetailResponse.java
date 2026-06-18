@@ -13,12 +13,10 @@ public record PaymentDetailResponse(
         String customerName,
         String customerMobilePhone
 
-
-
 ) {
     public static PaymentDetailResponse of(Payment payment, Order order, String firstProductName) {
         return PaymentDetailResponse.builder()
-                .tossOrderId("PAYMENT_" + payment.getId() + "_" +System.currentTimeMillis())
+                .tossOrderId(payment.getTossOrderId())
                 .customerKey("USER_ID_" + order.getUserId())
                 .amount(order.getTotalPayAmount())
                 .orderName(firstProductName + "항목 외 " + (order.getOrderProducts().size() - 1) + "건")

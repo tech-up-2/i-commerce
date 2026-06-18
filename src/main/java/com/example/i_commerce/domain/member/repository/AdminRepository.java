@@ -3,6 +3,8 @@ package com.example.i_commerce.domain.member.repository;
 import com.example.i_commerce.domain.member.entity.Admin;
 import com.example.i_commerce.domain.member.entity.enums.AdminRole;
 import com.example.i_commerce.domain.member.entity.enums.AdminStatus;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,4 +28,6 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
         AdminRole adminRole,
         AdminStatus adminStatus
     );
+
+    List<Admin> findAllByEmailHashIn(Collection<String> emailHashes);
 }

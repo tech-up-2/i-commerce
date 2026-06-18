@@ -2,12 +2,11 @@ package com.example.i_commerce.domain.review.service;
 
 import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.ReviewReport;
-import com.example.i_commerce.domain.review.entity.enums.ReportProcessStatus;
 import com.example.i_commerce.domain.review.entity.enums.ReviewReportStatus;
 import com.example.i_commerce.domain.review.event.ReviewStatusChangedEvent;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
-import com.example.i_commerce.domain.review.repo.ReviewReportRepository;
-import com.example.i_commerce.domain.review.repo.ReviewRepository;
+import com.example.i_commerce.domain.review.repository.ReviewReportRepository;
+import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.service.dto.CreateReportRequest;
 import com.example.i_commerce.global.exception.AppException;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +25,7 @@ public class ReviewReportService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void createReviewReport(Long reviewId, Long reporterId, CreateReportRequest dto) {
+    public Long createReviewReport(Long reviewId, Long reporterId, CreateReportRequest dto) {
 
         Review review = reviewRepo.findById(reviewId)
             .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
@@ -45,6 +44,7 @@ public class ReviewReportService {
 
         review.incrementReportCount();
 
+        return report.getId();
     }
 
     @Transactional

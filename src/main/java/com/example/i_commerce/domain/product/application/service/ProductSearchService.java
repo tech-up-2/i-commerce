@@ -1,15 +1,15 @@
 package com.example.i_commerce.domain.product.application.service;
 
 import com.example.i_commerce.domain.product.application.dto.ProductSearchQuery;
-import com.example.i_commerce.domain.product.controller.request.SearchProductRequest;
-import com.example.i_commerce.domain.product.controller.response.ProductItemSearchResponse;
+import com.example.i_commerce.domain.product.presentation.request.SearchProductRequest;
+import com.example.i_commerce.domain.product.presentation.response.ProductItemSearchResponse;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.CategoryRepository;
 import com.example.i_commerce.domain.product.repository.ProductSearchRepositoryCustom;
 import com.example.i_commerce.domain.product.repository.enums.ProductSortType;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.List;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ import org.springframework.util.StringUtils;
 
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProductSearchService {
 

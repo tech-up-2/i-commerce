@@ -6,12 +6,17 @@ spring:
     name: i-commerce
   profiles: #기본 프로파일 설정
     default: ${SPRING_PROFILES_ACTIVE:dev}
+#  jpa:
+#    properties:
+#      hibernate:
+#        default_batch_fetch_size: 100
 
 app:
   encryption:
     key: "Gq1wXnzi+7PBHjbvIpEi4TwjuH+L64fFAFYQGE0x2bc="
   jwt:
     secret: "oMUV1EZ82PhPtaaldRsWrYCMll8kFoyv+o1u0CJGuIM="
+    refresh-secret: "R7BlpH2qHTnSLOAC8PNAwuLwLORgemWDXB8d7FsIIm4="
   bootstrap: #최초 MASTER 관리자
     admin:
       enabled: true
@@ -21,3 +26,15 @@ app:
 
 security:
   email-hmac-key: "m+Mtv+DxZbk0psKymGWCsAMTx1jSMIJnIV/SVtlCTT8="
+  token-hmac-key: "pr9oR/AoLdZu5G+irmIw1DCo0tL+jJFUxZjqZSGtERI="
+
+resilience4j.retry:
+  instances:
+    tossConfirmRetry:
+      maxAttempts: 3                            # 최대 3번 시도
+      waitDuration: 1s                          # 재시도 간격 1초
+      ignoreExceptions:
+        - org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
+        - org.springframework.web.reactive.function.client.WebClientResponseException.Unauthorized
+        - org.springframework.web.reactive.function.client.WebClientResponseException.Forbidden
+        - org.springframework.web.reactive.function.client.WebClientResponseException.NotFound

@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 public enum OrderErrorCode implements ErrorCode {
     ORDER_NOT_OWNED(HttpStatus.FORBIDDEN, "ORD-40301", "해당 주문에 대한 권한이 없습니다."),
 
-    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORD-40401", "order를 찾을 수 없습니다.")
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "ORD-40401", "order를 찾을 수 없습니다."),
+    ORDER_PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "ORD-40402", "해당 주문 상품을 찾을 수 없습니다.")
     ;
 
     private final HttpStatus httpStatus;

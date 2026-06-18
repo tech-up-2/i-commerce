@@ -55,6 +55,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/chat/**").permitAll()
                 .requestMatchers("/connect/**").permitAll()
 
+                //모니터링 관련 추가
+                .requestMatchers("/actuator/health", "/actuator/prometheus", "/actuator/info", "/actuator/metrics").permitAll()
+
                 // 나머지는 기본적으로 인증 필요
                 .anyRequest().authenticated()
             )
@@ -70,7 +73,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3001"));
         configuration.setAllowedMethods(List.of("*"));//모든 HTTP 메서드 접근요청 허용
         configuration.setAllowedHeaders(List.of("*"));//모든 헤더 값을 허용하겠다.
         configuration.setAllowCredentials(true);//자격증명을 허용하겠다.
