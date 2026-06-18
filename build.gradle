@@ -83,6 +83,10 @@ dependencies {
 
 }
 
+bootBuildImage {
+    imageName = "i-commerce:latest"
+}
+
 tasks.named('test') {
     useJUnitPlatform()
     jvmArgs("-XX:+EnableDynamicAgentLoading")
