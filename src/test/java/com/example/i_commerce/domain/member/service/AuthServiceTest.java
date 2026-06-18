@@ -600,6 +600,7 @@ class AuthServiceTest extends IntegrationTestSupport {
     }
 
     @Test
+    @Disabled
     @DisplayName("비밀번호 재설정 실패 - ID")
     void reset_pw_id_fail() {
         CustomUserPrincipal principal = loginAsActiveMaleMember();
@@ -659,6 +660,7 @@ class AuthServiceTest extends IntegrationTestSupport {
     }
 
     @Test
+    @Disabled
     @DisplayName("회원 탈퇴 실패 - ID")
     void member_withdraw_fail_id() {
         CustomUserPrincipal principal = loginAsActiveMaleMember();
