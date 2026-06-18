@@ -10,7 +10,7 @@ import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.enums.Gender;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
-import com.example.i_commerce.global.security.jwt.TokenPayload;
+import com.example.i_commerce.global.security.jwt.dto.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
