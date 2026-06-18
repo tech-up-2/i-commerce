@@ -1,5 +1,5 @@
-import {runDoubleSubmitScenario} from "../../scenarios/order/_5_payment_double_submit_scenario";
-import {initPurchaseScenario} from "../../scenarios/order/wiremock-setup";
+import {runDoubleSubmitScenario} from "../../scenarios/order/_5_payment_double_submit_scenario.js";
+import {initPurchaseScenario} from "../../scenarios/order/wiremock-setup.js";
 
 
 export function setup() {
