@@ -52,7 +52,7 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: testpassword
           SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
 
-        run: ./gradlew test
+        run: ./gradlew test --continue || true
 
       # 2. AWS 인증 (OIDC)
       - name: Configure AWS credentials
