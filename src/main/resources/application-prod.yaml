@@ -20,7 +20,9 @@ spring:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
-
+    hikari:
+      maximum-pool-size: 30
+      connection-timeout: 7000
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -51,4 +53,13 @@ jwt:
 
 toss:
   secretKey: ${TOSS_SECRET_KEY}
-  baseUrl: http://localhost:8089
+  baseUrl: ${TOSS_BASE_URL:http://localhost:8089}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics, prometheus
+  endpoint:
+    health:
+      show-details: always

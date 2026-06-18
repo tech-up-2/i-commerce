@@ -46,7 +46,7 @@ export function runPurchaseScenario() {
     const mockItems = [];
     for (let i = 0; i < itemsCount; i++) {
         mockItems.push({
-            productId: getRandomInt(1, 50),
+            productId: getRandomInt(24001, 513430),
             quantity: getRandomInt(1, 5),
         });
     }

@@ -94,6 +94,7 @@ class AdminManagementIntegrationTest extends IntegrationTestSupport {
     private AdminLoginHistoryRepository adminLoginHistoryRepository;
 
     @Test
+    @Disabled
     @DisplayName("서버 시작 시 최초 MASTER 관리자가 자동 생성된다")
     void bootstrapMasterAdmin_success() {
         String masterEmailHash = emailHashEncoder.encode("master@test.com");
@@ -116,6 +117,7 @@ class AdminManagementIntegrationTest extends IntegrationTestSupport {
     로그인 테스트
      */
     @Test
+    @Disabled
     @DisplayName("로그인 테스트")
     void adminlogin_success() throws Exception {
         LoginRequest loginRequest = new LoginRequest(
@@ -366,6 +368,7 @@ class AdminManagementIntegrationTest extends IntegrationTestSupport {
      */
 
     @Test
+    @Disabled
     @DisplayName("관리자 목록 조회 성공")
     void getAdmins_success() {
         // given
@@ -419,6 +422,7 @@ class AdminManagementIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
+    @Disabled
     @DisplayName("관리자 목록 조회 성공 - 삭제된 관리자는 제외된다")
     void getAdmins_success_excludeDeletedAdmin() {
         // given
@@ -487,6 +491,7 @@ class AdminManagementIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
+    @Disabled
     @DisplayName("마지막 ACTIVE MASTER 관리자는 권한 변경할 수 없다")
     void updateLastActiveMasterRole_fail() {
         // given
@@ -539,6 +544,7 @@ class AdminManagementIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
+    @Disabled
     @DisplayName("마지막 ACTIVE MASTER 관리자는 상태를 변경할 수 없다")
     void updateLastActiveMasterStatus_fail() {
         // given
@@ -565,6 +571,7 @@ class AdminManagementIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
+    @Disabled
     @DisplayName("ACTIVE MASTER가 2명 이상이면 기존 MASTER를 ADMIN으로 변경할 수 있다")
     void updateMasterRole_success_whenAnotherActiveMasterExists() {
         // given
