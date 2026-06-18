@@ -1,4 +1,5 @@
 version: '3.8'
+name: i-commerce-monitoring
 
 services:
   # --------------------------------------------------------------------------
@@ -8,12 +9,10 @@ services:
     image: prom/prometheus
     container_name: i_commerce_prometheus_perf
     volumes:
-      # 🌟 설정 파일도 뒤에 -perf를 붙인 'prometheus-perf.yml'을 바인딩합니다.
       - ./prometheus-perf.yml:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     ports:
-      # 기존 로컬 프로메테우스(9090)와 충돌하지 않도록 포트를 '9091'로 변경합니다.
       - "9091:9090"
     networks:
       - monitoring-perf
@@ -25,7 +24,6 @@ services:
     image: grafana/grafana
     container_name: i_commerce_grafana_perf
     ports:
-      # 기존 로컬 그라파나(3000)와 충돌하지 않도록 포트를 '3001'로 변경합니다.
       - "3001:3000"
     networks:
       - monitoring-perf
@@ -39,11 +37,8 @@ services:
     image: influxdb:1.8
     container_name: i_commerce_influxdb_perf
     ports:
-      # 기존 인플럭스DB(8086)와 충돌하지 않도록 포트를 '8087'로 변경합니다.
-      # 🌟 k6 실행 시 '--out influxdb=http://localhost:8087/k6'로 쏴주셔야 합니다.
       - "8087:8086"
     volumes:
-      # 🌟 격리된 부하테스트 데이터 저장을 위해 볼륨명을 'influxdb-data-perf'로 분리합니다.
       - influxdb-data-perf:/var/lib/influxdb
     environment:
       - INFLUXDB_DB=k6
@@ -59,32 +54,8 @@ services:
           cpus: '2.0'
           memory: 2000M
 
-  # --------------------------------------------------------------------------
-  # 4. Mock-Toss-Server-perf (AWS 서버 전용 가짜 결제 대행사)
-  # --------------------------------------------------------------------------
-  mock-toss-server-perf:
-    image: wiremock/wiremock:latest
-    container_name: mock-toss-server-perf
-    ports:
-      # 기존 로컬 테스트용(8089)과 충돌하지 않도록 외부 연결 포트를 '8090'으로 변경합니다.
-      # 🌟 AWS Spring Boot의 결제 API 설정 주소는 'http://[내_로컬_공인_IP]:8090'이 됩니다.
-      # 공유기 포트포워딩을 하실 때도 '8090' 포트를 열어주셔야 합니다.
-      - "8090:8080"
-    command:
-      - --global-response-templating
-    restart: unless-stopped
-    networks:
-      - monitoring-perf
-    deploy:
-      resources:
-        limits:
-          cpus: '1.5'
-          memory: 1000M
-
 volumes:
-  # 🌟 기존 로컬 볼륨과 완벽히 격리된 새 볼륨 정의
   influxdb-data-perf:
 
 networks:
-  # 🌟 기존 로컬 도커 네트워크와 간섭을 차단하기 위한 새 네트워크 정의
   monitoring-perf:

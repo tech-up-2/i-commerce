@@ -51,3 +51,4 @@ jwt:
 
 toss:
   secretKey: ${TOSS_SECRET_KEY}
+  baseUrl: http://localhost:8089
