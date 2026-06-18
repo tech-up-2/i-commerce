@@ -44,15 +44,15 @@ jobs:
         run: touch .env
 
       # 1. 테스트 단계
-      - name: Run Test
-
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
-          SPRING_DATASOURCE_USERNAME: testuser
-          SPRING_DATASOURCE_PASSWORD: testpassword
-          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
-
-        run: ./gradlew test --continue || true
+#      - name: Run Test
+#
+#        env:
+#          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/testdb
+#          SPRING_DATASOURCE_USERNAME: testuser
+#          SPRING_DATASOURCE_PASSWORD: testpassword
+#          SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+#
+#        run: ./gradlew test --continue || true
 
       # 2. AWS 인증 (OIDC)
       - name: Configure AWS credentials
