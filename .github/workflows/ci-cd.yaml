@@ -99,6 +99,6 @@ jobs:
                \"docker rm wiremock || true\",
           
                \"docker run -d -p 8089:8080 --name wiremock wiremock/wiremock:latest --verbose\",
-               \"docker run -d -p 8080:8080 --name i_commerce -e SPRING_PROFILES_ACTIVE=prod -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} -e TOSS_SECRET_KEY=${{ secrets.TOSS_SECRET_KEY }} -e AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }} ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest\",
+               \"docker run -d -p 8080:8080 --name i_commerce -e SPRING_PROFILES_ACTIVE=prod -e SPRING_DATASOURCE_URL=${{ secrets.DB_URL }} -e SPRING_DATASOURCE_USERNAME=${{ secrets.DB_USERNAME }} -e SPRING_DATASOURCE_PASSWORD=${{ secrets.DB_PASSWORD }} -e TOSS_SECRET_KEY=${{ secrets.TOSS_SECRET_KEY }} -e TOSS_BASE_URL=${{ secrets.TOSS_BASE_URL }} -e AWS_S3_BUCKET_NAME=${{ secrets.AWS_S3_BUCKET_NAME }} ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest\",
                \"sudo docker image prune -af\"
             ]"
