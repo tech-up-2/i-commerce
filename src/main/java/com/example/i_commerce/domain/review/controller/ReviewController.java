@@ -1,13 +1,16 @@
 package com.example.i_commerce.domain.review.controller;
 
 import com.example.i_commerce.domain.review.facade.ReviewLikeFacade;
+import com.example.i_commerce.domain.review.service.ReviewCommentService;
 import com.example.i_commerce.domain.review.service.ReviewReportService;
 import com.example.i_commerce.domain.review.service.ReviewService;
+import com.example.i_commerce.domain.review.service.dto.CreateCommentRequest;
 import com.example.i_commerce.domain.review.service.dto.CreateReportRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewListResponse;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
 import com.example.i_commerce.domain.review.service.dto.ReviewStatsResponse;
 import com.example.i_commerce.domain.review.service.dto.SearchReviewRequest;
+import com.example.i_commerce.domain.review.service.dto.UpdateCommentRequest;
 import com.example.i_commerce.domain.review.service.dto.UpdateReviewRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.common.response.SliceResponse;
@@ -51,6 +54,7 @@ public class ReviewController {
     private final ReviewService reviewService;
     private final ReviewLikeFacade reviewLikeFacade;
     private final ReviewReportService reviewReportService;
+    private final ReviewCommentService reviewCommentService;
 
     @Operation(summary = "리뷰 목록 보기", description = "특정 상품에 대한 전체 리뷰를 본다.")
     @GetMapping
@@ -127,13 +131,35 @@ public class ReviewController {
     @PostMapping("/{reviewId}/reports")
     @PreAuthorize("@authChecker.canReportReview()")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Void> createReport(
+    public ApiResponse<Long> createReport(
         @PathVariable Long reviewId,
         @AuthenticationPrincipal CustomUserPrincipal principal,
         @RequestBody @Valid CreateReportRequest dto
     ) {
-        reviewReportService.createReviewReport(reviewId, principal.getId(), dto);
+        Long reportId = reviewReportService.createReviewReport(reviewId, principal.getId(), dto);
+        return ApiResponse.success(reportId);
+    }
+
+    @Operation(summary = "리뷰 답글 생성", description = "사용자는 특정 리뷰에 답글을 달 수 있다.")
+    @PostMapping("/{reviewId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<Void> createComment(
+        @PathVariable Long reviewId,
+        @AuthenticationPrincipal CustomUserPrincipal principal,
+        @RequestBody @Valid CreateCommentRequest request) {
+        reviewCommentService.createComment(reviewId, principal.getId(), request);
         return ApiResponse.success();
+    }
+
+    @Operation(summary = "리뷰 답글 수정", description = "사용자는 자신이 단 답글을 수정할 수 있다.")
+    @PatchMapping("/comments/{commentId}")
+    public ApiResponse<Long> editComment(
+        @PathVariable Long commentId,
+        @AuthenticationPrincipal CustomUserPrincipal principal,
+        @RequestBody @Valid UpdateCommentRequest request
+    ) {
+        Long editedCommentId = reviewCommentService.editComment(commentId, principal.getId(), request);
+        return ApiResponse.success(editedCommentId);
     }
 
 }

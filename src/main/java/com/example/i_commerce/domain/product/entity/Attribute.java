@@ -38,10 +38,6 @@ public class Attribute extends BaseEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "attribute", cascade = CascadeType.ALL)
-    private List<ProductAttribute> productAttributes = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "attribute", cascade = CascadeType.ALL)
     private List<CategoryAttribute> categoryAttributes = new ArrayList<>();
 
     public static Attribute of(String key, String value) {

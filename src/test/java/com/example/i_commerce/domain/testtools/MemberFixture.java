@@ -7,6 +7,7 @@ import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class MemberFixture {
@@ -58,6 +59,9 @@ public class MemberFixture {
     }
 
     private static String createRandomPhoneTail() {
-        return String.valueOf(System.nanoTime()).substring(5, 13);
+        return String.format(
+            "%08d",
+            ThreadLocalRandom.current().nextInt(0, 100_000_000)
+        );
     }
 }

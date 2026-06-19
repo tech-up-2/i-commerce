@@ -2,8 +2,8 @@ package com.example.i_commerce.domain.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.example.i_commerce.domain.member.entity.DeliveryAddress;
 import com.example.i_commerce.domain.member.entity.Member;
@@ -223,7 +223,7 @@ class DeliveryAddressServiceTest extends IntegrationTestSupport {
      */
     @Test
     @DisplayName("배송지 수정 성공")
-    void updatdAddress_success() throws Exception {
+    void updateAddress_success() throws Exception {
         DeliveryAddressRequest request = new DeliveryAddressRequest(
             "배송지",
             "홍길동",
@@ -433,7 +433,10 @@ class DeliveryAddressServiceTest extends IntegrationTestSupport {
 
         deliveryAddressService.changeDefaultAddress(deliveryAddress.id(), member.getId());
 
-        assertThat(deliveryAddress.isDefault()).isTrue();
+        DeliveryAddress updatedAddress = deliveryAddressRepository.
+            findById(deliveryAddress.id()).orElseThrow();
+
+        assertThat(updatedAddress.getIsDefault()).isTrue();
     }
 
     @Test

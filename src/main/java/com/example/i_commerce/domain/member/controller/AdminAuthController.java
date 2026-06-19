@@ -4,6 +4,9 @@ package com.example.i_commerce.domain.member.controller;
 import com.example.i_commerce.domain.member.service.admin.AdminService;
 import com.example.i_commerce.domain.member.service.admin.dto.AdminLoginResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenLogoutRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueResponse;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.security.jwt.BlacklistedTokenService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,15 +38,23 @@ public class AdminAuthController {
         return ApiResponse.success(adminLoginResponse);
     }
 
+    // 리프레시 토큰 검증 후 엑세스 토큰 재발급
+    @PostMapping("/reissue")
+    public ApiResponse<TokenReissueResponse> reissue(
+        @Valid @RequestBody TokenReissueRequest request
+    ) {
+        return ApiResponse.success(adminService.reissue(request));
+    }
+
     @PreAuthorize("isAuthenticated()")//로그인 되어 있는지 확인
     @SecurityRequirement(name = "BearerAuth")
     @Operation(summary = "관리자 로그아웃", description = "로그아웃한다.")
     @PostMapping("/logout")
     public ApiResponse<Void> logout(
-        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization
+        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+        @Valid @RequestBody TokenLogoutRequest request
     ) {//나중에 redis를 붙이면 토큰을 blacklist로 전달해야함.
-        String token = authorization.substring(7);
-        blacklistedTokenService.logout(token);
+        adminService.logout(authorization, request);
 
         return ApiResponse.success();
     }

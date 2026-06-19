@@ -2,8 +2,9 @@ package com.example.i_commerce.domain.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.example.i_commerce.domain.member.entity.Member;
 import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.entity.enums.SellerStatus;
 import com.example.i_commerce.domain.member.exception.MemberErrorCode;
@@ -74,11 +75,13 @@ public class SellerServiceTest extends IntegrationTestSupport {
         SellerResponse response = sellerService.applyForSeller(memberId, request);
 
         Seller seller = sellerRepository.findById(memberId).orElseThrow();
+        Member member1 = memberRepository.findById(memberId).orElseThrow();
 
         assertThat(response.sellerId()).isEqualTo(memberId);
         assertThat(seller.getId()).isEqualTo(memberId);
         assertThat(seller.getBusinessName()).isEqualTo("kt마켓");
         assertThat(seller.getSellerStatus()).isEqualTo(SellerStatus.PENDING);
+        assertThat(member1.getIsSeller()).isTrue();
     }
 
     @Test
@@ -99,6 +102,7 @@ public class SellerServiceTest extends IntegrationTestSupport {
         assertThat(response.sellerId()).isEqualTo(customUserPrincipal.getId());
         assertThat(seller.getBusinessName()).isEqualTo(request.businessName());
         assertThat(seller.getSellerStatus()).isEqualTo(SellerStatus.PENDING);
+        assertThat(seller.getDeletedAt()).isNull();
     }
 
     @Test
@@ -219,9 +223,11 @@ public class SellerServiceTest extends IntegrationTestSupport {
         sellerService.deleteSeller(principal.getId(), request);
 
         Seller seller = sellerRepository.findById(principal.getId()).orElseThrow();
+        Member member1 = memberRepository.findById(principal.getId()).orElseThrow();
 
         assertThat(seller.getSellerStatus()).isEqualTo(SellerStatus.WITHDRAW);
         assertThat(seller.getDeletedAt()).isNotNull();
+        assertThat(member1.getIsSeller()).isFalse();
     }
 
     @Test

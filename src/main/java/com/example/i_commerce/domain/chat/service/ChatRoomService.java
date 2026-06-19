@@ -8,6 +8,7 @@ import com.example.i_commerce.domain.chat.repository.ChatRoomRepository;
 import com.example.i_commerce.domain.chat.util.ChatHealthCheck;
 import com.example.i_commerce.domain.chat.util.ChatRoomNameGenerator;
 import com.example.i_commerce.domain.chat.util.TempChatUtil;
+import com.example.i_commerce.domain.member.entity.Seller;
 import com.example.i_commerce.domain.member.repository.MemberRepository;
 import com.example.i_commerce.domain.member.service.member.MemberService;
 import com.example.i_commerce.domain.member.service.member.dto.MemberChatInfo;
@@ -51,7 +52,7 @@ public class ChatRoomService {
     public ApiResponse<Long> getOrCreatePrivateRoom(Long otherMemberId) {
 
         MemberChatInfo member = memberService.getMemberChatInfo(TempChatUtil.getCurrentUserId());
-        MemberChatInfo otherMember = memberService.getMemberChatInfo(otherMemberId);
+        MemberChatInfo otherMember = memberService.getSellerChatInfo(otherMemberId);
 
         reqToSelf(member, otherMember);
         chatRoleChecker.roleCheck(member, otherMember);
@@ -130,7 +131,7 @@ public class ChatRoomService {
         Optional<ChatParticipant> participant = chatParticipantRepository.findByChatRoomAndMemberId(
             chatRoom, member.id());
         if (participant.isPresent()) {
-            throw new AppException(ChatErrorCode.CHAT_ROOM_ALREADY_EXISTS);
+            throw new AppException(ChatErrorCode.ALREADY_PARTICIPANT);
         }
         addParticipantToRoom(chatRoom, member.id());
         return ApiResponse.success();

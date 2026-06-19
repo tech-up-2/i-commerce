@@ -18,6 +18,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -36,8 +37,7 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepositoryCusto
     private static final QProduct product = QProduct.product;
     private static final QProductItem productItem = QProductItem.productItem;
     private static final QCategory category = QCategory.category;
-    private static final  QProductAttribute productAttribute = QProductAttribute.productAttribute;
-    private static final QAttribute attribute = QAttribute.attribute;
+    private static final QProductAttribute searchAttribute = new QProductAttribute("searchAttribute");
 
     @Override
     public Slice<ProductItemSearchResponse> search(
@@ -97,18 +97,18 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepositoryCusto
         }
 
         BooleanExpression nameMatch = product.name.contains(keyword);
-
+        BooleanExpression categoryMatch = category.name.contains(keyword);
+        QProductAttribute pa = new QProductAttribute("pa_keyword");
         BooleanExpression attributeMatch = JPAExpressions
             .selectOne()
-            .from(productAttribute)
-            .join(productAttribute.attribute, attribute)
+            .from(pa)
             .where(
-                productAttribute.productItem.id.eq(productItem.id),
-                attribute.value.contains(keyword)
+                pa.productItem.id.eq(productItem.id),
+                pa.displayName.contains(keyword)
             )
             .exists();
 
-        return nameMatch.or(attributeMatch);
+        return nameMatch.or(categoryMatch).or(attributeMatch);
     }
 
     private BooleanExpression categoryFilter(List<Long> categoryIds) {
@@ -154,7 +154,7 @@ public class ProductSearchRepositoryImpl implements ProductSearchRepositoryCusto
             .from(pa)
             .where(
                 pa.productItem.id.eq(productItem.id),
-                pa.attribute.id.eq(attributeId)
+                pa.attributeId.eq(attributeId)
             )
             .exists();
     }

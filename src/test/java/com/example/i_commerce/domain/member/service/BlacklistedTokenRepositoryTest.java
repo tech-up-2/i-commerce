@@ -2,14 +2,18 @@ package com.example.i_commerce.domain.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.i_commerce.global.security.jwt.BlacklistedToken;
-import com.example.i_commerce.global.security.jwt.BlacklistedTokenRepository;
+import com.example.i_commerce.global.security.jwt.entity.BlacklistedToken;
+import com.example.i_commerce.global.security.jwt.repo.BlacklistedTokenRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.context.annotation.Bean;
 
 @DataJpaTest
 public class BlacklistedTokenRepositoryTest {
@@ -54,5 +58,14 @@ public class BlacklistedTokenRepositoryTest {
 
         // 2. 남아있는 토큰은 만료되지 않은 'valid-hash'여야 함
         assertThat(remainingTokens.get(0).getTokenHash()).isEqualTo("valid-hash");
+    }
+
+    @TestConfiguration
+    static class TestCacheConfig {
+
+        @Bean
+        CacheManager cacheManager() {
+            return new ConcurrentMapCacheManager();
+        }
     }
 }

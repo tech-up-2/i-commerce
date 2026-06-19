@@ -17,6 +17,8 @@ public enum ProductErrorCode implements ErrorCode {
     CATEGORY_DEPTH_EXCEEDED(HttpStatus.BAD_REQUEST, "PRD-40005", "카테고리 최대 깊이를 초과했습니다."),
     NEGATIVE_QUANTITY_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "PRD-40006", "재고 수량은 음수일 수 없습니다."),
     INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "PRD-40007", "현재 상태에서 허용되지 않는 상태 변경입니다."),
+    INVALID_OPTION_COUNT(HttpStatus.BAD_REQUEST, "PRD-40008", "옵션 개수가 올바르지 않습니다."),
+    DUPLICATED_OPTION(HttpStatus.BAD_REQUEST, "PRD-40009", "중복 요청된 옵션이 존재합니다."),
 
     // 403 Forbidden
     GUEST_PAGE_LIMIT_EXCEEDED(HttpStatus.FORBIDDEN, "PRD-40301", "비로그인 사용자는 더 이상 페이지를 조회할 수 없습니다."),
@@ -44,6 +46,8 @@ public enum ProductErrorCode implements ErrorCode {
     STOCK_ALREADY_INITIALIZED(HttpStatus.CONFLICT, "PRD-40905", "재고가 이미 초기화되었습니다."),
     INSUFFICIENT_STOCK(HttpStatus.CONFLICT, "PRD-40906", "재고가 충분하지 않습니다."),
     CATEGORY_HAS_PRODUCTS(HttpStatus.CONFLICT, "PRD-40907", "하위 상품이 존재하는 카테고리는 삭제할 수 없습니다."),
+    STOCK_ALREADY_RESTORED(HttpStatus.CONFLICT, "PRD-40908", "이미 취소 처리된 주문입니다."),
+    STOCK_UNAVAILABLE(HttpStatus.CONFLICT, "PRD-40909", "사용할 수 없는 재고입니다.")
 
     ;
 

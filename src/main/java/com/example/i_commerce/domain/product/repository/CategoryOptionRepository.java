@@ -16,7 +16,13 @@ public interface CategoryOptionRepository extends JpaRepository<CategoryOption, 
 
     Optional<CategoryOption> findByIdAndCategoryId(Long id, Long categoryId);
 
-    List<CategoryOption> findAllByCategoryId(Long categoryId);
+    @Query("""
+    SELECT co.option.id
+    FROM CategoryOption co
+    WHERE co.category.id = :categoryId
+    AND co.option.id IN :optionIds
+    """)
+    List<Long> findAllIdsByCategoryIdAndOptionIds(Long categoryId, List<Long> optionIds);
 
     @Query("""
     SELECT new com.example.i_commerce.domain.product.repository.projection.CategoryOptionProjection(

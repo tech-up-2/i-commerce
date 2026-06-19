@@ -22,11 +22,32 @@ public enum MemberErrorCode implements ErrorCode {
     WITHDRAWN_MEMBER(HttpStatus.BAD_REQUEST, "USR-40003", "탈퇴 처리된 계정입니다."),
     DELIVERY_ADDRESS_LIMIT_EXCEEDED(
         HttpStatus.BAD_REQUEST, "USR-40004", "배송지는 최대 5개까지 등록할 수 있습니다."),
-    LAST_ACTIVE_MASTER_REQUIRED(HttpStatus.BAD_REQUEST, "ADM-40001",
+    STORE_ADDRESS_LIMIT_EXCEEDED(
+        HttpStatus.BAD_REQUEST, "USR-40005", "상점 주소는 최대 20개까지 등록할 수 있습니다."),
+    LAST_ACTIVE_MASTER_REQUIRED(HttpStatus.BAD_REQUEST, "ADM-40006",
         "사용 가능한 MASTER 관리자는 최소 1명 이상 존재해야 합니다."),
+    INVALID_ROLE(
+        HttpStatus.BAD_REQUEST,
+        "ADM-40007",
+        "유효하지 않은 권한입니다."
+    ),
+    INVALID_STATUS(
+        HttpStatus.BAD_REQUEST,
+        "ADM-40008",
+        "유효하지 않은 상태입니다."
+    ),
 
     // --- 401
-    INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "USR-40101", "패스워드가 틀렸습니다."),
+    INVALID_PASSWORD(HttpStatus.UNAUTHORIZED,
+        "USR-40101", "패스워드가 틀렸습니다."),
+    REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED,
+        "USR-40102", "리프레시 토큰이 없습니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,
+        "USR-40103", "유효하지 않은 Refresh Token입니다."),
+    EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,
+        "TKN-40104", "만료된 Refresh Token입니다."),
+    REVOKED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,
+        "TKN-40105", "폐기된 Refresh Token입니다."),
 
     // --- 404
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40401", "존재하지 않는 회원입니다."),

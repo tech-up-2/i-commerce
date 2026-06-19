@@ -12,6 +12,13 @@ public class OptionFixture {
             .inputType(OptionInputType.RADIO);
     }
 
+    public static Option createOption(String name, OptionInputType type) {
+        return defaultOption()
+            .name(name)
+            .inputType(type)
+            .build();
+    }
+
     public static Option createWithIdAndName(Long id, String name) {
         return defaultOption()
             .id(id)

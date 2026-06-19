@@ -6,7 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record LoginResponse(
     Long memberId,
     String email,
-    String accessToken
+    String accessToken,
+    String refreshToken
 ) {
 
 }

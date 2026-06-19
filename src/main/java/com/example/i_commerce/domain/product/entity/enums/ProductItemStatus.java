@@ -32,4 +32,5 @@ public enum ProductItemStatus {
             throw new AppException(ProductErrorCode.INVALID_STATUS_TRANSITION);
         }
     }
+
 }

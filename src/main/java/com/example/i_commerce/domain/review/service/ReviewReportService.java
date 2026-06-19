@@ -25,7 +25,7 @@ public class ReviewReportService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void createReviewReport(Long reviewId, Long reporterId, CreateReportRequest dto) {
+    public Long createReviewReport(Long reviewId, Long reporterId, CreateReportRequest dto) {
 
         Review review = reviewRepo.findById(reviewId)
             .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
@@ -44,6 +44,7 @@ public class ReviewReportService {
 
         review.incrementReportCount();
 
+        return report.getId();
     }
 
     @Transactional

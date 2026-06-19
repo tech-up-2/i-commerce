@@ -5,13 +5,16 @@ import com.example.i_commerce.domain.member.service.delivery.DeliveryAddressServ
 import com.example.i_commerce.domain.member.service.delivery.dto.DeliveryAddressSnapshot;
 import com.example.i_commerce.domain.member.service.member.MemberService;
 import com.example.i_commerce.domain.member.service.member.dto.MemberOrderInfo;
+import com.example.i_commerce.domain.order.entity.Delivery;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.Payment;
+import com.example.i_commerce.domain.order.entity.emuns.DeliveryStatus;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.entity.emuns.PaymentStatus;
 import com.example.i_commerce.domain.order.exception.OrderErrorCode;
 import com.example.i_commerce.domain.order.exception.PaymentErrorCode;
+import com.example.i_commerce.domain.order.repository.DeliveryRepository;
 import com.example.i_commerce.domain.order.repository.OrderProductRepository;
 import com.example.i_commerce.domain.order.repository.OrderRepository;
 import com.example.i_commerce.domain.order.repository.PaymentRepository;
@@ -25,12 +28,9 @@ import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
 import com.example.i_commerce.domain.order.service.dto.OrderSummaryResponse;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
-import com.example.i_commerce.domain.product.facade.StockFacade;
-import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.domain.product.repository.ProductItemRepository;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.exception.AppException;
-import com.example.i_commerce.global.exception.ErrorCode;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +52,7 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
     private final DeliveryAddressService deliveryAddressService;
     private final OrderProductRepository orderProductRepository;
+    private final DeliveryRepository deliveryRepository;
 
     @Transactional
     public ApiResponse<CreateOrderResponse> createOrder(Long memberId, CreateOrderRequest dto) {
@@ -115,7 +116,7 @@ public class OrderService {
 
         String firstProductName = order.getOrderProducts().stream().findFirst().map(OrderProduct::getProductName).orElse("");
 
-        return ApiResponse.success(CreateOrderResponse.of(order, firstProductName));
+        return ApiResponse.success(CreateOrderResponse.of(order, payment.getTossOrderId(), firstProductName));
 
     }
 
@@ -166,5 +167,42 @@ public class OrderService {
             orderProduct.getOrder().getUserId(),
             orderProduct.getOrder().getOrderStatus()
         );
+    }
+
+    @Transactional
+    public void updateOrderStatusByDeliveries(Long orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(OrderErrorCode.ORDER_NOT_FOUND));
+        List<Delivery> deliveries = deliveryRepository.findAllByOrderId(orderId);
+
+        OrderStatus nextStatus = determineOrderStatus(deliveries);
+
+        order.changeOrderStatus(nextStatus);
+    }
+
+    private OrderStatus determineOrderStatus(List<Delivery> deliveries) {
+        long totalCount = deliveries.size();
+
+        long shippingCount = deliveries.stream()
+                .filter(d -> d.getDeliveryStatus() == DeliveryStatus.SHIPPING)
+                .count();
+
+        long arrivedCount = deliveries.stream()
+                .filter(d -> d.getDeliveryStatus() == DeliveryStatus.ARRIVED)
+                .count();
+
+        if (arrivedCount == totalCount) {
+            return OrderStatus.DELIVERED;
+        }
+        if (shippingCount == totalCount) {
+            return OrderStatus.SHIPPING;
+        }
+        if (arrivedCount > 0) {
+            return OrderStatus.PARTIAL_DELIVERED;
+        }
+        if (shippingCount > 0) {
+            return OrderStatus.PARTIAL_SHIPPING;
+        }
+
+        return OrderStatus.CONFIRMED;
     }
 }

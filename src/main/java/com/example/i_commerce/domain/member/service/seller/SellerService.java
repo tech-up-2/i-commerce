@@ -52,6 +52,7 @@ public class SellerService {
                     dataEncryptor.encrypt(dto.depositorName())
                 );
                 existingSeller.changeStatus(SellerStatus.PENDING);
+                existingSeller.restore();
                 return existingSeller;
             })
             .orElseGet(() -> Seller.builder()//seller 등록이 없으면 새로 생성

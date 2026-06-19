@@ -23,15 +23,15 @@ public class ReviewLikeFacade {
     }
 
     // 2. 단순 전달 (판매자 권한 기능들)
-    public void approveBestReview(Long reviewId) {
-        reviewLikeService.approveBestReview(reviewId);
+    public void approveBestReview(Long reviewId, Long sellerId) {
+        reviewLikeService.approveBestReview(reviewId, sellerId);
     }
 
-    public void cancelBestReview(Long reviewId) {
-        reviewLikeService.cancelBestReview(reviewId);
+    public void cancelBestReview(Long reviewId, Long sellerId) {
+        reviewLikeService.cancelBestReview(reviewId, sellerId);
     }
 
-    public void excludeFromBest(Long reviewId) {
-        reviewLikeService.excludeReviewFromBest(reviewId);
+    public void excludeFromBest(Long reviewId, Long sellerId) {
+        reviewLikeService.excludeReviewFromBest(reviewId, sellerId);
     }
 }

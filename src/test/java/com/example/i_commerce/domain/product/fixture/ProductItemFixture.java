@@ -1,9 +1,11 @@
 package com.example.i_commerce.domain.product.fixture;
 
+import com.example.i_commerce.domain.product.entity.Product;
+import com.example.i_commerce.domain.product.entity.ProductAttribute;
 import com.example.i_commerce.domain.product.entity.ProductItem;
 import com.example.i_commerce.domain.product.entity.enums.ProductItemStatus;
-import com.example.i_commerce.domain.product.entity.ProductOptionValue;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.UUID;
 
 public class ProductItemFixture {
 
@@ -13,7 +15,7 @@ public class ProductItemFixture {
             .sku("SKU-001")
             .price(10000)
             .status(ProductItemStatus.ON_SALE)
-            .attributes(List.of())
+            .attributes(new ArrayList<>())
             .isDefault(true);
 
     }
@@ -25,22 +27,43 @@ public class ProductItemFixture {
             .build();
     }
 
-    public static ProductItem createDoubleOptionItem(
-        ProductOptionValue ov1,
-        ProductOptionValue ov2
+    public static ProductItem createItemWithStock(
+        Product product, String sku, int stockQuantity
     ) {
-        return defaultProductItem()
-            .optionValue1(ov1)
-            .optionValue2(ov2)
+        ProductItem item = defaultProductItem()
+            .sku(sku)
             .build();
+        product.addItem(item);
+        item.initStock(stockQuantity);
+        return item;
     }
 
-    public static ProductItem createSingleOptionItem(
-        ProductOptionValue ov1
+    public static ProductItem createProductItemBy(
+        Product product,
+        int price,
+        ProductItemStatus status
     ) {
-        return defaultProductItem()
-            .optionValue1(ov1)
+        ProductItem item = ProductItem.builder()
+            .sku(UUID.randomUUID().toString())
+            .price(price)
+            .status(status)
+            .isDefault(true)
             .build();
+        product.addItem(item);
+        return item;
+    }
+
+    public static void createProductAttributeBy(
+        ProductItem productItem,
+        Long attributeId,
+        String displayName
+    ) {
+        ProductAttribute attribute = ProductAttribute.builder()
+            .attributeId(attributeId)
+            .displayName(displayName)
+            .displayOrder(1)
+            .build();
+        productItem.addAttribute(attribute);
     }
 
 }

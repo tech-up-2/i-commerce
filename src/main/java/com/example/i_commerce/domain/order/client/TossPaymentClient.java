@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,7 +20,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 @Component
 @RequiredArgsConstructor
-public class TossPaymentClient {
+public class TossPaymentClient implements PaymentClient {
 
     private final WebClient tossWebClient;
 
@@ -32,7 +33,7 @@ public class TossPaymentClient {
         this.encodedKey = Base64.getEncoder().encodeToString((SECRET_KEY + ":").getBytes());
     }
 
-    @Retry(name = "tossConfirmRetry", fallbackMethod = "checkPaymentStatus")
+    @Override
     public Map<String, Object> requestConfirm(PaymentConfirmRequest dto) {
         String url = "/confirm";
 
@@ -41,16 +42,10 @@ public class TossPaymentClient {
         params.put("amount", dto.amount());
         params.put("paymentKey", dto.paymentKey());
 
-        try{
-            return executePost(url, params);
-        } catch (WebClientResponseException e) {
-            if (e.getStatusCode().is4xxClientError()) {
-                throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
-            }
-            throw e;
-        }
+        return executePost(url, params);
     }
 
+    @Override
     public Map<String, Object> requestCanceled(PaymentCancelRequest dto) {
         String url = "/" + dto.paymentKey() + "/cancel";
 
@@ -66,14 +61,14 @@ public class TossPaymentClient {
             if (e.getStatusCode().is4xxClientError()) {
                 throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_FAILED);
             }
-            throw new AppException(PaymentErrorCode.PAYMENT_CONFIRM_FAILED);
+            if (e.getStatusCode().is5xxServerError()) {
+                throw new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT);
+            }
+            throw new AppException(PaymentErrorCode.PAYMENT_CANCEL_FAILED);
         }
     }
 
-    public Map<String, Object> checkPaymentStatus(PaymentConfirmRequest dto, Exception e) {
-        return this.checkPaymentStatus(dto.paymentKey());
-    }
-
+    @Override
     public Map checkPaymentStatus(String paymentKey) {
         String url = "/" + paymentKey;
 
@@ -91,6 +86,9 @@ public class TossPaymentClient {
         } catch (WebClientRequestException e) {
             throw new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT);
         } catch (WebClientResponseException e) {
+            if (e.getStatusCode().is5xxServerError()) {
+                throw new AppException(PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT);
+            }
             if (e.getStatusCode().is4xxClientError()) {
                 throw new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND);
             }

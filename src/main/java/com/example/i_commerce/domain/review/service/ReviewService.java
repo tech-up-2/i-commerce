@@ -1,14 +1,20 @@
 package com.example.i_commerce.domain.review.service;
 
+import com.example.i_commerce.domain.member.service.store.StoreService;
 import com.example.i_commerce.domain.order.entity.OrderProduct;
 import com.example.i_commerce.domain.order.entity.emuns.OrderStatus;
 import com.example.i_commerce.domain.order.service.OrderService;
 import com.example.i_commerce.domain.order.service.dto.OrderProductResponse;
+import com.example.i_commerce.domain.product.application.service.ProductQueryService;
 import com.example.i_commerce.domain.review.entity.Review;
+import com.example.i_commerce.domain.review.entity.ReviewComment;
 import com.example.i_commerce.domain.review.entity.ReviewImage;
+import com.example.i_commerce.domain.review.entity.enums.ReviewStatus;
 import com.example.i_commerce.domain.review.exception.ReviewErrorCode;
+import com.example.i_commerce.domain.review.repository.ReviewCommentRepository;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.domain.review.repository.StarRateCountProjection;
+import com.example.i_commerce.domain.review.service.dto.CommentResponse;
 import com.example.i_commerce.domain.review.service.dto.CreateReviewRequest;
 import com.example.i_commerce.domain.review.service.dto.ReviewResponse;
 import com.example.i_commerce.domain.review.service.dto.ReviewStatsResponse;
@@ -21,7 +27,9 @@ import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
 import com.example.i_commerce.global.s3.service.S3ImageService;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +47,9 @@ public class ReviewService {
     private final ReviewForbiddenWordValidator reviewForbiddenWordValidator;
     private final S3ImageService s3ImageService;
     private final OrderService orderService;
+    private final StoreService storeService;
+    private final ProductQueryService productQueryService;
+    private final ReviewCommentRepository reviewCommentRepo;
 
     @Transactional
     public Long createReview(Long orderProductId, Long userId, CreateReviewRequest dto, List<MultipartFile> imageFiles) {
@@ -46,7 +57,7 @@ public class ReviewService {
         validateStarRating(dto.getStarRate());
         reviewForbiddenWordValidator.validateContent(dto.getContent());
 
-        if (reviewRepo.existsByOrderProductId(orderProductId)) {
+        if (reviewRepo.existsByUserIdAndOrderProductIdAndStatus(userId, orderProductId, ReviewStatus.ACTIVE)) {
             throw new AppException(ReviewErrorCode.ALREADY_REVIEWED);
         }
 
@@ -95,7 +106,7 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public SliceResponse<ReviewListResponse> viewReviewList(Long productId, Pageable pageable) {
 
-        Slice<Review> reviewSlice = reviewRepo.findByProductId(productId, pageable);
+        Slice<Review> reviewSlice = reviewRepo.findByProductIdAndStatus(productId, ReviewStatus.ACTIVE, pageable);
 
         return SliceResponse.of(reviewSlice, ReviewListResponse::from);
     }
@@ -146,10 +157,36 @@ public class ReviewService {
 
         Review review = getReviewOrThrow(reviewId);
 
-        ReviewResponse dto = ReviewResponse.from(review);
+        List<ReviewComment> comments = reviewCommentRepo.findByReviewId(reviewId);
 
-        return dto;
+        List<CommentResponse> commentTree = assembleCommentTree(comments);
+
+        return ReviewResponse.of(review, commentTree);
     }
+    private List<CommentResponse> assembleCommentTree(List<ReviewComment> comments) {
+        Map<Long, CommentResponse> map = new HashMap<>();
+        List<CommentResponse> roots = new ArrayList<>();
+
+        for (ReviewComment c : comments) {
+            map.put(c.getId(), CommentResponse.from(c));
+        }
+
+        for (ReviewComment c : comments) {
+            CommentResponse dto = map.get(c.getId());
+
+            if (c.getParent() == null) {
+                roots.add(dto);
+            } else {
+                CommentResponse parentDto = map.get(c.getParent().getId());
+                if (parentDto != null) {
+                    parentDto.getChildren().add(dto);
+                }
+            }
+        }
+
+        return roots;
+    }
+
 
     @Transactional
     public Long editReview(Long reviewId, Long userId, UpdateReviewRequest dto, List<MultipartFile> newImageFiles) {
@@ -213,12 +250,23 @@ public class ReviewService {
             review.getImages().forEach(image -> s3ImageService.deleteImage(image.getImageUrl()));
         }
 
-        reviewRepo.delete(review);
+        review.markAsDeleted();
     }
 
     @Transactional
-    public List<ReviewListResponse> getBestReviewCandidates(Long productId) {
-        List<Review> reviews = reviewRepo.findAllByProductIdAndDeletedAtIsNull(productId);
+    public List<ReviewListResponse> getBestReviewCandidates(Long productId, Long sellerId) {
+        Long storeId = productQueryService.getStoreIdByProductId(productId);
+
+        if (storeId == null) {
+            throw new AppException(ReviewErrorCode.PRODUCT_NOT_FOUND);
+        }
+
+        if (!storeService.isStoreManager(sellerId, storeId)) {
+            throw new AppException(CommonErrorCode.INVALID_PERMISSION);
+        }
+
+        List<Review> reviews = reviewRepo.findAllByProductIdAndStatus(productId, ReviewStatus.ACTIVE);
+
         reviews.removeIf(Review::isExcluded);
 
         reviews.sort((r1, r2) -> Double.compare(r2.calculateRecommendationScore(),
@@ -242,8 +290,8 @@ public class ReviewService {
     }
 
     private Review getReviewOrThrow(Long reviewId) {
-        return reviewRepo.findById(reviewId)
-        .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
+        return reviewRepo.findByIdAndStatus(reviewId, ReviewStatus.ACTIVE)
+            .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
     }
 
     private void validateAuthor(Review review, Long userId) {

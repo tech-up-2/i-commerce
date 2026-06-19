@@ -3,11 +3,11 @@ package com.example.i_commerce.domain.product.application.service;
 
 import com.example.i_commerce.domain.product.application.dto.StockDeductCommand;
 import com.example.i_commerce.domain.product.entity.Stock;
-import com.example.i_commerce.domain.product.entity.StockHistory;
 import com.example.i_commerce.domain.product.event.StockDepletedEvent;
 import com.example.i_commerce.domain.product.exception.ProductErrorCode;
 import com.example.i_commerce.domain.product.repository.StockHistoryRepository;
 import com.example.i_commerce.domain.product.repository.StockRepository;
+import com.example.i_commerce.domain.product.repository.projection.StockDeductHistory;
 import com.example.i_commerce.global.exception.AppException;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +57,8 @@ public class StockService {
     }
 
     public void rollbackStocks(Long orderId) {
-        List<StockHistory> deductHistories = stockHistoryRepository
+
+        List<StockDeductHistory> deductHistories = stockHistoryRepository
             .findDeductHistoriesByOrderId(orderId);
 
         if(deductHistories.isEmpty()) {
@@ -65,7 +66,7 @@ public class StockService {
         }
 
         List<Long> productItemIds = deductHistories.stream()
-            .map(h -> h.getStock().getProductItem().getId())
+            .map(StockDeductHistory::productItemId)
             .sorted()
             .toList();
 
@@ -73,9 +74,13 @@ public class StockService {
 
         validateAllStocksFound(productItemIds, stockMap);
 
-        for (StockHistory history : deductHistories) {
-            Stock stock = stockMap.get(history.getStock().getProductItem().getId());
-            stock.restore(history.getChangeQuantity(), orderId);
+        if(stockHistoryRepository.existsRestoreHistoryByOrderId(orderId)) {
+            throw new AppException(ProductErrorCode.STOCK_ALREADY_RESTORED);
+        }
+
+        for (StockDeductHistory history : deductHistories) {
+            Stock stock = stockMap.get(history.productItemId());
+            stock.restore(history.changeQuantity(), orderId);
         }
 
     }

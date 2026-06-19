@@ -1,5 +1,6 @@
 package com.example.i_commerce.domain.order.service;
 
+import com.example.i_commerce.domain.order.client.PaymentClient;
 import com.example.i_commerce.domain.order.client.TossPaymentClient;
 import com.example.i_commerce.domain.order.entity.Order;
 import com.example.i_commerce.domain.order.entity.Payment;
@@ -25,7 +26,7 @@ public class AutoPaymentCancelService {
 
     private final PaymentRepository paymentRepository;
     private final ApplicationEventPublisher publisher;
-    private final TossPaymentClient tossPaymentClient;
+    private final PaymentClient tossPaymentClient;
 
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -41,7 +42,7 @@ public class AutoPaymentCancelService {
             order.changeOrderStatus(OrderStatus.CANCELLED);
 
             publisher.publishEvent(new PaymentStatusChangedEvent(
-                    payment, PaymentStatus.READY, dto.cancelReason(), PaymentStatus.FAILED, dto.paymentKey(), response.toString()));
+                    payment.getId(), PaymentStatus.READY, dto.cancelReason(), PaymentStatus.FAILED, dto.paymentKey(), response.toString()));
         } catch (AppException e) {
             if (e.getErrorCode() == PaymentErrorCode.PAYMENT_NETWORK_TIMEOUT) {
                 log.error("[자동 취소 실패] 자동 취소 시도 중 타임아웃 발생. 토스 장부 확인 불가.");
