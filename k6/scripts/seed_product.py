@@ -335,7 +335,7 @@ def seed(target_products: int, chunk_size: int = 3_000):
     for _ in range(current_chunk):
       cat_name = random.choices(cat_names, weights=cat_weights, k=1)[0]
       cat_id   = category_map[cat_name]["id"]
-      store_id = random.randint(1, 5000)
+      store_id = random.randint(1, 8000)
       pname    = random_product_name(cat_name)
       desc     = fake.text(max_nb_chars=300)
 

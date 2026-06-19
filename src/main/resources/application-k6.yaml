@@ -17,14 +17,18 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/i_commerce
+    url: jdbc:postgresql://i_commerce_postgres:5432/i_commerce
     username: postgres
     password: 1234
+    hikari:
+      # [추천] 2코어 기준 하드웨어 효율을 극대화하면서 180명 요청을 받아줄 수 있는 마지노선
+      maximum-pool-size: 30
+      connection-timeout: 7000
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: update #update
     show-sql: true
     open-in-view: false
 
@@ -39,6 +43,7 @@ spring:
         bucket: ${AWS_S3_BUCKET_NAME:dummy}
       stack:
         auto: false
+  threads.virtual.enabled: true
 
   servlet:
     multipart:
@@ -47,6 +52,7 @@ spring:
 
 toss:
   secretKey: ${TOSS_SECRET_KEY:dummy}
+  baseUrl: http://mock-toss-server:8080
 
 management:
   endpoints:

@@ -1,4 +1,25 @@
 services:
+  # 1. API 서버 (Spring Boot - bootBuildImage 기반)
+  app:
+    image: i-commerce:latest
+    container_name: i_commerce_app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    networks:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+#          cpus: '3.0'        # 500 RPS 스레드 연산을 위한 3코어 할당
+#          memory: 4000M
+          cpus: '3.5'        # 4코어 중 시스템 기본 프로세스용 0.5코어 제외
+          memory: 7000M      # 8 GiB(약 8192M) 중 OS 마진을 제외한 가용 메모리
+
   postgres:
     build:
       dockerfile: ./docker/postgres/Dockerfile
@@ -16,6 +37,40 @@ services:
       - postgres_volume:/var/lib/postgresql
     networks:
       - monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4000M
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: i_commerce_postgres_exporter
+    restart: unless-stopped
+    environment:
+      # 내부 컨테이너 통신이므로 포트는 5433이 아닌 5432를 사용합니다.
+      DATA_SOURCE_NAME: "postgresql://postgres:1234@i_commerce_postgres:5432/i_commerce?sslmode=disable"
+    networks:
+      - monitoring
+    ports:
+      - "9187:9187"
+    depends_on:
+      - postgres
+  # 3. Redis 캐시 서버 (추후 도입 대비 - 필요할 때 주석 해제)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: i_commerce_redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - monitoring
+  #   # 🌟 Redis 자원 최적 할당
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '1.0'        # 싱글 스레드 기반이므로 1코어면 충분
+  #         memory: 1000M      # 고속 조회 및 세션 캐싱용 1GB 할당
 
   prometheus:
     image: prom/prometheus
@@ -50,6 +105,26 @@ services:
       - INFLUXDB_HTTP_MAX_BODY_SIZE=0
     networks:
       monitoring:
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'        # k6가 쏟아내는 초당 수천 개의 시계열 데이터 저장용 2코어
+          memory: 2000M
+  mock-toss-server:
+    image: wiremock/wiremock:latest # ◀ 가장 안정적인 최신 v3 버전 자동 다운로드
+    container_name: mock-toss-server
+    ports:
+      - "8089:8080" # 외부 포트 8089를 사용해 WebClient 연동
+    command:
+      - --global-response-templating # ◀ Handlebars 문법({{jsonPath}}) 활성화 옵션 자동 주입
+    restart: unless-stopped
+    networks:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'        # 500 RPS 가짜 응답 처리를 위한 1.5코어 할당
+          memory: 1000M
 
 volumes:
   postgres_volume:
