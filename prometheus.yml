@@ -16,4 +16,4 @@ scrape_configs:
 
   - job_name: 'postgres'
     static_configs:
-      - targets: [ 'postgres_exporter:9187' ]
+      - targets: [ 'i_commerce_postgres_exporter:9187' ]

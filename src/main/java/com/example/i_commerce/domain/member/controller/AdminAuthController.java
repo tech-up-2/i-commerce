@@ -4,6 +4,8 @@ package com.example.i_commerce.domain.member.controller;
 import com.example.i_commerce.domain.member.service.admin.AdminService;
 import com.example.i_commerce.domain.member.service.admin.dto.AdminLoginResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueResponse;
 import com.example.i_commerce.global.common.response.ApiResponse;
 import com.example.i_commerce.global.security.jwt.BlacklistedTokenService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +35,14 @@ public class AdminAuthController {
     public ApiResponse<AdminLoginResponse> login(@RequestBody @Valid LoginRequest dto) {
         AdminLoginResponse adminLoginResponse = adminService.login(dto);
         return ApiResponse.success(adminLoginResponse);
+    }
+
+    // 리프레시 토큰 검증 후 엑세스 토큰 재발급
+    @PostMapping("/reissue")
+    public ApiResponse<TokenReissueResponse> reissue(
+        @Valid @RequestBody TokenReissueRequest request
+    ) {
+        return ApiResponse.success(adminService.reissue(request));
     }
 
     @PreAuthorize("isAuthenticated()")//로그인 되어 있는지 확인

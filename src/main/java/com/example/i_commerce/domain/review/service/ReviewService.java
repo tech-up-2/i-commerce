@@ -94,6 +94,7 @@ public class ReviewService {
     public SliceResponse<ReviewResponse> searchReviews(SearchReviewRequest request, Pageable pageable) {
 
         Slice<Review> reviewSlice = reviewRepo.searchReviews(
+            request.getProductId(),
             request.getOptionName(),
             request.getKeyword(),
             request.getStarRate(),

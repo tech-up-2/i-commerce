@@ -77,7 +77,7 @@ public class ReviewController {
     @Operation(summary = "리뷰 검색 및 페이징 조회", description = "옵션명과 키워드로 리뷰를 검색합니다.")
     @GetMapping("/search")
     public ApiResponse<SliceResponse<ReviewResponse>> searchReviews(
-        @ModelAttribute SearchReviewRequest request,
+        @Valid @ModelAttribute SearchReviewRequest request,
         @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         SliceResponse<ReviewResponse> response = reviewService.searchReviews(request, pageable);

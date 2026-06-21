@@ -9,6 +9,8 @@ import com.example.i_commerce.domain.member.service.auth.dto.MemberSignUpRequest
 import com.example.i_commerce.domain.member.service.auth.dto.PasswordFindRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.PasswordResetRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.SignUpResponse;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserInfoResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserUpdateRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
@@ -53,7 +55,14 @@ public class AuthController {
     public ApiResponse<LoginResponse> login(@RequestBody @Valid LoginRequest dto) {
         LoginResponse response = authService.login(dto);
         return ApiResponse.success(response);
-    }//개선필요사항: 로그인 되어 있을 때 로그인이 안되게 해야함
+    }
+
+    @PostMapping("/reissue")
+    public ApiResponse<TokenReissueResponse> reissue(
+        @Valid @RequestBody TokenReissueRequest request
+    ) {
+        return ApiResponse.success(authService.reissue(request));
+    }
 
     //로그아웃
     @PreAuthorize("isAuthenticated()")

@@ -1,5 +1,7 @@
 package com.example.i_commerce.global.security.jwt;
 
+import com.example.i_commerce.global.security.jwt.entity.BlacklistedToken;
+import com.example.i_commerce.global.security.jwt.repo.BlacklistedTokenRepository;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
