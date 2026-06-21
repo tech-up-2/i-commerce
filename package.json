@@ -1,0 +1,23 @@
+{
+  "name": "i-commerce",
+  "version": "1.0.0",
+  "description": "> **쇼핑부터 실시간 소통까지, 쿠팡 클론 백엔드 시스템**",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tech-up-2/i-commerce.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tech-up-2/i-commerce/issues"
+  },
+  "homepage": "https://github.com/tech-up-2/i-commerce#readme",
+  "devDependencies": {
+    "@types/k6": "^2.0.0"
+  }
+}
