@@ -37,6 +37,14 @@ def seed_reviews():
     db_options = [r[0] for r in cursor.fetchall()]
     option_names = db_options if db_options else ["기본 옵션 / 단일 상품"]
 
+    print("\n[안전 장치] 기존 데이터 충돌 방지를 위한 최대 ID 탐색 중...")
+    cursor.execute("SELECT COALESCE(MAX(id), 0) FROM reviews;")
+    start_review_id = cursor.fetchone()[0] + 1
+
+    cursor.execute("SELECT COALESCE(MAX(id), 0) FROM review_images;")
+    image_id_counter = cursor.fetchone()[0] + 1
+    print(f"-> 리뷰는 {start_review_id}번부터, 이미지는 {image_id_counter}번부터 안전하게 이어 적재합니다.")
+
     print(f"\n해당 상품(ID: {target_product_id}) 기반 대용량 리뷰 40,000건 적재 시작...")
 
     print("[보안 변경] 외래키 제약조건 임시 비활성화 (Replica 모드)")
@@ -57,43 +65,43 @@ def seed_reviews():
 
     review_data = []
     image_data = []
-    image_id_counter = 1
 
     TOTAL_REVIEWS = 40000
     CHUNK_SIZE = 10000
     MAX_USER_ID = 40000
 
-    for i in range(1, TOTAL_REVIEWS + 1):
+    for offset in range(TOTAL_REVIEWS):
+      review_id = start_review_id + offset
       user_id = random.randint(1, MAX_USER_ID)
-      current_option = option_names[(i % len(option_names))]
-      dummy_order_product_id = i
-      star_rate = (i % 5) + 1
+      current_option = option_names[(offset % len(option_names))]
+      dummy_order_product_id = review_id
+      star_rate = (offset % 5) + 1
 
-      if i == 1:
+      if offset == 0:
         content = "★테스트용 첫 번째 리뷰★"
       else:
-        content = f"[{current_option}] 평점 {star_rate}점 다중 검색 및 페이징 성능 테스트용 dummy 리뷰 {i}번"
+        content = f"[{current_option}] 평점 {star_rate}점 다중 검색 및 페이징 성능 테스트용 dummy 리뷰 {review_id}번"
 
       review_data.append((
-        i, target_product_id, dummy_order_product_id, user_id, current_option,
+        review_id, target_product_id, dummy_order_product_id, user_id, current_option,
         content, star_rate, 0, 0, 0, 'ACTIVE', False, False, False,
         '2026-06-16 11:15:00', '2026-06-16 11:15:00'
       ))
 
       image_count = random.randint(0, 10)
       for order in range(image_count):
-        dummy_url = f"https://i-commerce.test.{i}_{order}.jpg"
+        dummy_url = f"https://i-commerce.test.{review_id}_{order}.jpg"
         image_data.append((
-          image_id_counter, dummy_url, order, i, '2026-06-16 11:15:00', '2026-06-16 11:15:00'
+          image_id_counter, dummy_url, order, review_id, '2026-06-16 11:15:00', '2026-06-16 11:15:00'
         ))
         image_id_counter += 1
 
-      if i % CHUNK_SIZE == 0:
+      if (offset + 1) % CHUNK_SIZE == 0:
         execute_values(cursor, review_sql, review_data)
         if image_data:
           execute_values(cursor, image_sql, image_data)
         conn.commit()
-        print(f"   -> {i}건 적재 완료...")
+        print(f"   -> {offset + 1}건 적재 완료...")
 
         review_data.clear()
         image_data.clear()
