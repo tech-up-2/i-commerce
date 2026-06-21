@@ -10,7 +10,10 @@ spring:
 #    properties:
 #      hibernate:
 #        default_batch_fetch_size: 100
-
+  datasource:
+    hikari:
+      maximum-pool-size: ${HIKARI_MAX_POOL_SIZE:30}
+      connection-timeout: ${HIKARI_CONN_TIMEOUT:7000}
 app:
   encryption:
     key: "Gq1wXnzi+7PBHjbvIpEi4TwjuH+L64fFAFYQGE0x2bc="
