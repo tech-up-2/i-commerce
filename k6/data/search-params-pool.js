@@ -13,8 +13,9 @@ export const KEYWORDS = [
   '노트북', '청바지', '샴푸', '운동화', '이어폰', '냉장고',
 ];
 
-// 실제 적재 후 SELECT id FROM categories WHERE depth=2; 로 갱신 권장
-export const LEAF_CATEGORY_IDS = Array.from({ length: 40 }, (_, i) => i + 3);
+export const LEAF_CATEGORY_IDS = __ENV.LEAF_CATEGORY_IDS
+    ? __ENV.LEAF_CATEGORY_IDS.split(',').map(id => parseInt(id.trim(), 10))
+    : Array.from({ length: 40 }, (_, i) => i + 3);
 
 export const SORT_TYPES = ['RELEVANCE', 'PRICE_ASC', 'PRICE_DESC', 'LATEST'];
 
