@@ -11,7 +11,7 @@
  */
 
 import thresholds from '../../config/product-thresholds.js';
-import { runSearchPersona } from '../../scenarios/search-personas';
+import { runSearchPersona } from '../../scenarios/search-personas.js';
 
 const DATA_VOLUME = __ENV.DATA_VOLUME || 'unknown';
 
