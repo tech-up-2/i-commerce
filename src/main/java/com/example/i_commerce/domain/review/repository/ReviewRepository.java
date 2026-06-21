@@ -26,10 +26,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findAllByProductIdAndStatus(Long productId, ReviewStatus status);
 
     @Query("SELECT r FROM Review r " +
-        "WHERE (:displayOptionName IS NULL OR r.displayOptionName = :displayOptionName) " +
-        "AND (:keyword IS NULL OR r.content LIKE CONCAT('%',:keyword, '%')) " +
+        "WHERE r.productId = :productId " +
+        "AND (:displayOptionName IS NULL OR r.displayOptionName = :displayOptionName) " +
+        "AND (:keyword IS NULL OR r.content LIKE CONCAT('%', CAST(:keyword AS string), '%')) " +
         "AND (:starRate IS NULL OR r.starRate = :starRate)")
     Slice<Review> searchReviews(
+        @Param("productId") Long productId,
         @Param("displayOptionName") String displayOptionName,
         @Param("keyword") String keyword,
         @Param("starRate") Integer starRate,
