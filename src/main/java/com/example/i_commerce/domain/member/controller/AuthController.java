@@ -120,7 +120,7 @@ public class AuthController {
         return ApiResponse.success(null);
     }
 
-    //정보조회
+    //회원정보조회
     @Operation(summary = "내 정보 조회", description = "로그인한 사용자의 회원 정보를 조회합니다.")
     @GetMapping("/users/me")
     @PreAuthorize("@authChecker.canViewMemberInfo()")
