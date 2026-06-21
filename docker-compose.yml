@@ -4,6 +4,10 @@ services:
       dockerfile: ./docker/postgres/Dockerfile
       args:
         PG_BIGM_VERSION: "1.2-20250903"
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements,pg_bigm"
     container_name: i_commerce_postgres
     restart: unless-stopped
     environment:
