@@ -3,7 +3,6 @@ import random
 import psycopg2
 from psycopg2.extras import execute_values
 
-
 def get_connection():
   return psycopg2.connect(
     host=os.getenv("DB_HOST", "localhost"),
@@ -24,9 +23,9 @@ def seed_reviews():
     row = cursor.fetchone()
     if row:
       target_product_id = row[0]
-      print(f"데이터셋에 존재하는 진짜 상품 ID를 타겟으로 지정: {target_product_id}")
+      print(f"[성공] 데이터셋에 존재하는 첫 번째 상품 ID 타겟 지정: {target_product_id}")
     else:
-      target_product_id = 55
+      target_product_id = 24003
       print(f"[주의] 상품 테이블이 비어있어 기본값 {target_product_id}로 진행합니다.")
 
     cursor.execute("""
@@ -36,40 +35,42 @@ def seed_reviews():
                    """, (target_product_id,))
 
     db_options = [r[0] for r in cursor.fetchall()]
+    option_names = db_options if db_options else ["기본 옵션 / 단일 상품"]
 
-    if not db_options:
-      print("해당 상품은 옵션이 없는 상품(NONE)이므로 기본 텍스트 매핑을 사용합니다.")
-      option_names = ["기본 옵션 / 단일 상품"]
-    else:
-      option_names = db_options
-      print(f"[성공] 진짜 옵션 {len(option_names)}개 실시간 탐지 완료: {option_names}")
+    print(f"\n해당 상품(ID: {target_product_id}) 기반 대용량 리뷰 40,000건 적재 시작...")
 
-    print(f"\n해당 상품(ID: {target_product_id}) 기반 리뷰 1,000건 & 이미지 적재 시작")
-
+    print("[보안 변경] 외래키 제약조건 임시 비활성화 (Replica 모드)")
     cursor.execute("SET session_replication_role = 'replica';")
 
-    sql = """
-          INSERT INTO reviews (
-              id, product_id, order_product_id, user_id, display_option_name, content,
-              star_rate, like_count, report_count, version, status,
-              is_best, is_excluded, is_updated, created_at, updated_at
-          ) VALUES %s
-              ON CONFLICT (id) DO NOTHING;
-          """
+    review_sql = """
+                 INSERT INTO reviews (
+                     id, product_id, order_product_id, user_id, display_option_name, content,
+                     star_rate, like_count, report_count, version, status,
+                     is_best, is_excluded, is_updated, created_at, updated_at
+                 ) VALUES %s ON CONFLICT (id) DO NOTHING; 
+                 """
+
+    image_sql = """
+                INSERT INTO review_images (id, image_url, sort_order, review_id, created_at, updated_at)
+                VALUES %s ON CONFLICT (id) DO NOTHING; 
+                """
 
     review_data = []
     image_data = []
     image_id_counter = 1
 
-    for i in range(1, 1001):
-      user_id = (i % 609) + 1
+    TOTAL_REVIEWS = 40000
+    CHUNK_SIZE = 10000
+    MAX_USER_ID = 40000
+
+    for i in range(1, TOTAL_REVIEWS + 1):
+      user_id = random.randint(1, MAX_USER_ID)
       current_option = option_names[(i % len(option_names))]
       dummy_order_product_id = i
       star_rate = (i % 5) + 1
 
       if i == 1:
-        star_rate = 5
-        content = "★테스트용 리뷰★"
+        content = "★테스트용 첫 번째 리뷰★"
       else:
         content = f"[{current_option}] 평점 {star_rate}점 다중 검색 및 페이징 성능 테스트용 dummy 리뷰 {i}번"
 
@@ -80,37 +81,36 @@ def seed_reviews():
       ))
 
       image_count = random.randint(0, 10)
-
       for order in range(image_count):
         dummy_url = f"https://i-commerce.test.{i}_{order}.jpg"
-
         image_data.append((
-          image_id_counter,
-          dummy_url,
-          order,
-          i,
-          '2026-06-16 11:15:00',
-          '2026-06-16 11:15:00'
+          image_id_counter, dummy_url, order, i, '2026-06-16 11:15:00', '2026-06-16 11:15:00'
         ))
         image_id_counter += 1
 
-    execute_values(cursor, sql, review_data)
-    conn.commit()
-    print("제약조건 우회 완료, 리뷰 데이터 1,000건 적재 성공")
+      if i % CHUNK_SIZE == 0:
+        execute_values(cursor, review_sql, review_data)
+        if image_data:
+          execute_values(cursor, image_sql, image_data)
+        conn.commit()
+        print(f"   -> {i}건 적재 완료...")
 
-    image_sql = """
-                INSERT INTO review_images (id, image_url, sort_order, review_id, created_at, updated_at)
-                VALUES %s ON CONFLICT (id) DO NOTHING;
-                """
+        review_data.clear()
+        image_data.clear()
 
-    execute_values(cursor, image_sql, image_data)
-    conn.commit()
-    print(f"리뷰 이미지 데이터 총 {len(image_data)}건 랜덤 분산 적재 완료")
+    if review_data:
+      execute_values(cursor, review_sql, review_data)
+      if image_data:
+        execute_values(cursor, image_sql, image_data)
+      conn.commit()
 
+    print(f"\n리뷰 데이터 총 {TOTAL_REVIEWS}건 최종 적재 성공!")
+
+    print("모든 테이블 ID 시퀀스 동기화 진행 중...")
     cursor.execute("SELECT setval(pg_get_serial_sequence('reviews', 'id'), COALESCE((SELECT MAX(id) FROM reviews), 1));")
     cursor.execute("SELECT setval(pg_get_serial_sequence('review_images', 'id'), COALESCE((SELECT MAX(id) FROM review_images), 1));")
     conn.commit()
-    print("모든 테이블 ID 시퀀스 동기화 완료!")
+    print("시퀀스 동기화 완료!")
 
   except Exception as e:
     print(f"에러 발생: {e}")
@@ -119,11 +119,11 @@ def seed_reviews():
     try:
       cursor.execute("SET session_replication_role = 'origin';")
       conn.commit()
-    except:
-      pass
+    except Exception as rollback_error:
+      print(f"Origin 모드 복구 실패: {rollback_error}")
+
     cursor.close()
     conn.close()
-
 
 if __name__ == "__main__":
   seed_reviews()
