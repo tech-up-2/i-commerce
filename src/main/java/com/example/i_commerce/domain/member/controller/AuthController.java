@@ -142,4 +142,11 @@ public class AuthController {
         UserInfoResponse response = authService.updateMyInfo(principal.getId(), request);
         return ApiResponse.success(response);
     }
+
+    //Access 토큰 테스트 API
+    @PreAuthorize("@authChecker.canUpdateMemberInfo()")
+    @GetMapping("/tokentest")
+    public ApiResponse<String> accessTokenTest() {
+        return ApiResponse.success("테스트 성공");
+    }
 }
