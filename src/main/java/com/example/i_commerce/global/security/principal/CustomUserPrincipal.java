@@ -3,7 +3,7 @@ package com.example.i_commerce.global.security.principal;
 import com.example.i_commerce.domain.member.entity.enums.AdminRole;
 import com.example.i_commerce.domain.member.entity.enums.MemberType;
 import com.example.i_commerce.global.security.SecurityAuthority;
-import com.example.i_commerce.global.security.jwt.TokenPayload;
+import com.example.i_commerce.global.security.jwt.dto.TokenPayload;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;

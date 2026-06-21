@@ -1,5 +1,6 @@
 package com.example.i_commerce.global.security.jwt;
 
+import com.example.i_commerce.global.security.jwt.dto.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;

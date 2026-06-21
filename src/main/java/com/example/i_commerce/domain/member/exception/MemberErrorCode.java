@@ -38,7 +38,16 @@ public enum MemberErrorCode implements ErrorCode {
     ),
 
     // --- 401
-    INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "USR-40101", "패스워드가 틀렸습니다."),
+    INVALID_PASSWORD(HttpStatus.UNAUTHORIZED,
+        "USR-40101", "패스워드가 틀렸습니다."),
+    REFRESH_TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED,
+        "USR-40102", "리프레시 토큰이 없습니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,
+        "USR-40103", "유효하지 않은 Refresh Token입니다."),
+    EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,
+        "TKN-40104", "만료된 Refresh Token입니다."),
+    REVOKED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED,
+        "TKN-40105", "폐기된 Refresh Token입니다."),
 
     // --- 404
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USR-40401", "존재하지 않는 회원입니다."),

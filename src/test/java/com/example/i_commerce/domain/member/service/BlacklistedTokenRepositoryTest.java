@@ -2,8 +2,8 @@ package com.example.i_commerce.domain.member.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.i_commerce.global.security.jwt.BlacklistedToken;
-import com.example.i_commerce.global.security.jwt.BlacklistedTokenRepository;
+import com.example.i_commerce.global.security.jwt.entity.BlacklistedToken;
+import com.example.i_commerce.global.security.jwt.repo.BlacklistedTokenRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;

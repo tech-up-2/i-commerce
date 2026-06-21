@@ -19,7 +19,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/connect")
-            .setAllowedOrigins("http://localhost:3000")//front end 환경인 3000번에 맞춰줌
+            .setAllowedOrigins("http://localhost:3001")//front end 환경인 3000번에 맞춰줌
 //            ws://가 아닌 http:// 엔드포인트를 사용할 수 있게 해주는 sockJs라이브러리를 통한 요청을 허용하는 설정
             .withSockJS();
     }

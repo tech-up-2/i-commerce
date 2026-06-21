@@ -19,7 +19,6 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Component
-@Profile("!k6")
 @RequiredArgsConstructor
 public class TossPaymentClient implements PaymentClient {
 

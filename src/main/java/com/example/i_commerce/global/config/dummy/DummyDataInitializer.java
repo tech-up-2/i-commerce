@@ -22,8 +22,14 @@ import com.example.i_commerce.domain.member.repository.StoreAddressRepository;
 import com.example.i_commerce.domain.member.repository.StoreRepository;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -39,22 +45,31 @@ import org.springframework.transaction.annotation.Transactional;
 public class DummyDataInitializer implements CommandLineRunner {
 
     private static final String PASSWORD = "password123!";
-    // 필요하면 이 숫자만 조절하면 됨
-    private static final int MEMBER_COUNT_PER_STATUS = 250;
-    private static final int SELLER_COUNT_PER_STATUS = 25;
-    private static final int ADMIN_COUNT_PER_ROLE = 3;
+
+    private static final int MEMBER_COUNT_PER_STATUS = 15000;
+    private static final int SELLER_COUNT_PER_STATUS = 1000;
+    private static final int ADMIN_COUNT_PER_ROLE = 100;
+
     private static final int DELIVERY_ADDRESS_COUNT_PER_MEMBER = 2;
     private static final int STORE_COUNT_PER_SELLER = 2;
     private static final int STORE_ADDRESS_COUNT_PER_STORE = 3;
+
+    private static final int BATCH_SIZE = 1000;
+
     private final MemberRepository memberRepository;
     private final SellerRepository sellerRepository;
     private final StoreRepository storeRepository;
     private final DeliveryAddressRepository deliveryAddressRepository;
     private final StoreAddressRepository storeAddressRepository;
     private final AdminRepository adminRepository;
+
     private final PasswordEncoder passwordEncoder;
     private final EmailHashEncoder emailHashEncoder;
     private final DataEncryptor dataEncryptor;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private String encodedPassword;
     private byte[] encryptedBirthday;
     private byte[] encryptedPhoneNumber;
@@ -68,90 +83,222 @@ public class DummyDataInitializer implements CommandLineRunner {
     public void run(String... args) {
         log.info("더미 데이터 생성을 시작합니다.");
 
+        initCommonValues();
+
+        createMembersFast();
+        createSellersFast();
+        createAdminsFast();
+
+        log.info("더미 데이터 생성이 완료되었습니다.");
+    }
+
+    private void initCommonValues() {
         this.encodedPassword = passwordEncoder.encode(PASSWORD);
-        this.encryptedBirthday = dataEncryptor.
-            encrypt(LocalDate.of(1999, 1, 1).toString());
+        this.encryptedBirthday = dataEncryptor.encrypt(LocalDate.of(1999, 1, 1).toString());
         this.encryptedPhoneNumber = dataEncryptor.encrypt("01012345678");
         this.encryptedZipCode = dataEncryptor.encrypt("12345");
         this.encryptedRecipientPhone = dataEncryptor.encrypt("01012345678");
         this.encryptedBankName = dataEncryptor.encrypt("국민은행");
         this.encryptedBankAccount = dataEncryptor.encrypt("12345678901234");
-
-        createMembers();
-        createSellers();
-        createAdmins();
-
-        log.info("더미 데이터 생성이 완료되었습니다.");
     }
 
-    /**
-     * 일반 회원 생성
-     * <p>
-     * email 규칙: activeMember1@test.com inactiveMember1@test.com suspendedMember1@test.com
-     * withdrawnMember1@test.com
-     */
-    private void createMembers() {
+    private void createMembersFast() {
+        log.info("일반 회원 더미 데이터 생성을 시작합니다.");
+
+        List<MemberSeed> seeds = new ArrayList<>(BATCH_SIZE);
+
         for (MemberStatus status : MemberStatus.values()) {
             for (int i = 1; i <= MEMBER_COUNT_PER_STATUS; i++) {
                 String email = status.name().toLowerCase() + "Member" + i + "@test.com";
+                String emailHash = emailHashEncoder.encode(email);
                 String name = "일반회원" + i;
 
-                Member member = createMemberIfNotExists(
+                seeds.add(new MemberSeed(
                     email,
+                    emailHash,
                     name,
                     MemberType.CUSTOMER,
                     status,
                     false,
                     i
-                );
+                ));
 
-                createDeliveryAddressesIfNotExists(member, name);
+                if (seeds.size() >= BATCH_SIZE) {
+                    saveMemberSeeds(seeds);
+                    seeds.clear();
+                }
             }
         }
+
+        if (!seeds.isEmpty()) {
+            saveMemberSeeds(seeds);
+            seeds.clear();
+        }
+
+        log.info("일반 회원 더미 데이터 생성을 완료했습니다.");
     }
 
-    /**
-     * 판매자 생성
-     * <p>
-     * email 규칙: pendingSeller1@test.com approvedSeller1@test.com blockedSeller1@test.com
-     * withdrawSeller1@test.com
-     * <p>
-     * 주의: 판매자는 SellerStatus 테스트가 목적이므로 MemberStatus는 ACTIVE로 고정한다.
-     */
-    private void createSellers() {
+    private void saveMemberSeeds(List<MemberSeed> seeds) {
+        Set<String> existingEmailHashes = findExistingMemberEmailHashes(seeds);
+
+        List<MemberSeed> newSeeds = seeds.stream()
+            .filter(seed -> !existingEmailHashes.contains(seed.emailHash()))
+            .toList();
+
+        if (newSeeds.isEmpty()) {
+            return;
+        }
+
+        List<Member> members = new ArrayList<>(newSeeds.size());
+
+        for (MemberSeed seed : newSeeds) {
+            members.add(createMember(seed));
+        }
+
+        memberRepository.saveAll(members);
+        memberRepository.flush();
+
+        List<DeliveryAddress> deliveryAddresses = new ArrayList<>(
+            members.size() * DELIVERY_ADDRESS_COUNT_PER_MEMBER
+        );
+
+        for (int idx = 0; idx < members.size(); idx++) {
+            Member member = members.get(idx);
+            MemberSeed seed = newSeeds.get(idx);
+
+            for (int i = 1; i <= DELIVERY_ADDRESS_COUNT_PER_MEMBER; i++) {
+                deliveryAddresses.add(createDeliveryAddress(member.getId(), seed.name(), i));
+            }
+        }
+
+        deliveryAddressRepository.saveAll(deliveryAddresses);
+        deliveryAddressRepository.flush();
+
+        entityManager.clear();
+    }
+
+    private void createSellersFast() {
+        log.info("판매자 더미 데이터 생성을 시작합니다.");
+
+        List<SellerSeed> seeds = new ArrayList<>(BATCH_SIZE);
+
         for (SellerStatus sellerStatus : SellerStatus.values()) {
             for (int i = 1; i <= SELLER_COUNT_PER_STATUS; i++) {
                 String email = sellerStatus.name().toLowerCase() + "Seller" + i + "@test.com";
+                String emailHash = emailHashEncoder.encode(email);
                 String name = "판매자" + i;
 
-                Member sellerMember = createMemberIfNotExists(
+                seeds.add(new SellerSeed(
                     email,
-                    name,
-                    MemberType.SELLER,
-                    MemberStatus.ACTIVE,
-                    true,
-                    i
-                );
-
-                Seller seller = createSellerIfNotExists(
-                    sellerMember,
+                    emailHash,
                     name,
                     sellerStatus,
                     i
-                );
+                ));
 
-                createStoresIfNotExists(seller, name);
+                if (seeds.size() >= BATCH_SIZE) {
+                    saveSellerSeeds(seeds);
+                    seeds.clear();
+                }
             }
         }
+
+        if (!seeds.isEmpty()) {
+            saveSellerSeeds(seeds);
+            seeds.clear();
+        }
+
+        log.info("판매자 더미 데이터 생성을 완료했습니다.");
     }
 
-    /**
-     * 관리자 생성
-     * <p>
-     * email 규칙: activeMaster1@test.com activeAdmin1@test.com activeOperator1@test.com
-     * lockedMaster1@test.com withdrawnAdmin1@test.com
-     */
-    private void createAdmins() {
+    private void saveSellerSeeds(List<SellerSeed> seeds) {
+        Set<String> existingEmailHashes = findExistingMemberEmailHashesForSellers(seeds);
+
+        List<SellerSeed> newSeeds = seeds.stream()
+            .filter(seed -> !existingEmailHashes.contains(seed.emailHash()))
+            .toList();
+
+        if (newSeeds.isEmpty()) {
+            return;
+        }
+
+        List<Member> sellerMembers = new ArrayList<>(newSeeds.size());
+
+        for (SellerSeed seed : newSeeds) {
+            MemberSeed memberSeed = new MemberSeed(
+                seed.email(),
+                seed.emailHash(),
+                seed.name(),
+                MemberType.SELLER,
+                MemberStatus.ACTIVE,
+                true,
+                seed.number()
+            );
+
+            sellerMembers.add(createMember(memberSeed));
+        }
+
+        memberRepository.saveAll(sellerMembers);
+        memberRepository.flush();
+
+        List<Seller> sellers = new ArrayList<>(newSeeds.size());
+
+        for (int idx = 0; idx < sellerMembers.size(); idx++) {
+            Member member = sellerMembers.get(idx);
+            SellerSeed seed = newSeeds.get(idx);
+
+            sellers.add(createSeller(member, seed.name(), seed.sellerStatus(), seed.number()));
+        }
+
+        sellerRepository.saveAll(sellers);
+        sellerRepository.flush();
+
+        List<Store> stores = new ArrayList<>(sellers.size() * STORE_COUNT_PER_SELLER);
+
+        for (int idx = 0; idx < sellers.size(); idx++) {
+            Seller seller = sellers.get(idx);
+            SellerSeed seed = newSeeds.get(idx);
+
+            String businessName = seed.name() + "의 마켓";
+
+            for (int i = 1; i <= STORE_COUNT_PER_SELLER; i++) {
+                String storeName = businessName + "의 상점" + i;
+
+                Store store = Store.builder()
+                    .sellerId(seller.getId())
+                    .storeName(storeName)
+                    .phoneNumber("01012345678")
+                    .storeStatus(StoreStatus.OPEN)
+                    .build();
+
+                stores.add(store);
+            }
+        }
+
+        storeRepository.saveAll(stores);
+        storeRepository.flush();
+
+        List<StoreAddress> storeAddresses = new ArrayList<>(
+            stores.size() * STORE_ADDRESS_COUNT_PER_STORE
+        );
+
+        for (Store store : stores) {
+            for (int i = 1; i <= STORE_ADDRESS_COUNT_PER_STORE; i++) {
+                storeAddresses.add(createStoreAddress(store.getId(), store.getStoreName(), i));
+            }
+        }
+
+        storeAddressRepository.saveAll(storeAddresses);
+        storeAddressRepository.flush();
+
+        entityManager.clear();
+    }
+
+    private void createAdminsFast() {
+        log.info("관리자 더미 데이터 생성을 시작합니다.");
+
+        List<AdminSeed> seeds = new ArrayList<>(BATCH_SIZE);
+
         for (AdminStatus status : AdminStatus.values()) {
             for (AdminRole role : AdminRole.values()) {
                 for (int i = 1; i <= ADMIN_COUNT_PER_ROLE; i++) {
@@ -160,185 +307,194 @@ public class DummyDataInitializer implements CommandLineRunner {
                         + i
                         + "@test.com";
 
+                    String emailHash = emailHashEncoder.encode(email);
                     String name = "관리자" + i;
 
-                    createAdminIfNotExists(email, name, role, status);
+                    seeds.add(new AdminSeed(
+                        email,
+                        emailHash,
+                        name,
+                        role,
+                        status
+                    ));
+
+                    if (seeds.size() >= BATCH_SIZE) {
+                        saveAdminSeeds(seeds);
+                        seeds.clear();
+                    }
                 }
             }
         }
+
+        if (!seeds.isEmpty()) {
+            saveAdminSeeds(seeds);
+            seeds.clear();
+        }
+
+        log.info("관리자 더미 데이터 생성을 완료했습니다.");
     }
 
-    private Member createMemberIfNotExists(
-        String email,
-        String name,
-        MemberType memberType,
-        MemberStatus memberStatus,
-        Boolean isSeller,
-        int number
-    ) {
-        String emailHash = emailHashEncoder.encode(email);
+    private void saveAdminSeeds(List<AdminSeed> seeds) {
+        List<String> emailHashes = seeds.stream()
+            .map(AdminSeed::emailHash)
+            .toList();
 
-        Gender gender = number % 2 == 0
-            ? Gender.FEMALE : Gender.MALE;
+        Set<String> existingEmailHashes = adminRepository.findAllByEmailHashIn(emailHashes)
+            .stream()
+            .map(Admin::getEmailHash)
+            .collect(Collectors.toSet());
 
-        return memberRepository.findByEmailHash(emailHash)
-            .orElseGet(() -> {
-                Member member = Member.builder()
-                    .emailHash(emailHash)
-                    .emailEncrypted(dataEncryptor.encrypt(email))
-                    .password(encodedPassword)
-                    .name(dataEncryptor.encrypt(name))
-                    .sex(gender)
-                    .birthday(encryptedBirthday)
-                    .phoneNumber(encryptedPhoneNumber)
-                    .role(memberType)
-                    .status(memberStatus)
-                    .isSeller(isSeller)
-                    .point(0)
-                    .build();
+        List<Admin> admins = new ArrayList<>();
 
-                return memberRepository.save(member);
-            });
-    }
+        for (AdminSeed seed : seeds) {
+            if (existingEmailHashes.contains(seed.emailHash())) {
+                continue;
+            }
 
-    private void createDeliveryAddressesIfNotExists(Member member, String memberName) {
-        long count = deliveryAddressRepository.countByMemberId(member.getId());
+            Admin admin = Admin.builder()
+                .emailHash(seed.emailHash())
+                .emailEncrypted(dataEncryptor.encrypt(seed.email()))
+                .password(encodedPassword)
+                .name(dataEncryptor.encrypt(seed.name()))
+                .adminRole(seed.role())
+                .adminStatus(seed.status())
+                .build();
 
-        if (count > 0) {
+            admins.add(admin);
+        }
+
+        if (admins.isEmpty()) {
             return;
         }
 
-        for (int i = 1; i <= DELIVERY_ADDRESS_COUNT_PER_MEMBER; i++) {
-            DeliveryAddress deliveryAddress = DeliveryAddress.builder()
-                .memberId(member.getId())
-                .label(memberName + "의 배송지" + i)
-                .recipientName(dataEncryptor.encrypt(memberName))
-                .recipientPhone(encryptedRecipientPhone)
-                .zipCode(encryptedZipCode)
-                .roadAddress(dataEncryptor.encrypt("서울특별시 강남구 테헤란로 " + i))
-                .jibunAddress(dataEncryptor.encrypt("서울특별시 강남구 역삼동 " + i))
-                .detailAddress(dataEncryptor.encrypt(i + "층"))
-                .extraAddress(dataEncryptor.encrypt("테스트 건물"))
-                .deliveryMemo(dataEncryptor.encrypt("문 앞에 놓아주세요."))
-                .isDefault(i == 1)
-                .build();
+        adminRepository.saveAll(admins);
+        adminRepository.flush();
 
-            deliveryAddressRepository.save(deliveryAddress);
-        }
+        entityManager.clear();
     }
 
-    private Seller createSellerIfNotExists(
+    private Set<String> findExistingMemberEmailHashes(List<MemberSeed> seeds) {
+        List<String> emailHashes = seeds.stream()
+            .map(MemberSeed::emailHash)
+            .toList();
+
+        return memberRepository.findAllByEmailHashIn(emailHashes)
+            .stream()
+            .map(Member::getEmailHash)
+            .collect(Collectors.toSet());
+    }
+
+    private Set<String> findExistingMemberEmailHashesForSellers(List<SellerSeed> seeds) {
+        List<String> emailHashes = seeds.stream()
+            .map(SellerSeed::emailHash)
+            .toList();
+
+        return memberRepository.findAllByEmailHashIn(emailHashes)
+            .stream()
+            .map(Member::getEmailHash)
+            .collect(Collectors.toSet());
+    }
+
+    private Member createMember(MemberSeed seed) {
+        Gender gender = seed.number() % 2 == 0
+            ? Gender.FEMALE
+            : Gender.MALE;
+
+        return Member.builder()
+            .emailHash(seed.emailHash())
+            .emailEncrypted(dataEncryptor.encrypt(seed.email()))
+            .password(encodedPassword)
+            .name(dataEncryptor.encrypt(seed.name()))
+            .sex(gender)
+            .birthday(encryptedBirthday)
+            .phoneNumber(encryptedPhoneNumber)
+            .role(seed.memberType())
+            .status(seed.memberStatus())
+            .isSeller(seed.isSeller())
+            .point(0)
+            .build();
+    }
+
+    private DeliveryAddress createDeliveryAddress(Long memberId, String memberName, int number) {
+        return DeliveryAddress.builder()
+            .memberId(memberId)
+            .label(memberName + "의 배송지" + number)
+            .recipientName(dataEncryptor.encrypt(memberName))
+            .recipientPhone(encryptedRecipientPhone)
+            .zipCode(encryptedZipCode)
+            .roadAddress(dataEncryptor.encrypt("서울특별시 강남구 테헤란로 " + number))
+            .jibunAddress(dataEncryptor.encrypt("서울특별시 강남구 역삼동 " + number))
+            .detailAddress(dataEncryptor.encrypt(number + "층"))
+            .extraAddress(dataEncryptor.encrypt("테스트 건물"))
+            .deliveryMemo(dataEncryptor.encrypt("문 앞에 놓아주세요."))
+            .isDefault(number == 1)
+            .build();
+    }
+
+    private Seller createSeller(
         Member member,
         String memberName,
         SellerStatus sellerStatus,
         int number
     ) {
-        return sellerRepository.findById(member.getId())
-            .orElseGet(() -> {
-                String businessName = memberName + "의 마켓";
-
-                Seller seller = Seller.builder()
-                    .member(member)
-                    .businessName(businessName)
-                    .businessNumber(String.format("12345%05d", number))
-                    .mailOrderRegistrationNumber("2026-서울강남-" + String.format("%04d", number))
-                    .ownerName(memberName)
-                    .phoneNumber("01012345678")
-                    .sellerStatus(sellerStatus)
-                    .approvedAt(
-                        sellerStatus == SellerStatus.APPROVED
-                            ? LocalDateTime.now()
-                            : null
-                    )
-                    .bankName(encryptedBankName)
-                    .bankAccount(encryptedBankAccount)
-                    .depositorName(dataEncryptor.encrypt(memberName))
-                    .build();
-
-                return sellerRepository.save(seller);
-            });
-    }
-
-    private void createStoresIfNotExists(Seller seller, String memberName) {
         String businessName = memberName + "의 마켓";
 
-        long storeCount = storeRepository.countBySellerIdAndDeletedAtIsNull(seller.getId());
-
-        if (storeCount > 0) {
-            return;
-        }
-
-        for (int i = 1; i <= STORE_COUNT_PER_SELLER; i++) {
-            String storeName = businessName + "의 상점" + i;
-
-            Store store = Store.builder()
-                .sellerId(seller.getId())
-                .storeName(storeName)
-                .phoneNumber("01012345678")
-                .storeStatus(StoreStatus.OPEN)
-                .build();
-
-            Store savedStore = storeRepository.save(store);
-
-            createStoreAddressesIfNotExists(savedStore, storeName);
-        }
+        return Seller.builder()
+            .member(member)
+            .businessName(businessName)
+            .businessNumber(generateBusinessNumber(sellerStatus, number))
+            .mailOrderRegistrationNumber(generateMailOrderRegistrationNumber(sellerStatus, number))
+            .ownerName(memberName)
+            .phoneNumber("01012345678")
+            .sellerStatus(sellerStatus)
+            .approvedAt(
+                sellerStatus == SellerStatus.APPROVED
+                    ? LocalDateTime.now()
+                    : null
+            )
+            .bankName(encryptedBankName)
+            .bankAccount(encryptedBankAccount)
+            .depositorName(dataEncryptor.encrypt(memberName))
+            .build();
     }
 
-    private void createStoreAddressesIfNotExists(Store store, String storeName) {
-        long count = storeAddressRepository.countByStoreIdAndDeletedAtIsNull(store.getId());
-
-        if (count > 0) {
-            return;
-        }
-
+    private StoreAddress createStoreAddress(Long storeId, String storeName, int number) {
         AddressType[] addressTypes = {
             AddressType.SHIPPING,
             AddressType.RETURN,
             AddressType.BUSINESS
         };
 
-        for (int i = 1; i <= STORE_ADDRESS_COUNT_PER_STORE; i++) {
-            AddressType addressType = addressTypes[(i - 1) % addressTypes.length];
-
-            StoreAddress storeAddress = StoreAddress.builder()
-                .storeId(store.getId())
-                .addressType(addressType)
-                .label(storeName + "의 주소" + i)
-                .addressPhoneNumber("01012345678")
-                .zipCode("12345")
-                .roadAddress("서울특별시 강남구 테헤란로 " + i)
-                .jibunAddress("서울특별시 강남구 역삼동 " + i)
-                .detailAddress(i + "층")
-                .extraAddress("테스트 건물")
-                .isDefault(i == 1)
-                .build();
-
-            storeAddressRepository.save(storeAddress);
-        }
+        return StoreAddress.builder()
+            .storeId(storeId)
+            .addressType(addressTypes[(number - 1) % addressTypes.length])
+            .label(storeName + "의 주소" + number)
+            .addressPhoneNumber("01012345678")
+            .zipCode("12345")
+            .roadAddress("서울특별시 강남구 테헤란로 " + number)
+            .jibunAddress("서울특별시 강남구 역삼동 " + number)
+            .detailAddress(number + "층")
+            .extraAddress("테스트 건물")
+            .isDefault(number == 1)
+            .build();
     }
 
-    private void createAdminIfNotExists(
-        String email,
-        String name,
-        AdminRole role,
-        AdminStatus status
-    ) {
-        String emailHash = emailHashEncoder.encode(email);
+    private String generateBusinessNumber(SellerStatus status, int number) {
+        int prefix = switch (status) {
+            case PENDING -> 10;
+            case APPROVED -> 20;
+            case BLOCKED -> 30;
+            case WITHDRAW -> 40;
+        };
 
-        if (adminRepository.existsByEmailHash(emailHash)) {
-            return;
-        }
+        return String.format("%02d%08d", prefix, number);
+    }
 
-        Admin admin = Admin.builder()
-            .emailHash(emailHash)
-            .emailEncrypted(dataEncryptor.encrypt(email))
-            .password(encodedPassword)
-            .name(dataEncryptor.encrypt(name))
-            .adminRole(role)
-            .adminStatus(status)
-            .build();
-
-        adminRepository.save(admin);
+    private String generateMailOrderRegistrationNumber(SellerStatus status, int number) {
+        return "2026-서울강남-"
+            + status.name().toLowerCase()
+            + "-"
+            + String.format("%04d", number);
     }
 
     private String capitalize(String value) {
@@ -347,5 +503,37 @@ public class DummyDataInitializer implements CommandLineRunner {
         }
 
         return value.substring(0, 1).toUpperCase() + value.substring(1).toLowerCase();
+    }
+
+    private record MemberSeed(
+        String email,
+        String emailHash,
+        String name,
+        MemberType memberType,
+        MemberStatus memberStatus,
+        boolean isSeller,
+        int number
+    ) {
+
+    }
+
+    private record SellerSeed(
+        String email,
+        String emailHash,
+        String name,
+        SellerStatus sellerStatus,
+        int number
+    ) {
+
+    }
+
+    private record AdminSeed(
+        String email,
+        String emailHash,
+        String name,
+        AdminRole role,
+        AdminStatus status
+    ) {
+
     }
 }
