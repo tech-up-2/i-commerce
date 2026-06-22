@@ -19,7 +19,7 @@ export default {
   // 리뷰 도메인
   'http_req_duration{tags.name:review_list}': ['p(95)<200'],
   'http_req_duration{tags.name:review_search}': ['p(95)<250', 'p(99)<500'],
-  'http_req_duration{tags.name:review_create}': ['p(95)<800', 'p(99)<1500'],
+  'http_req_duration{tags.name:review_like}': ['p(95)<400', 'p(99)<1000'],
 
   // 채팅 도메인 (WebSocket 관련 커스텀 메트릭은 load-test.js에서 생성)
   'http_req_duration{tags.name:chat_join}': ['p(95)<200'],

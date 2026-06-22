@@ -9,6 +9,7 @@ import com.example.i_commerce.domain.review.repository.ReviewLikeRepository;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,12 +30,12 @@ public class ReviewLikeService {
     @Transactional
     public boolean toggleLike(Long reviewId, Long likerId) {
 
-        Review review = getReviewOrThrow(reviewId);
+        Review review = reviewRepo.findByIdForUpdate(reviewId)
+            .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
 
         Optional<ReviewLike> existingLike = reviewLikeRepo.findByReviewAndLikerId(review, likerId);
 
         boolean isLiked;
-
         if (existingLike.isPresent()) {
             reviewLikeRepo.delete(existingLike.get());
             review.decreaseLikeCount();
@@ -51,7 +52,6 @@ public class ReviewLikeService {
 
         review.checkBestEligibility(BEST_THRESHOLD);
         return isLiked;
-
     }
 
     @Transactional

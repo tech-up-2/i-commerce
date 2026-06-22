@@ -6,8 +6,8 @@ scrape_configs:
   - job_name: 'springboot-perf'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: [ 13.125.133.69:8080]
+      - targets: [ 3.35.216.145:8080]
   - job_name: 'aws-ec2-os-perf'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: [ 13.125.133.69:8080]
+      - targets: [ 3.35.216.145:8080]
