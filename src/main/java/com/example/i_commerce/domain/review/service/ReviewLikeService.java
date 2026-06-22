@@ -58,7 +58,8 @@ public class ReviewLikeService {
     @Transactional
     public boolean toggleLike(Long reviewId, Long likerId) {
 
-        Review review = getReviewOrThrow(reviewId);
+        Review review = reviewRepo.findByIdForUpdate(reviewId)
+            .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
 
         Optional<ReviewLike> existingLike = reviewLikeRepo.findByReviewAndLikerId(review, likerId);
 
