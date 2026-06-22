@@ -5,8 +5,8 @@
  *   k6 run k6/tests/category-attribute/category-attribute-smoke-test.js --env TEST_TOKEN=
  *
  */
-import { getAuthTokenFromEnv } from '../../lib/auth-helper.js';
-import { categoryAttributeFullScenario } from '../../scenarios/category-attribute-flows.js';
+import { getAuthTokenFromEnv } from '../../../lib/auth-helper.js';
+import { categoryAttributeFullScenario } from '../../../scenarios/product_api/category-attribute-flows.js';
 
 export const options = {
   vus: 1,

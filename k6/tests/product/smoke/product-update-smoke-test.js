@@ -8,9 +8,9 @@
  *     --env TEST_STORE_ID=1
  *
  */
-import { getAuthTokenFromEnv, getAdminToken } from '../../lib/auth-helper.js';
-import { getStoreId } from '../../lib/store-helper.js';
-import { productUpdateFullScenario } from '../../scenarios/product-update-flows.js';
+import { getAuthTokenFromEnv, getAdminToken } from '../../../lib/auth-helper.js';
+import { getStoreId } from '../../../lib/store-helper.js';
+import { productUpdateFullScenario } from '../../../scenarios/product_api/product-update-flows.js';
 
 export const options = {
   vus: 1,

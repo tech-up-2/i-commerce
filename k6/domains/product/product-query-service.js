@@ -1,8 +1,5 @@
-
-
 import http from 'k6/http';
 import { buildParams } from '../../lib/http-helper.js';
-
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
 const PRODUCT_BASE_PATH = `${BASE_URL}/api/v1/products`;
@@ -60,6 +57,8 @@ export function getProductDetail(token, productId, itemId = null) {
  * @param {string}      [params.sortType]     - 정렬 타입 (RELEVANCE|PRICE_ASC|PRICE_DESC|LATEST)
  * @param {number}      [params.page]         - 페이지 번호 (기본 0, guest는 0만 허용)
  * @param {number}      [params.size]         - 페이지 크기 (기본 20)
+ * @param {string}      [personaName] - 호출한 페르소나 이름 (예: 'keyword_explorer')
+ * @param {string}      [step]  - 호출한 단계 이름
  * @returns {Response} k6 Response 객체
  *
  * 응답 구조:
@@ -92,7 +91,11 @@ export function getProductDetail(token, productId, itemId = null) {
  *   keyword 없음 + sortType 없음 → LATEST 자동 적용
  *   keyword 있음 + sortType 없음 → RELEVANCE 유지
  */
-export function searchProducts(token, params = {}) {
+export function searchProducts(
+    token, params = {},
+    personaName = 'unspecified',
+    step = 'unspecified'
+) {
 
   const queryParams = {};
 
@@ -120,5 +123,12 @@ export function searchProducts(token, params = {}) {
       ? `${PRODUCT_BASE_PATH}/search?${queryString}`
       : `${PRODUCT_BASE_PATH}/search`;
 
-  return http.get(url, buildParams(token, 'product_search'));
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  return http.get(url, {
+    headers,
+    tags: {name: 'product_search', persona: personaName, step: step},
+  });
+
 }

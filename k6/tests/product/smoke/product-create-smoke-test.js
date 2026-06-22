@@ -13,9 +13,9 @@
  *
  */
 
-import { getAuthTokenFromEnv, getAdminToken } from '../../lib/auth-helper.js';
-import { getStoreId } from '../../lib/store-helper.js';
-import { productCreateFullScenario } from '../../scenarios/product-create-flows.js';
+import { getAuthTokenFromEnv, getAdminToken } from '../../../lib/auth-helper.js';
+import { getStoreId } from '../../../lib/store-helper.js';
+import { productCreateFullScenario } from '../../../scenarios/product_api/product-create-flows.js';
 
 export const options = {
   vus: 1,

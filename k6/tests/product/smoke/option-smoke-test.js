@@ -5,8 +5,8 @@
  *   k6 run k6/tests/product/option-smoke-test.js --env TEST_TOKEN=
  */
 
-import { getAuthTokenFromEnv } from '../../lib/auth-helper.js';
-import { optionFullScenario } from '../../scenarios/option-flows.js';
+import { getAuthTokenFromEnv } from '../../../lib/auth-helper.js';
+import { optionFullScenario } from '../../../scenarios/product_api/option-flows.js';
 
 export const options = {
   vus: 1,

@@ -16,11 +16,11 @@
  *
  */
 import { check, sleep } from 'k6';
-import { searchProducts } from '../domains/product/product-query-service.js';
+import { searchProducts } from '../../domains/product/product-query-service.js';
 import {
   createTestProduct,
   cleanupTestProduct,
-} from '../lib/product-helper.js';
+} from '../../lib/product-helper.js';
 
 /**
  * SliceResponse 공통 구조 검증 헬퍼

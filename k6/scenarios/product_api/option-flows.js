@@ -6,12 +6,12 @@
  */
 import { check, sleep } from 'k6';
 import { SharedArray } from 'k6/data';
-import { getAuthTokenFromEnv } from '../lib/auth-helper.js';
+import { getAuthTokenFromEnv } from '../../lib/auth-helper.js';
 import {
   createOption,
   getAllOptions,
   deleteOption,
-} from '../domains/product/option-service.js';
+} from '../../domains/product/option-service.js';
 
 const optionItems = new SharedArray('optionItems', function () {
   return JSON.parse(open('../data/option-items.json'));

@@ -25,6 +25,10 @@ services:
       dockerfile: ./docker/postgres/Dockerfile
       args:
         PG_BIGM_VERSION: "1.2-20250903"
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements,pg_bigm"
     container_name: i_commerce_postgres
     restart: unless-stopped
     environment:
@@ -71,6 +75,18 @@ services:
   #       limits:
   #         cpus: '1.0'        # 싱글 스레드 기반이므로 1코어면 충분
   #         memory: 1000M      # 고속 조회 및 세션 캐싱용 1GB 할당
+
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgres_exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:1234@i_commerce_postgres:5432/i_commerce?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - monitoring
+    depends_on:
+      - postgres
 
   prometheus:
     image: prom/prometheus

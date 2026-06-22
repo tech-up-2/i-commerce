@@ -5,13 +5,13 @@
  * 사전 준비/정리: lib/product-helper.js
  */
 import { check, sleep } from 'k6';
-import { createProduct } from '../domains/product/product-command-service.js';
-import { setupTestData, cleanupTestData } from '../lib/product-helper.js';
+import { createProduct } from '../../domains/product/product-command-service.js';
+import { setupTestData, cleanupTestData } from '../../lib/product-helper.js';
 import {
   buildNoneProductPayload,
   buildSingleProductPayload,
   buildDoubleProductPayload,
-} from '../lib/product-payload-builder.js';
+} from '../../lib/product-payload-builder.js';
 
 /**
  * [케이스 1] NONE 타입 상품 생성
