@@ -51,7 +51,7 @@ public class ReviewLikeServiceUnitTest {
             .likeCount(0L)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdForUpdate(reviewId)).willReturn(Optional.of(mockReview));
         given(reviewLikeRepo.findByReviewAndLikerId(mockReview, likerId)).willReturn(Optional.empty());
 
         //when
@@ -79,7 +79,7 @@ public class ReviewLikeServiceUnitTest {
             .likerId(likerId)
             .build();
 
-        given(reviewRepo.findById(reviewId)).willReturn(Optional.of(mockReview));
+        given(reviewRepo.findByIdForUpdate(reviewId)).willReturn(Optional.of(mockReview));
         given(reviewLikeRepo.findByReviewAndLikerId(mockReview, likerId)).willReturn(
             Optional.of(mockReviewLike));
 
