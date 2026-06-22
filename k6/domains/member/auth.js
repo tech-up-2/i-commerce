@@ -14,13 +14,14 @@ export function login(email, password, options = {}) {
   });
 
   const tagName = (options.tags && options.tags.name) || '로그인';
+  const expectedStatuses = options.expectedStatuses || [200];
 
   return sendRequest('로그인', () => {
     const params = getJsonHeaders();
     params.tags = {name: tagName};
 
     return http.post(url, payload, params);
-  }, [200]);
+  }, expectedStatuses);
 }
 
 //토큰 재발급
@@ -53,4 +54,24 @@ export function tokenTest(accessToken, options = {}) {
 
     return http.get(url, params);
   }, [200]);
+}
+
+//비정상 로그인
+export function failedLogin(email, wrongPassword, options = {}) {
+  const url = `${BASE_URL}/api/v1/auth/login`;
+
+  const payload = JSON.stringify({
+    email: email,
+    password: wrongPassword
+  });
+
+  const tagName = (options.tags && options.tags.name) || '비밀번호오류로그인';
+  const expectedStatuses = options.expectedStatuses || [401];
+
+  return sendRequest('비밀번호 오류 로그인', () => {
+    const params = getJsonHeaders();
+    params.tags = {name: tagName};
+
+    return http.post(url, payload, params);
+  }, expectedStatuses);
 }
