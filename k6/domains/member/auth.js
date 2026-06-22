@@ -1,6 +1,6 @@
 import http from 'k6/http';
-import {sendRequest} from "./send-request";
-import {getAuthHeaders, getJsonHeaders} from "./hearders";
+import {getAuthHeaders, getJsonHeaders} from "./hearders.js";
+import {sendRequest} from "./send-request.js";
 
 const BASE_URL = __ENV.TARGET_HOST || 'http://localhost:8080';
 

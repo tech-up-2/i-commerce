@@ -1,12 +1,12 @@
 import {check, sleep} from "k6";
-import {failedLogin, login} from "../../domains/member/auth";
-import {getMyInfo, updateMyInfo} from "../../domains/member/member";
-import {getMyAddresses} from "../../domains/member/delivery";
+import {failedLogin, login} from "../../domains/member/auth.js";
+import {getMyInfo, updateMyInfo} from "../../domains/member/member.js";
+import {getMyAddresses} from "../../domains/member/delivery.js";
 
 export function userServiceTest(user) {
   const loginRes = login(user.email, user.password);
 
-  const accessToken = loginRes.accessToken;
+  const accessToken = loginRes.json('data.accessToken');
 
   if (!accessToken) {
     console.error(`accessToken 없음 | body=${loginRes.body}`);
