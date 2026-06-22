@@ -58,8 +58,7 @@ public class ReviewLikeService {
     @Transactional
     public boolean toggleLike(Long reviewId, Long likerId) {
 
-        Review review = reviewRepo.findByIdForUpdate(reviewId)
-            .orElseThrow(() -> new EntityNotFoundException("리뷰가 없습니다."));
+        Review review = getReviewOrThrow(reviewId);
 
         Optional<ReviewLike> existingLike = reviewLikeRepo.findByReviewAndLikerId(review, likerId);
 
