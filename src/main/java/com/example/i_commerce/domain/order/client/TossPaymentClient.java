@@ -41,6 +41,11 @@ public class TossPaymentClient implements PaymentClient {
         params.put("orderId", dto.tossOrderId());
         params.put("amount", dto.amount());
         params.put("paymentKey", dto.paymentKey());
+        
+        //와이어 목으로 에러를 만들기 위해 사용
+        if (dto.mockBehavior() != null) {
+            params.put("mockBehavior", dto.mockBehavior());
+        }
 
         return executePost(url, params);
     }
