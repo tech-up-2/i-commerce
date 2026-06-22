@@ -27,34 +27,6 @@ public class ReviewLikeService {
     private final StoreService storeService;
     private static final double BEST_THRESHOLD = 80.0;
 
-//    @Transactional
-//    public boolean toggleLike(Long reviewId, Long likerId) {
-//
-//        Review review = getReviewOrThrow(reviewId);
-//
-//        Optional<ReviewLike> existingLike = reviewLikeRepo.findByReviewAndLikerId(review, likerId);
-//
-//        boolean isLiked;
-//
-//        if (existingLike.isPresent()) {
-//            reviewLikeRepo.delete(existingLike.get());
-//            review.decreaseLikeCount();
-//            isLiked = false;
-//        } else {
-//            ReviewLike newLike = ReviewLike.builder()
-//                .review(review)
-//                .likerId(likerId)
-//                .build();
-//            reviewLikeRepo.save(newLike);
-//            review.increaseLikeCount();
-//            isLiked = true;
-//        }
-//
-//        review.checkBestEligibility(BEST_THRESHOLD);
-//        return isLiked;
-//
-//    }
-
     @Transactional
     public boolean toggleLike(Long reviewId, Long likerId) {
 
