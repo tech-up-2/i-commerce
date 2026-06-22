@@ -1,14 +1,18 @@
-import {userServiceTest} from "../../../scenarios/member/userService.js";
+import http from 'k6/http';
+import {loginBlockTest} from "../../../scenarios/member/userService.js";
 import {loadMemberUsers} from "../../../domains/member/csv-loader.js";
 
 const users = loadMemberUsers('../../../data/dummy-tokens.csv')
 
+http.setResponseCallback(
+    http.expectedStatuses(200, 401, 429)
+);
+
 export const options = {
   stages: [
-    {duration: '30s', target: 100},
-    {duration: '30s', target: 300},
-    {duration: '90s', target: 300},
-    {duration: '30s', target: 0}
+    {duration: '120s', target: 350},
+    {duration: "300s", target: 350},
+    {duration: '60s', target: 0}
   ],
   thresholds: {
     http_req_failed: ['rate < 0.01'],
@@ -19,5 +23,5 @@ export const options = {
 export default function () {
   const user = users[(__VU - 1) % users.length];
 
-  userServiceTest(user);
+  loginBlockTest(user);
 }

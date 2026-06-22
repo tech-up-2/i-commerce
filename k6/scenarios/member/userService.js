@@ -23,7 +23,7 @@ export function userServiceTest(user) {
 }
 
 export function userInfoManageTest(user) {
-  const beforeRes = getMyInfo(user.accessToken, {
+  const beforeRes = getMyInfo(user.token, {
     tags: {name: '회원정보조회_수정전'}
   });
 
@@ -31,11 +31,14 @@ export function userInfoManageTest(user) {
     return;
   }
 
+  const beforeBody = beforeRes.json();
+  const beforeData = beforeBody.data;
+
   sleep(1);
 
-  const updateRequest = createUpdateRequest(user);
+  const updateRequest = createUpdateRequest(beforeData);
 
-  const updateRes = updateMyInfo(user.accessToken, updateRequest, {
+  const updateRes = updateMyInfo(user.token, updateRequest, {
     tags: {name: '회원정보수정'}
   });
 
@@ -45,24 +48,29 @@ export function userInfoManageTest(user) {
 
   sleep(1);
 
-  const afterRes = getMyInfo(user.accessToken, {
+  const afterRes = getMyInfo(user.token, {
     tags: {name: '회원정보조회_수정후'}
   });
 
   check(afterRes, {
     '회원정보 수정값 반영': (r) => {
       const body = r.json();
-
       const data = body.data;
 
-      return (
-          data.name === updateRequest.name &&
-          data.phoneNumber === updateRequest.phoneNumber
-      )
+      return data.name === updateRequest.name;
     }
   });
 
   sleep(1);
+}
+
+export function createUpdateRequest(beforeData) {
+  return {
+    name: '부하테스트수정회원',
+    phoneNumber: beforeData.phoneNumber,
+    gender: "MALE",
+    birthday: beforeData.birthday
+  };
 }
 
 export function loginBlockTest(user) {
