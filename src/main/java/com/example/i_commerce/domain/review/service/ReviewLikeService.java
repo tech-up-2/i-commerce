@@ -9,6 +9,7 @@ import com.example.i_commerce.domain.review.repository.ReviewLikeRepository;
 import com.example.i_commerce.domain.review.repository.ReviewRepository;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.exception.common.CommonErrorCode;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,15 +27,43 @@ public class ReviewLikeService {
     private final StoreService storeService;
     private static final double BEST_THRESHOLD = 80.0;
 
+//    @Transactional
+//    public boolean toggleLike(Long reviewId, Long likerId) {
+//
+//        Review review = getReviewOrThrow(reviewId);
+//
+//        Optional<ReviewLike> existingLike = reviewLikeRepo.findByReviewAndLikerId(review, likerId);
+//
+//        boolean isLiked;
+//
+//        if (existingLike.isPresent()) {
+//            reviewLikeRepo.delete(existingLike.get());
+//            review.decreaseLikeCount();
+//            isLiked = false;
+//        } else {
+//            ReviewLike newLike = ReviewLike.builder()
+//                .review(review)
+//                .likerId(likerId)
+//                .build();
+//            reviewLikeRepo.save(newLike);
+//            review.increaseLikeCount();
+//            isLiked = true;
+//        }
+//
+//        review.checkBestEligibility(BEST_THRESHOLD);
+//        return isLiked;
+//
+//    }
+
     @Transactional
     public boolean toggleLike(Long reviewId, Long likerId) {
 
-        Review review = getReviewOrThrow(reviewId);
+        Review review = reviewRepo.findByIdForUpdate(reviewId)
+            .orElseThrow(() -> new EntityNotFoundException("리뷰가 없습니다."));
 
         Optional<ReviewLike> existingLike = reviewLikeRepo.findByReviewAndLikerId(review, likerId);
 
         boolean isLiked;
-
         if (existingLike.isPresent()) {
             reviewLikeRepo.delete(existingLike.get());
             review.decreaseLikeCount();
@@ -51,7 +80,6 @@ public class ReviewLikeService {
 
         review.checkBestEligibility(BEST_THRESHOLD);
         return isLiked;
-
     }
 
     @Transactional

@@ -17,7 +17,7 @@ public class ReviewLikeFacade {
             try {
                 return reviewLikeService.toggleLike(reviewId, likerId);
             } catch (ObjectOptimisticLockingFailureException e) {
-                Thread.sleep(50);
+                Thread.sleep(5);
             }
         }
     }

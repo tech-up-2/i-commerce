@@ -5,10 +5,12 @@ import com.example.i_commerce.domain.review.entity.Review;
 import com.example.i_commerce.domain.review.entity.enums.ReviewStatus;
 import com.example.i_commerce.domain.review.service.dto.SellerReviewManagementResponse;
 import com.example.i_commerce.global.common.response.SliceResponse;
+import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -43,5 +45,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<StarRateCountProjection> getStarRateStats(@Param("productId") Long productId);
 
     Slice<Review> findAllByProductIdIn(List<Long> productIds, Pageable pageable);
+
+    //리뷰 좋아요 - 비관락
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select r from Review r where r.id = :id")
+    Optional<Review> findByIdForUpdate(@Param("id") Long id);
 }
 
