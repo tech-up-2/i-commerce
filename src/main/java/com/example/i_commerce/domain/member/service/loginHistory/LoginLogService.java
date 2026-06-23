@@ -35,13 +35,14 @@ public class LoginLogService {
     private final Map<String, FailedLoginAttempt> adminFailedLoginCache = new ConcurrentHashMap<>();
 
     //히스토리 기록
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void writeMemberLoginHistory(
         Long memberId,
         LoginResult loginResult,
         String ipAddress,
         LocalDateTime time,
-        LoginFailReason failReason) {
+        LoginFailReason failReason
+    ) {
         UserLoginHistory history = UserLoginHistory.builder()
             .memberId(memberId)
             .loginResult(loginResult)

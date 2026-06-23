@@ -25,8 +25,10 @@ import com.example.i_commerce.domain.member.service.auth.dto.UserInfoResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserUpdateRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
 import com.example.i_commerce.domain.member.service.loginHistory.LoginLogService;
+import com.example.i_commerce.domain.member.service.loginHistory.dto.MemberLoginHistoryEvent;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
+import com.example.i_commerce.domain.member.tools.PerfTimer;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.jwt.BlacklistedTokenService;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
@@ -38,9 +40,9 @@ import com.example.i_commerce.global.security.jwt.entity.RefreshToken;
 import com.example.i_commerce.global.security.jwt.repo.RefreshTokenRepository;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -61,6 +63,13 @@ public class AuthService {
     private final LoginLogService loginLogService;
     private final RefreshTokenValidator refreshTokenValidator;
     private final BlacklistedTokenService blacklistedTokenService;
+    private final RefreshTokenService refreshTokenService;
+
+    //이벤트 처리용
+    private final ApplicationEventPublisher eventPublisher;
+
+    //측정용
+    private final PerfTimer perfTimer;
 
     //회원 가입
     @Transactional
@@ -92,107 +101,272 @@ public class AuthService {
 
     }
 
-    //로그인
-    @Transactional
+    // 로그인
+//    public LoginResponse login(LoginRequest dto) {
+//        String emailHash = emailHashEncoder.encode(dto.email());
+//
+//        Member member = memberRepository.findByEmailHash(emailHash)
+//            .orElse(null);
+//
+//        if (member == null) {
+//            eventPublisher.publishEvent(
+//                new MemberLoginHistoryEvent(
+//                    null,
+//                    LoginResult.FAILURE,
+//                    null,
+//                    LocalDateTime.now(),
+//                    LoginFailReason.INVALID_CREDENTIALS
+//                )
+//            );
+//
+//            throw new AppException(MemberErrorCode.USER_NOT_FOUND);
+//        }
+//
+//        validateLoginStatus(member);
+//        loginLogService.validateNotBlocked(emailHash);
+//
+//        if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
+//            eventPublisher.publishEvent(
+//                new MemberLoginHistoryEvent(
+//                    member.getId(),
+//                    LoginResult.FAILURE,
+//                    null,
+//                    LocalDateTime.now(),
+//                    LoginFailReason.PASSWORD_MISMATCH
+//                )
+//            );
+//
+//            // 실패 카운트/차단 판단은 동기 유지
+//            loginLogService.userLoginFailedSequence(member.getEmailHash());
+//
+//            throw new AppException(MemberErrorCode.INVALID_PASSWORD);
+//        }
+//
+//        Seller seller = null;
+//
+//        if (member.getIsSeller()) {
+//            seller = sellerRepository.findById(member.getId())
+//                .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
+//        }
+//
+//        TokenPayload payload;
+//
+//        if (seller != null) {
+//            payload = new TokenPayload(
+//                PrincipalType.MEMBER,
+//                member.getId(),
+//                MemberType.SELLER,
+//                member.getStatus(),
+//                seller.getSellerStatus()
+//            );
+//        } else {
+//            payload = new TokenPayload(
+//                PrincipalType.MEMBER,
+//                member.getId(),
+//                MemberType.CUSTOMER,
+//                member.getStatus(),
+//                null
+//            );
+//        }
+//
+//        String accessToken = jwtTokenUtil.createToken(payload);
+//
+//        String tokenId = UUID.randomUUID().toString();
+//
+//        RefreshTokenPayload refreshTokenPayload = new RefreshTokenPayload(
+//            PrincipalType.MEMBER,
+//            member.getId(),
+//            tokenId
+//        );
+//
+//        String refreshToken = jwtTokenUtil.createRefreshToken(refreshTokenPayload);
+//        String refreshTokenHash = tokenHashEncoder.encode(refreshToken);
+//
+//        RefreshToken savedRefreshToken = RefreshToken.create(
+//            tokenId,
+//            payload.principalType(),
+//            payload.accountId(),
+//            refreshTokenHash,
+//            LocalDateTime.now().plusDays(7)
+//        );
+//
+//        refreshTokenService.save(savedRefreshToken);
+//
+//        eventPublisher.publishEvent(
+//            new MemberLoginHistoryEvent(
+//                member.getId(),
+//                LoginResult.SUCCESS,
+//                null,
+//                LocalDateTime.now(),
+//                null
+//            )
+//        );
+//
+//        return new LoginResponse(
+//            member.getId(),
+//            dto.email(),
+//            accessToken,
+//            refreshToken
+//        );
+//    }
+
+    //측정용 로그인
     public LoginResponse login(LoginRequest dto) {
-        String emailHash = emailHashEncoder.encode(dto.email());
-
-        Optional<Member> memberOptional = memberRepository.findByEmailHash(emailHash);
-
-        if (memberOptional.isEmpty()) {
-            // 로그인 실패 기록
-            loginLogService.writeMemberLoginHistory(null,
-                LoginResult.FAILURE, null, LocalDateTime.now(),
-                LoginFailReason.INVALID_CREDENTIALS
+        return perfTimer.record("member_login", "total", () -> {
+            String emailHash = perfTimer.record("member_login", "email_hash", () ->
+                emailHashEncoder.encode(dto.email())
             );
 
-            throw new AppException(MemberErrorCode.USER_NOT_FOUND);
-        }
-
-        Member member = memberOptional.get();
-
-        validateLoginStatus(member);// status상태 검증
-        //emailblacklist 검사 하는 코드
-        loginLogService.validateNotBlocked(emailHash);
-
-        if (!passwordEncoder.matches(dto.password(), member.getPassword())) {
-            //로그인 실패 기록
-            loginLogService.writeMemberLoginHistory(member.getId(), LoginResult.FAILURE, null,
-                LocalDateTime.now(), LoginFailReason.PASSWORD_MISMATCH);
-            //로그인 실패시 절차
-            loginLogService.userLoginFailedSequence(emailHash);
-            throw new AppException(MemberErrorCode.INVALID_PASSWORD);
-        }
-
-        // 리팩토링으로 인한 삭제
-        //String email = dataEncryptor.decrypt(member.getEmailEncrypted());
-
-        // 엑세스 토큰 발급
-        TokenPayload payload;
-
-        Seller seller = null;
-
-        //여기서 굳이 예외를 던져야 하나? 그냥 없으면 안넣으면 되잖아.
-        if (member.getIsSeller()) {
-            seller = sellerRepository.findById(member.getId())
-                .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
-        }
-
-        if (seller != null) {
-            payload = new TokenPayload(
-                PrincipalType.MEMBER,
-                member.getId(),
-                MemberType.SELLER,
-                member.getStatus(),
-                seller.getSellerStatus()
+            Member member = perfTimer.record("member_login", "member_find_by_email_hash", () ->
+                memberRepository.findByEmailHash(emailHash)
+                    .orElse(null)
             );
-        } else {
-            payload = new TokenPayload(
-                PrincipalType.MEMBER,
-                member.getId(),
-                MemberType.CUSTOMER,
-                member.getStatus(),
-                null
+
+            if (member == null) {
+                perfTimer.record("member_login", "failure_event_publish_user_not_found", () ->
+                    eventPublisher.publishEvent(
+                        new MemberLoginHistoryEvent(
+                            null,
+                            LoginResult.FAILURE,
+                            null,
+                            LocalDateTime.now(),
+                            LoginFailReason.INVALID_CREDENTIALS
+                        )
+                    )
+                );
+
+                throw new AppException(MemberErrorCode.USER_NOT_FOUND);
+            }
+
+            perfTimer.record("member_login", "status_validate", () ->
+                validateLoginStatus(member)
             );
-        }
 
-        String accessToken = jwtTokenUtil.createToken(payload);
+            perfTimer.record("member_login", "blacklist_validate", () ->
+                loginLogService.validateNotBlocked(emailHash)
+            );
 
-        // 리프레시 토큰 발급
-        String tokenId = UUID.randomUUID().toString();
+            Boolean passwordMatched = perfTimer.record("member_login", "password_match", () ->
+                passwordEncoder.matches(dto.password(), member.getPassword())
+            );
 
-        RefreshTokenPayload refreshTokenPayload = new RefreshTokenPayload(
-            PrincipalType.MEMBER,
-            member.getId(),
-            tokenId
-        );
+            if (!passwordMatched) {
+                perfTimer.record("member_login", "failure_event_publish_password_mismatch", () ->
+                    eventPublisher.publishEvent(
+                        new MemberLoginHistoryEvent(
+                            member.getId(),
+                            LoginResult.FAILURE,
+                            null,
+                            LocalDateTime.now(),
+                            LoginFailReason.PASSWORD_MISMATCH
+                        )
+                    )
+                );
 
-        String refreshToken = jwtTokenUtil.createRefreshToken(refreshTokenPayload);
+                // 실패 카운트/차단 판단은 동기 유지
+                perfTimer.record("member_login", "failed_login_sequence", () ->
+                    loginLogService.userLoginFailedSequence(member.getEmailHash())
+                );
 
-        String refreshTokenHash = tokenHashEncoder.encode(refreshToken);
+                throw new AppException(MemberErrorCode.INVALID_PASSWORD);
+            }
 
-        RefreshToken savedToken = RefreshToken.create(
-            tokenId,
-            payload.principalType(),
-            payload.accountId(),
-            refreshTokenHash,
-            LocalDateTime.now().plusDays(7)
-        );
+            Seller seller = null;
 
-        refreshTokenRepository.save(savedToken);
+            if (member.getIsSeller()) {
+                seller = perfTimer.record("member_login", "seller_find", () ->
+                    sellerRepository.findById(member.getId())
+                        .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND))
+                );
+            }
 
-        //로그인 성공 기록
-        loginLogService.writeMemberLoginHistory(member.getId(),
-            LoginResult.SUCCESS, null, LocalDateTime.now(), null);
+            Seller finalSeller = seller;
 
-        return new LoginResponse(
-            member.getId(),
-            dto.email(),
-            accessToken,
-            refreshToken
-        );
+            TokenPayload payload = perfTimer.record("member_login", "access_token_payload_create",
+                () -> {
+                    if (finalSeller != null) {
+                        return new TokenPayload(
+                            PrincipalType.MEMBER,
+                            member.getId(),
+                            MemberType.SELLER,
+                            member.getStatus(),
+                            finalSeller.getSellerStatus()
+                        );
+                    }
+
+                    return new TokenPayload(
+                        PrincipalType.MEMBER,
+                        member.getId(),
+                        MemberType.CUSTOMER,
+                        member.getStatus(),
+                        null
+                    );
+                });
+
+            String accessToken = perfTimer.record("member_login", "access_token_create", () ->
+                jwtTokenUtil.createToken(payload)
+            );
+
+            String tokenId = perfTimer.record("member_login", "refresh_token_id_create", () ->
+                UUID.randomUUID().toString()
+            );
+
+            RefreshTokenPayload refreshTokenPayload = perfTimer.record("member_login",
+                "refresh_token_payload_create", () ->
+                    new RefreshTokenPayload(
+                        PrincipalType.MEMBER,
+                        member.getId(),
+                        tokenId
+                    )
+            );
+
+            String refreshToken = perfTimer.record("member_login", "refresh_token_create", () ->
+                jwtTokenUtil.createRefreshToken(refreshTokenPayload)
+            );
+
+            String refreshTokenHash = perfTimer.record("member_login", "refresh_token_hash", () ->
+                tokenHashEncoder.encode(refreshToken)
+            );
+
+            RefreshToken savedRefreshToken = perfTimer.record("member_login",
+                "refresh_token_entity_create", () ->
+                    RefreshToken.create(
+                        tokenId,
+                        payload.principalType(),
+                        payload.accountId(),
+                        refreshTokenHash,
+                        LocalDateTime.now().plusDays(7)
+                    )
+            );
+
+            perfTimer.record("member_login", "refresh_token_save", () ->
+                refreshTokenService.save(savedRefreshToken)
+            );
+
+            perfTimer.record("member_login", "success_event_publish", () ->
+                eventPublisher.publishEvent(
+                    new MemberLoginHistoryEvent(
+                        member.getId(),
+                        LoginResult.SUCCESS,
+                        null,
+                        LocalDateTime.now(),
+                        null
+                    )
+                )
+            );
+
+            return perfTimer.record("member_login", "response_create", () ->
+                new LoginResponse(
+                    member.getId(),
+                    dto.email(),
+                    accessToken,
+                    refreshToken
+                )
+            );
+        });
     }
 
+    //토큰 재발급
     @Transactional
     public TokenReissueResponse reissue(TokenReissueRequest request) {
 
