@@ -124,13 +124,15 @@ public class AuthService {
             throw new AppException(MemberErrorCode.INVALID_PASSWORD);
         }
 
-        String email = dataEncryptor.decrypt(member.getEmailEncrypted());
+        // 리팩토링으로 인한 삭제
+        //String email = dataEncryptor.decrypt(member.getEmailEncrypted());
 
         // 엑세스 토큰 발급
         TokenPayload payload;
 
         Seller seller = null;
 
+        //여기서 굳이 예외를 던져야 하나? 그냥 없으면 안넣으면 되잖아.
         if (member.getIsSeller()) {
             seller = sellerRepository.findById(member.getId())
                 .orElseThrow(() -> new AppException(MemberErrorCode.SELLER_NOT_FOUND));
@@ -185,7 +187,7 @@ public class AuthService {
 
         return new LoginResponse(
             member.getId(),
-            email,
+            dto.email(),
             accessToken,
             refreshToken
         );
