@@ -9,13 +9,13 @@ import com.example.i_commerce.domain.member.service.auth.dto.MemberSignUpRequest
 import com.example.i_commerce.domain.member.service.auth.dto.PasswordFindRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.PasswordResetRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.SignUpResponse;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenLogoutRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserInfoResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.UserUpdateRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.WithDrawRequest;
 import com.example.i_commerce.global.common.response.ApiResponse;
-import com.example.i_commerce.global.security.jwt.BlacklistedTokenService;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -41,7 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
-    private final BlacklistedTokenService blacklistedTokenService;
 
     @Operation(summary = "회원가입", description = "일반 회원 계정을 생성한다.")
     @PostMapping("/signup")
@@ -70,11 +69,10 @@ public class AuthController {
     @Operation(summary = "로그아웃", description = "로그아웃한다.")
     @PostMapping("/logout")
     public ApiResponse<Void> logout(
-        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization
+        @RequestHeader(HttpHeaders.AUTHORIZATION) String authorization,
+        @Valid @RequestBody TokenLogoutRequest request
     ) {//나중에 redis를 붙여야 함.
-        String token = authorization.substring(7);
-        blacklistedTokenService.logout(token);
-
+        authService.logout(authorization, request);
         return ApiResponse.success();
     }
 
@@ -122,7 +120,7 @@ public class AuthController {
         return ApiResponse.success(null);
     }
 
-    //정보조회
+    //회원정보조회
     @Operation(summary = "내 정보 조회", description = "로그인한 사용자의 회원 정보를 조회합니다.")
     @GetMapping("/users/me")
     @PreAuthorize("@authChecker.canViewMemberInfo()")
@@ -143,5 +141,12 @@ public class AuthController {
     ) {
         UserInfoResponse response = authService.updateMyInfo(principal.getId(), request);
         return ApiResponse.success(response);
+    }
+
+    //Access 토큰 테스트 API
+    @PreAuthorize("@authChecker.canUpdateMemberInfo()")
+    @GetMapping("/tokentest")
+    public ApiResponse<String> accessTokenTest() {
+        return ApiResponse.success("테스트 성공");
     }
 }

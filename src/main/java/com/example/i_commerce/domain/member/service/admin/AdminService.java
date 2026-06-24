@@ -24,15 +24,17 @@ import com.example.i_commerce.domain.member.service.admin.dto.AdminSellerStatusU
 import com.example.i_commerce.domain.member.service.admin.dto.AdminStatusUpdateRequest;
 import com.example.i_commerce.domain.member.service.admin.dto.AdminUpdateResponse;
 import com.example.i_commerce.domain.member.service.auth.dto.LoginRequest;
+import com.example.i_commerce.domain.member.service.auth.dto.TokenLogoutRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueRequest;
 import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueResponse;
 import com.example.i_commerce.domain.member.service.loginHistory.LoginLogService;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
-import com.example.i_commerce.domain.member.tools.RefreshTokenValidator;
 import com.example.i_commerce.global.common.response.SliceResponse;
 import com.example.i_commerce.global.exception.AppException;
+import com.example.i_commerce.global.security.jwt.BlacklistedTokenService;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
+import com.example.i_commerce.global.security.jwt.RefreshTokenValidator;
 import com.example.i_commerce.global.security.jwt.TokenHashEncoder;
 import com.example.i_commerce.global.security.jwt.dto.RefreshTokenPayload;
 import com.example.i_commerce.global.security.jwt.dto.TokenPayload;
@@ -64,6 +66,7 @@ public class AdminService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final LoginLogService loginLogService;
     private final RefreshTokenValidator refreshTokenValidator;
+    private final BlacklistedTokenService blacklistedTokenService;
 
     @Transactional
     public AdminLoginResponse login(LoginRequest dto) {
@@ -194,6 +197,20 @@ public class AdminService {
         if (admin.getAdminStatus() == AdminStatus.LOCKED) {
             throw new AppException(MemberErrorCode.ADMIN_LOCKED);
         }
+    }
+
+    //관리자 로그아웃
+    @Transactional
+    public void logout(String authorization, TokenLogoutRequest request) {
+        String accessToken = authorization.substring(7);
+        blacklistedTokenService.logout(accessToken);
+
+        RefreshToken savedToken = refreshTokenValidator.validateAndGetToken(
+            request.refreshToken(),
+            PrincipalType.ADMIN
+        );
+
+        refreshTokenRepository.delete(savedToken);
     }
 
     //관리자 생성

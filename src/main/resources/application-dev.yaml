@@ -17,13 +17,13 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5433/i_commerce
+    url: jdbc:postgresql://postgres:5432/i_commerce #jdbc:postgresql://localhost:5433/i_commerce
     username: postgres
     password: 1234
-#    driver-class-name: org.postgresql.Driver
-#    url: jdbc:postgresql://localhost:5434/i_commerce
-#    username: postgres
-#    password: postgres1234
+    #    driver-class-name: org.postgresql.Driver
+    #    url: jdbc:postgresql://localhost:5434/i_commerce
+    #    username: postgres
+    #    password: postgres1234
     hikari:
       # [추천] 2코어 기준 하드웨어 효율을 극대화하면서 180명 요청을 받아줄 수 있는 마지노선
       maximum-pool-size: 30

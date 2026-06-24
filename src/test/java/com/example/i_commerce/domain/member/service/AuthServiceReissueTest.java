@@ -25,12 +25,12 @@ import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueRequest
 import com.example.i_commerce.domain.member.service.auth.dto.TokenReissueResponse;
 import com.example.i_commerce.domain.member.tools.DataEncryptor;
 import com.example.i_commerce.domain.member.tools.EmailHashEncoder;
-import com.example.i_commerce.domain.member.tools.RefreshTokenValidator;
 import com.example.i_commerce.domain.testtools.AdminFixture;
 import com.example.i_commerce.domain.testtools.MemberFixture;
 import com.example.i_commerce.domain.testtools.SellerFixture;
 import com.example.i_commerce.global.exception.AppException;
 import com.example.i_commerce.global.security.jwt.JwtTokenUtil;
+import com.example.i_commerce.global.security.jwt.RefreshTokenValidator;
 import com.example.i_commerce.global.security.jwt.dto.RefreshTokenPayload;
 import com.example.i_commerce.global.security.jwt.dto.TokenPayload;
 import com.example.i_commerce.global.security.principal.CustomUserPrincipal.PrincipalType;

@@ -15,8 +15,8 @@ services:
     deploy:
       resources:
         limits:
-#          cpus: '3.0'        # 500 RPS 스레드 연산을 위한 3코어 할당
-#          memory: 4000M
+          #          cpus: '3.0'        # 500 RPS 스레드 연산을 위한 3코어 할당
+          #          memory: 4000M
           cpus: '3.5'        # 4코어 중 시스템 기본 프로세스용 0.5코어 제외
           memory: 7000M      # 8 GiB(약 8192M) 중 OS 마진을 제외한 가용 메모리
 
@@ -98,6 +98,8 @@ services:
       - "9090:9090"
     networks:
       - monitoring
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   grafana:
     image: grafana/grafana

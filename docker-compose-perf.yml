@@ -16,6 +16,8 @@ services:
       - "9091:9090"
     networks:
       - monitoring-perf
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   # --------------------------------------------------------------------------
   # 2. Grafana-perf (부하테스트 전용 시각화 대시보드)
